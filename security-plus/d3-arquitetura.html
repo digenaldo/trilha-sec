@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domínio 3 · Arquitetura de segurança · Trilha Sec</title>
+<meta name="description" content="Guia do Domínio 3 do CompTIA Security+ (SY0-801, 19%): modelos de arquitetura, nuvem, OT, segmentação, zero trust, firewalls, VPN, proteção de dados, resiliência, backups e métricas de recuperação, com questões originais de prática.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · Domínio 3 · 19%</span>
+  <h1>Domínio 3 · Arquitetura de segurança</h1>
+  <p class="lead">Ao fim desta página você vai saber escolher e justificar onde cada controle fica numa arquitetura (nuvem, rede, dados e recuperação) do jeito que a prova pede: pelo cenário, pelo custo e pelo risco.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz como dev</span>
+    <p>Você já desenha arquitetura: escolhe entre Lambda e Kubernetes, decide se o banco fica numa subnet privada, configura um load balancer, escreve Terraform, define backup do Postgres. Este domínio pergunta a mesma coisa com outra lente: <strong>o que cada escolha muda na segurança e na capacidade de voltar depois de uma falha</strong>. Grande parte do vocabulário de rede já foi apresentada em <a href="../02-redes-e-linux.html">Redes e Linux</a>; aqui a gente sobe um nível.</p>
+  </div>
+
+  <h2 id="visao">O que o domínio cobre</h2>
+  <p>O Domínio 3 vale <strong>19%</strong> da prova SY0-801 (na SY0-701 valia 18%). Com até 90 questões, isso dá algo como 16 a 18 perguntas. São quatro objetivos oficiais:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Objetivo</th><th>Tema</th><th>Verbo da prova</th></tr></thead>
+    <tbody>
+      <tr><td>3.1</td><td>Implicações de segurança de diferentes modelos de arquitetura</td><td>Comparar e contrastar</td></tr>
+      <tr><td>3.2</td><td>Gerenciar a arquitetura para proteger a infraestrutura</td><td>Dado um cenário, aplicar</td></tr>
+      <tr><td>3.3</td><td>Conceitos e estratégias para proteger dados</td><td>Resumir</td></tr>
+      <tr><td>3.4</td><td>Resiliência e recuperação na arquitetura</td><td>Explicar</td></tr>
+    </tbody>
+  </table></div>
+  <p>O verbo importa: "dado um cenário" (3.2) indica que ali aparecem as questões mais longas e as <dfn>PBQs</dfn> (<em>performance-based questions</em>, questões práticas em que você arrasta, ordena ou configura algo, em vez de marcar alternativa).</p>
+
+  <div class="callout">
+    <span class="callout-title">Qual versão esta página segue</span>
+    <p>A estrutura segue o documento oficial de objetivos da <strong>SY0-801 (V8), versão 2.0 do documento</strong>, linkado na página da CompTIA e conferido em 2026-11-25. A SY0-801 foi lançada em 2026-11-17; a SY0-701 continua disponível até 2027-06-11. Quem vai fazer a 701 também é atendido: os itens que só existem na lista da 701 estão aqui, marcados como <span class="tag">701</span>.</p>
+    <p><strong>O que mudou da 701 para a 801 neste domínio:</strong></p>
+    <ul>
+      <li><strong>Zero Trust</strong> saiu do Domínio 1 e virou parte do 3.2, com foco prático (saúde e inventário do dispositivo, controle de acesso por aplicação).</li>
+      <li>Os itens de dispositivo (firewall, IDS/IPS, WAF, UTM, 802.1X, proxy) que a 701 listava no 3.2 foram para o <a href="d4-operacoes.html#4-1">4.1</a> da 801. Eles continuam explicados aqui porque são decisões de arquitetura, e o 4.1 aponta para cá.</li>
+      <li>SD-WAN e SASE <span class="tag">701</span> deram lugar a <strong>SSE</strong>. Entraram também: <em>out-of-band management</em>, mensageria com criptografia ponta a ponta, transferência de arquivos, gMSA e <em>privilege creep</em>.</li>
+      <li>No 3.1, IoT, ICS/SCADA, RTOS e embarcados deixam de ser listados um a um e passam a caber em <strong>OT</strong>. SDN, virtualização e containers não aparecem mais no 3.1 (virtualização continua no Domínio 2 e no 3.4). Novos: proprietário vs. código aberto, usabilidade, facilidade de recuperação, propriedade, requisitos ambientais.</li>
+      <li>No 3.3 entraram dados estruturados vs. não estruturados, papéis de proteção de dados (dono, custodiante, controlador...), ciclo de vida do dado, <em>data transpose</em>, desidentificação e filtragem.</li>
+      <li>No 3.4 entraram autoscaling, fonte redundante, protetor de surto, imutabilidade de backup, teste de restauração e as <strong>métricas de recuperação</strong> RTO/RPO/MTTR/MTBF, que na 701 ficavam no Domínio 5.</li>
+    </ul>
+  </div>
+
+  <h2 id="3-1">3.1 · Modelos de arquitetura e suas implicações</h2>
+  <p>O objetivo aqui não é decorar definições, e sim saber o que cada modelo <strong>muda</strong> em quem é responsável, onde fica o dado e o que pode dar errado.</p>
+
+  <h3>Modelos de serviço em nuvem e a matriz de responsabilidade</h3>
+  <p>Três siglas organizam a conversa:</p>
+  <ul>
+    <li><dfn>IaaS</dfn> (<em>Infrastructure as a Service</em>): você aluga máquinas virtuais, rede e disco. Exemplo: EC2, Compute Engine. Você cuida do sistema operacional para cima.</li>
+    <li><dfn>PaaS</dfn> (<em>Platform as a Service</em>): você entrega o código e a plataforma roda. Exemplo: App Engine, Heroku, RDS (banco gerenciado). Você cuida do código e da configuração.</li>
+    <li><dfn>SaaS</dfn> (<em>Software as a Service</em>): você usa o software pronto. Exemplo: Gmail, Salesforce, Slack. Você cuida de quem acessa e de que dados coloca lá.</li>
+  </ul>
+  <p>A <dfn>matriz de responsabilidade compartilhada</dfn> (<em>shared responsibility model</em>) é a tabela que diz quem protege o quê. A regra prática: <strong>quanto mais "as a Service", menos você gerencia, mas dados e identidades são sempre seus</strong>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Camada</th><th>On-premises</th><th>IaaS</th><th>PaaS</th><th>SaaS</th></tr></thead>
+    <tbody>
+      <tr><td>Dados e classificação</td><td>Cliente</td><td>Cliente</td><td>Cliente</td><td>Cliente</td></tr>
+      <tr><td>Identidades e acesso</td><td>Cliente</td><td>Cliente</td><td>Cliente</td><td>Cliente</td></tr>
+      <tr><td>Aplicação</td><td>Cliente</td><td>Cliente</td><td>Cliente</td><td>Provedor</td></tr>
+      <tr><td>Sistema operacional e patches</td><td>Cliente</td><td>Cliente</td><td>Provedor</td><td>Provedor</td></tr>
+      <tr><td>Virtualização, rede física</td><td>Cliente</td><td>Provedor</td><td>Provedor</td><td>Provedor</td></tr>
+      <tr><td>Datacenter físico</td><td>Cliente</td><td>Provedor</td><td>Provedor</td><td>Provedor</td></tr>
+    </tbody>
+  </table></div>
+  <p>A maioria dos vazamentos em nuvem acontece na parte do cliente: bucket S3 público, chave de acesso no GitHub, grupo de segurança com <code>0.0.0.0/0</code> na porta 22. A prova adora perguntar "de quem é a culpa?" num cenário assim, e a resposta quase sempre é do cliente.</p>
+
+  <h3>Modelos de implantação</h3>
+  <ul>
+    <li><dfn>Nuvem pública</dfn>: infraestrutura compartilhada entre vários clientes (<dfn>multitenancy</dfn>, vários inquilinos no mesmo hardware). Barata e elástica; risco de vazamento entre inquilinos e de configuração errada.</li>
+    <li><dfn>Nuvem privada</dfn>: infraestrutura dedicada a uma organização, no datacenter dela ou num provedor. Mais controle, mais custo.</li>
+    <li><dfn>Nuvem híbrida</dfn>: mistura de on-premises/privada com pública, conectadas. O ponto fraco costuma ser a conexão e a consistência das políticas entre os dois mundos.</li>
+    <li><dfn>Nuvem comunitária</dfn>: compartilhada por organizações com o mesmo requisito (por exemplo, órgãos de governo ou hospitais). Custos e compliance divididos.</li>
+    <li><dfn>Multicloud</dfn>: usar mais de um provedor público (AWS e GCP, por exemplo). Reduz dependência de um fornecedor e de uma única falha regional, mas multiplica o trabalho: cada provedor tem seu IAM, seus logs e seus padrões.</li>
+  </ul>
+
+  <h3>Serverless, microsserviços e IaC</h3>
+  <p><dfn>Serverless</dfn> é rodar funções sem gerenciar servidor (Lambda, Cloud Functions). A superfície de sistema operacional some do seu lado, mas aparecem riscos novos: permissões IAM largas demais por função, dependências vulneráveis e eventos de entrada não validados.</p>
+  <p><dfn>Microsserviços</dfn> dividem a aplicação em serviços pequenos que conversam por API. Vantagem de segurança: falha e comprometimento ficam mais contidos, e cada serviço pode ter só a permissão de que precisa. Desvantagem: muito mais tráfego leste-oeste (entre serviços) para autenticar e criptografar, e mais APIs expostas.</p>
+  <p><dfn>IaC</dfn> (<em>Infrastructure as Code</em>, infraestrutura descrita em arquivos versionados, como Terraform ou CloudFormation) é visto como ganho de segurança porque a configuração fica revisável, repetível e auditável, e porque dá para escanear antes de aplicar. O risco é o espelho disso: um módulo errado replica o erro em cem lugares. Você já viu isso em <a href="../04-devsecops.html#iac">DevSecOps</a>.</p>
+
+  <h3>On-premises, centralizado e descentralizado</h3>
+  <p><dfn>On-premises</dfn> é a infraestrutura que fica no prédio da empresa: controle total, responsabilidade total (energia, refrigeração, segurança física, patch). Uma arquitetura <dfn>centralizada</dfn> concentra decisões e dados num ponto (mais fácil de gerenciar e auditar, mas é um ponto único de falha); uma <dfn>descentralizada</dfn> distribui (mais resiliente, mais difícil de manter consistente).</p>
+
+  <h3>Virtualização e containers <span class="tag">701</span></h3>
+  <p><dfn>Virtualização</dfn> roda várias máquinas virtuais sobre um <dfn>hipervisor</dfn> (camada que divide o hardware entre as VMs). O risco clássico é o <dfn>VM escape</dfn>: código que sai da VM e alcança o hipervisor ou outras VMs. Outro é o <em>VM sprawl</em>, VMs esquecidas e sem patch. <dfn>Containers</dfn> compartilham o kernel do host, então isolam menos que VMs: um kernel vulnerável afeta todos. Mais em <a href="../04-devsecops.html#containers">DevSecOps</a>.</p>
+
+  <h3>Segmentação física, air gap e segmentação lógica</h3>
+  <ul>
+    <li><dfn>Segmentação física</dfn>: redes separadas em hardware diferente (switches e cabos próprios).</li>
+    <li><dfn>Air gap</dfn> (rede isolada fisicamente): nenhuma conexão com outras redes, nem com a internet. Usado em sistemas industriais críticos, militares e cofres de backup. Não é invulnerável: o Stuxnet chegou por pendrive.</li>
+    <li><dfn>Segmentação lógica</dfn>: separação feita por software no mesmo hardware, como <dfn>VLANs</dfn> (redes virtuais num mesmo switch), subnets e regras de firewall. Mais barata e flexível, depende de configuração correta.</li>
+    <li><dfn>SDN</dfn> <span class="tag">701</span> (<em>Software-Defined Networking</em>): separa o <em>plano de controle</em> (quem decide para onde o tráfego vai) do <em>plano de dados</em> (quem encaminha os pacotes), permitindo programar a rede por API. A VPC da sua nuvem é, na prática, SDN.</li>
+  </ul>
+
+  <h3>OT: ICS, SCADA, IoT, embarcados e RTOS</h3>
+  <p><dfn>OT</dfn> (<em>Operational Technology</em>) é a tecnologia que controla o mundo físico: válvulas, esteiras, subestações, bombas. Dentro dela:</p>
+  <ul>
+    <li><dfn>ICS</dfn> (<em>Industrial Control Systems</em>): sistemas de controle industrial em geral.</li>
+    <li><dfn>SCADA</dfn> (<em>Supervisory Control and Data Acquisition</em>): o tipo de ICS que supervisiona instalações espalhadas geograficamente, como uma rede de distribuição de água.</li>
+    <li><dfn>Sistema embarcado</dfn>: computador dedicado a uma função dentro de um equipamento (o firmware da impressora, da câmera, do carro).</li>
+    <li><dfn>RTOS</dfn> (<em>Real-Time Operating System</em>): sistema operacional que garante resposta em tempo determinado, como o controlador de um airbag. Instalar um agente de segurança pesado pode quebrar essa garantia.</li>
+    <li><dfn>IoT</dfn> (<em>Internet of Things</em>): dispositivos conectados de consumo ou corporativos, como sensores, lâmpadas e câmeras. Senhas padrão e firmware sem atualização são os problemas típicos.</li>
+  </ul>
+  <p>O ponto que a prova cobra: em OT a prioridade é <strong>disponibilidade e segurança física das pessoas</strong>, não confidencialidade. Patch muitas vezes não existe ou exige parar a fábrica. Por isso o controle esperado é <strong>segmentar e isolar</strong> (às vezes air gap), monitorar passivamente e aplicar controles compensatórios.</p>
+
+  <h3>Considerações técnicas e de negócio</h3>
+  <p>Toda escolha de arquitetura é um trade-off. A prova lista os critérios; saiba dar um exemplo de cada:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Critério</th><th>O que pergunta</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Disponibilidade</td><td>O sistema está de pé quando precisam dele?</td><td>Multi-AZ no banco.</td></tr>
+      <tr><td>Resiliência</td><td>Aguenta falha e se recupera sozinho?</td><td>Pods reiniciados pelo Kubernetes.</td></tr>
+      <tr><td>Facilidade de recuperação</td><td>Quanto custa voltar ao normal?</td><td>Recriar tudo via IaC em vez de configurar à mão.</td></tr>
+      <tr><td>Proprietário vs. código aberto</td><td>Quem corrige, com que transparência?</td><td>Código aberto é auditável, mas o suporte pode depender da comunidade.</td></tr>
+      <tr><td>Usabilidade</td><td>As pessoas vão contornar o controle?</td><td>MFA chato demais vira senha anotada.</td></tr>
+      <tr><td>Responsabilidade / propriedade</td><td>Quem responde e quem é dono?</td><td>Matriz de responsabilidade da nuvem.</td></tr>
+      <tr><td>Compute e energia</td><td>Tem CPU e bateria para o controle?</td><td>Sensor IoT não roda criptografia pesada.</td></tr>
+      <tr><td>Disponibilidade de patch <span class="tag">701</span></td><td>O fabricante ainda corrige?</td><td>Controlador industrial fora de suporte.</td></tr>
+      <tr><td>Custo</td><td>O controle custa menos que o risco?</td><td>Site quente vs. frio.</td></tr>
+      <tr><td>Escalabilidade e responsividade</td><td>Cresce com a demanda, responde rápido?</td><td>Autoscaling; CDN.</td></tr>
+      <tr><td>Facilidade de implantação <span class="tag">701</span></td><td>Dá para colocar no ar sem dor?</td><td>SaaS vs. instalar on-prem.</td></tr>
+      <tr><td>Transferência de risco <span class="tag">701</span> / Risco</td><td>Dá para passar o risco adiante?</td><td>Seguro cibernético, contrato com provedor.</td></tr>
+      <tr><td>Soberania e classificação do dado</td><td>Onde o dado pode morar?</td><td>Dado de cidadão europeu na UE.</td></tr>
+      <tr><td>Requisitos ambientais</td><td>Temperatura, umidade, espaço físico.</td><td>Datacenter em região sujeita a enchente.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="3-2">3.2 · Gerenciar a arquitetura para proteger a infraestrutura</h2>
+
+  <h3>Posicionamento, zonas e superfície de ataque</h3>
+  <p><dfn>Zona de segurança</dfn> é um pedaço da rede com o mesmo nível de confiança e as mesmas regras. Clássico: internet (não confiável), <dfn>screened subnet</dfn> (o nome atual da <dfn>DMZ</dfn>, a rede intermediária onde ficam os servidores expostos ao público), rede interna e rede restrita (dados sensíveis). O <dfn>posicionamento de dispositivos</dfn> é decidir onde cada controle fica entre essas zonas: o firewall entre cada par de zonas, o WAF na frente da aplicação web, o sensor do IDS onde ele enxerga o tráfego que importa.</p>
+  <p><dfn>Superfície de ataque</dfn> é a soma de tudo que um atacante pode tocar: portas abertas, APIs, contas, serviços. Reduzir superfície (desligar o que não usa, fechar portas) é sempre resposta forte. <dfn>Diversidade</dfn> é usar fornecedores ou tecnologias diferentes em camadas diferentes, para que uma única falha (ou um único bug de fornecedor) não derrube todas.</p>
+
+  <h3>Modos de falha: fail-open e fail-closed</h3>
+  <p>Quando um controle falha, ele pode deixar tudo passar ou bloquear tudo:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Fail-open</th><th>Fail-closed</th></tr></thead>
+    <tbody>
+      <tr><td>Comportamento</td><td>Em falha, deixa o tráfego passar.</td><td>Em falha, bloqueia tudo.</td></tr>
+      <tr><td>Prioriza</td><td>Disponibilidade.</td><td>Confidencialidade e integridade.</td></tr>
+      <tr><td>Exemplo</td><td>IPS que, se travar, vira "fio" para o e-commerce não cair.</td><td>Firewall do datacenter de pagamentos; porta corta-fogo que tranca.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Cuidado com a segurança física: porta de saída de emergência é <em>fail-safe</em> (abre em falha de energia) porque vida humana vem antes. Em dev, pense em um circuit breaker: o que acontece com a requisição quando o serviço de autorização cai? Se você deixa passar, é fail-open.</p>
+
+  <h3>Ativo vs. passivo, inline vs. tap</h3>
+  <ul>
+    <li>Um dispositivo <dfn>inline</dfn> fica no caminho do tráfego: todo pacote passa por ele. Pode bloquear (é <dfn>ativo</dfn>), mas, se cair, derruba ou expõe a rede (por isso a pergunta do modo de falha).</li>
+    <li>Um dispositivo em <dfn>tap/monitor</dfn> recebe uma cópia do tráfego. Um <dfn>TAP</dfn> é um equipamento físico que copia o sinal do cabo; <dfn>port mirroring</dfn> (ou SPAN) é o switch copiando o tráfego de uma porta para outra. Só observa e alerta (é <dfn>passivo</dfn>); se cair, a rede segue.</li>
+  </ul>
+  <p>Isso explica a diferença entre IDS e IPS: o <dfn>IDS</dfn> (<em>Intrusion Detection System</em>) normalmente fica em tap e só alerta; o <dfn>IPS</dfn> (<em>Intrusion Prevention System</em>) fica inline e bloqueia.</p>
+
+  <h3>Dispositivos de infraestrutura</h3>
+  <ul>
+    <li><dfn>Jump server</dfn> (ou bastion host): servidor endurecido, exposto de forma controlada, por onde administradores entram para chegar aos servidores internos. Concentra acesso, log e MFA num lugar só. Hoje muita gente usa o equivalente gerenciado (AWS SSM Session Manager, IAP do GCP).</li>
+    <li><dfn>Proxy</dfn>: intermediário de requisições. O <dfn>forward proxy</dfn> fica na saída e representa os usuários internos indo para a internet (filtra e registra navegação). O <dfn>reverse proxy</dfn> fica na entrada e representa os servidores para quem vem de fora (Nginx na frente da app, terminando TLS).</li>
+    <li><dfn>Load balancer</dfn>: distribui requisições entre servidores. Ajuda disponibilidade e pode terminar TLS e absorver parte de um ataque de negação de serviço.</li>
+    <li><dfn>Sensores</dfn>: pontos de coleta (de IDS, de NetFlow, de rede) espalhados para dar visibilidade aos sistemas de monitoramento.</li>
+    <li><dfn>Port security</dfn>: controle no switch que limita quais dispositivos podem usar uma porta, por exemplo por endereço MAC. A forma forte é o <dfn>802.1X</dfn>: padrão de autenticação na porta, em que o dispositivo (<em>supplicant</em>) se autentica via o switch ou access point (<em>authenticator</em>) num servidor RADIUS (<em>authentication server</em>) antes de ganhar rede. Ele transporta <dfn>EAP</dfn> (<em>Extensible Authentication Protocol</em>, um "envelope" que aceita vários métodos, como EAP-TLS com certificado ou PEAP com senha).</li>
+  </ul>
+
+  <h3>Tipos de firewall</h3>
+  <p>Firewall decide, por regras, que tráfego passa entre zonas. Os tipos diferem pela camada do modelo OSI (as camadas de rede, de cabo a aplicação, explicadas em <a href="../02-redes-e-linux.html#camadas">Redes e Linux</a>) que eles conseguem ler:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tipo</th><th>Enxerga</th><th>Bom para</th><th>Não pega</th></tr></thead>
+    <tbody>
+      <tr><td>Camada 4 (stateful)</td><td>IP, porta, protocolo e estado da conexão.</td><td>"Só a porta 443 entra no servidor web."</td><td>Um SQL injection dentro de HTTPS na 443.</td></tr>
+      <tr><td>Camada 7 (aplicação)</td><td>O conteúdo: URL, método, aplicação.</td><td>"Bloquear upload para Dropbox, permitir leitura."</td><td>É mais caro e mais lento.</td></tr>
+      <tr><td><dfn>NGFW</dfn> (<em>Next-Generation Firewall</em>)</td><td>Camada 7 + identidade do usuário + IPS + inspeção de TLS.</td><td>Perímetro corporativo moderno.</td><td>Ataques específicos de aplicação web, que são papel do WAF.</td></tr>
+      <tr><td><dfn>WAF</dfn> (<em>Web Application Firewall</em>)</td><td>HTTP em detalhe: parâmetros, cabeçalhos, corpo.</td><td>Bloquear SQLi, XSS e bots na frente da app.</td><td>Tráfego que não é web.</td></tr>
+      <tr><td><dfn>UTM</dfn> (<em>Unified Threat Management</em>)</td><td>Vários controles numa caixa: firewall, antivírus, filtro web, VPN.</td><td>Pequena empresa, filial.</td><td>Escala; e vira ponto único de falha.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Acesso remoto, VPN e túneis</h3>
+  <p><dfn>VPN</dfn> (<em>Virtual Private Network</em>) cria um <dfn>túnel</dfn> criptografado sobre uma rede não confiável. Dois sabores:</p>
+  <ul>
+    <li><dfn>Site-to-site</dfn>: liga duas redes (matriz e filial, on-prem e VPC). Normalmente <dfn>IPsec</dfn>, conjunto de protocolos na camada 3. Peças: <dfn>IKE</dfn> negocia as chaves; <dfn>AH</dfn> (<em>Authentication Header</em>) dá integridade e autenticação mas <strong>não criptografa</strong>; <dfn>ESP</dfn> (<em>Encapsulating Security Payload</em>) criptografa. No <em>modo túnel</em> o pacote inteiro é encapsulado (site-to-site); no <em>modo transporte</em> só o conteúdo (host a host).</li>
+    <li><dfn>Remote access</dfn>: liga um usuário à rede. Muito comum sobre <dfn>TLS</dfn> (a mesma criptografia do HTTPS), porque passa por quase qualquer firewall na porta 443.</li>
+  </ul>
+  <p><dfn>Split tunnel</dfn> manda só o tráfego corporativo pela VPN; <dfn>full tunnel</dfn> manda tudo (mais controle e inspeção, mais carga). Questão típica: "como garantir que a navegação do usuário remoto passe pelo filtro da empresa?" Resposta: full tunnel.</p>
+  <p>Outros itens de comunicação segura da 801:</p>
+  <ul>
+    <li><dfn>Out-of-band management</dfn>: rede ou canal separado só para administrar equipamentos (porta de console, modem, rede de gerência). Se a rede principal cair ou for comprometida, você ainda consegue entrar.</li>
+    <li><dfn>Mensageria com criptografia ponta a ponta</dfn> (<em>E2EE</em>): só remetente e destinatário leem; o servidor no meio vê só bytes cifrados (Signal, WhatsApp).</li>
+    <li><dfn>Transferência de arquivos</dfn>: trocar FTP (texto puro) por <dfn>SFTP</dfn> (sobre SSH) ou <dfn>FTPS</dfn> (FTP sobre TLS).</li>
+    <li><dfn>SD-WAN</dfn> <span class="tag">701</span> (<em>Software-Defined WAN</em>): conecta filiais usando vários links (internet, 4G, MPLS) e escolhe o melhor caminho por software.</li>
+    <li><dfn>SASE</dfn> <span class="tag">701</span> (<em>Secure Access Service Edge</em>): junta a rede (SD-WAN) e a segurança entregue como serviço na nuvem, perto do usuário. <dfn>SSE</dfn> (<em>Security Service Edge</em>, que a 801 cobra) é a metade de segurança do SASE: <dfn>SWG</dfn> (gateway web seguro), <dfn>CASB</dfn> (controle do uso de SaaS) e <dfn>ZTNA</dfn> (acesso por aplicação, em vez de colocar o usuário dentro da rede inteira, como a VPN faz).</li>
+  </ul>
+
+  <h3>Arquitetura Zero Trust</h3>
+  <p><dfn>Zero Trust</dfn> é o princípio de nunca confiar por estar "dentro da rede": cada acesso é verificado com identidade, contexto e estado do dispositivo. Os blocos que a prova usa:</p>
+  <ul>
+    <li><dfn>Plano de controle</dfn>: decide. Contém o <dfn>PDP</dfn> (<em>Policy Decision Point</em>), formado pelo <em>policy engine</em> (avalia a regra) e pelo <em>policy administrator</em> (manda executar).</li>
+    <li><dfn>Plano de dados</dfn>: executa. Contém o <dfn>PEP</dfn> (<em>Policy Enforcement Point</em>), o portão que libera ou bloqueia, como o proxy na frente da aplicação.</li>
+    <li>Autenticação do usuário (forte, contínua), gestão de dispositivo (<strong>saúde</strong>: está com disco criptografado, patch em dia, EDR rodando? <strong>inventário</strong>: o dispositivo é conhecido?), e controle de acesso por aplicação (cada app é liberado separadamente).</li>
+  </ul>
+  <p>Paralelo dev: é a diferença entre "toda chamada interna é confiável porque está na VPC" e "todo serviço valida o JWT e a política, mesmo vindo de dentro" (como em um service mesh com mTLS).</p>
+
+  <h3>Gestão de identidade na infraestrutura</h3>
+  <ul>
+    <li><dfn>gMSA</dfn> (<em>Group Managed Service Account</em>): conta de serviço do Active Directory cuja senha longa é gerada e trocada automaticamente pelo domínio. Resolve o clássico "conta de serviço com senha fixa há dez anos".</li>
+    <li><dfn>Contas de menor privilégio</dfn>: o administrador usa uma conta comum no dia a dia e só eleva quando precisa.</li>
+    <li><dfn>Privilege creep</dfn> (acúmulo de privilégio): a pessoa muda de time três vezes e carrega as permissões de todos. Combate-se com revisão periódica de acesso (ver <a href="d4-operacoes.html#4-5">4.5</a>).</li>
+  </ul>
+
+  <h2 id="3-3">3.3 · Proteção de dados</h2>
+
+  <h3>Tipos de dado</h3>
+  <p><dfn>Dado estruturado</dfn> tem esquema fixo (tabela do Postgres). <dfn>Dado não estruturado</dfn> não tem (PDF, e-mail, imagem, log em texto livre), e é o mais difícil de achar e classificar, por isso é onde a DLP mais sofre. Por conteúdo, a prova cita:</p>
+  <ul>
+    <li><dfn>Dado regulado</dfn>: protegido por lei ou norma, como dados pessoais (LGPD, GDPR), de saúde (HIPAA nos EUA), de cartão (PCI DSS), de crianças.</li>
+    <li><dfn>Segredo comercial</dfn> (<em>trade secret</em>): valor vem de ser secreto, como a receita ou o algoritmo de ranking.</li>
+    <li><dfn>Propriedade intelectual</dfn>: patentes, código, marcas.</li>
+    <li>Dados <strong>legais</strong> (processos, contratos) e <strong>financeiros</strong> (balanço, folha).</li>
+  </ul>
+
+  <h3>Classificações</h3>
+  <p>Classificar é rotular o dado pelo impacto se vazar ou se perder, para saber que controle aplicar. Existem dois vocabulários e a 801 lista os dois misturados:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Governo/militar (do mais alto ao mais baixo)</th><th>Corporativo (do mais alto ao mais baixo)</th></tr></thead>
+    <tbody>
+      <tr><td>Top secret (ultrassecreto)</td><td>Restricted / Confidential (restrito, confidencial)</td></tr>
+      <tr><td>Secret (secreto)</td><td>Sensitive / Private (sensível, privado)</td></tr>
+      <tr><td>Confidential (confidencial)</td><td>Internal (interno)</td></tr>
+      <tr><td>Unclassified (não classificado)</td><td>Public (público)</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Critical</strong> fala de disponibilidade (o negócio para sem ele), não de sigilo. A ordem exata dos rótulos corporativos varia por empresa; a prova costuma cobrar a ideia (público é o mais baixo, top secret o mais alto) e não uma ordem única.</p>
+
+  <h3>Estados do dado</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Estado</th><th>Exemplo</th><th>Controle típico</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Em repouso</dfn> (<em>at rest</em>)</td><td>Disco, banco, bucket, backup.</td><td>Criptografia de disco/volume/campo, controle de acesso.</td></tr>
+      <tr><td><dfn>Em trânsito</dfn> (<em>in transit</em>)</td><td>Requisição HTTPS, replicação entre regiões.</td><td>TLS, IPsec, VPN.</td></tr>
+      <tr><td><dfn>Em uso</dfn> (<em>in use</em>)</td><td>Na memória RAM, sendo processado.</td><td><dfn>Secure enclave</dfn>/computação confidencial (área de CPU isolada), mascaramento na tela.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Soberania, localização e manuseio</h3>
+  <ul>
+    <li><dfn>Soberania de dados</dfn>: o dado obedece às leis do país onde está armazenado. Por isso escolher a região <code>sa-east-1</code> não é só latência.</li>
+    <li><dfn>Geolocalização</dfn> e <dfn>geofencing</dfn>: usar a posição do usuário ou do dispositivo para decidir acesso (bloquear login de fora do país; MDM que trava o app fora do prédio). <dfn>Restrição geográfica</dfn> é a regra resultante.</li>
+    <li><dfn>Localização e posicionamento do dado</dfn>: em que região, provedor e sistema o dado mora, e se pode ir para outro lugar.</li>
+    <li><dfn>Marcação e rotulagem</dfn>: colocar o rótulo de classificação no próprio dado (metadado do arquivo, cabeçalho do documento) para que DLP e pessoas saibam como tratá-lo.</li>
+  </ul>
+
+  <h3>Métodos para proteger dados</h3>
+  <p>Este é o par de tabelas mais cobrado do domínio. O que separa os métodos é: <strong>dá para voltar ao original? E com o quê?</strong></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Método</th><th>O que faz</th><th>Reversível?</th><th>Exemplo dev</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Criptografia</dfn></td><td>Transforma com algoritmo e chave.</td><td>Sim, com a chave.</td><td>AES-GCM no campo CPF; KMS.</td></tr>
+      <tr><td><dfn>Hashing</dfn></td><td>Gera resumo de tamanho fixo.</td><td>Não (mão única).</td><td>bcrypt/argon2 de senha; SHA-256 para checar integridade.</td></tr>
+      <tr><td><dfn>Mascaramento</dfn></td><td>Esconde parte do valor na exibição ou em cópias.</td><td>Não, na cópia mascarada.</td><td><code>***.***.123-45</code>; base de homologação com dados falsos.</td></tr>
+      <tr><td><dfn>Tokenização</dfn></td><td>Troca o valor por um token sem relação matemática; o original fica num cofre.</td><td>Só consultando o cofre.</td><td>Gateway de pagamento devolve <code>tok_9f2...</code> no lugar do cartão; tira o sistema do escopo PCI.</td></tr>
+      <tr><td><dfn>Ofuscação</dfn></td><td>Torna difícil de entender, sem segredo forte.</td><td>Sim, com esforço.</td><td>Minificar e ofuscar JS; Base64 (não é criptografia!).</td></tr>
+      <tr><td><dfn>Data transpose</dfn></td><td>Embaralha/troca posições de valores (entre linhas ou caracteres).</td><td>Depende.</td><td>Trocar cidades entre registros numa base de teste.</td></tr>
+      <tr><td><dfn>Desidentificação</dfn></td><td>Remove o que identifica a pessoa (anonimização ou pseudonimização).</td><td>Anonimizado não; pseudonimizado sim, com a tabela de chaves.</td><td>Dataset para análise sem nome e CPF.</td></tr>
+      <tr><td><dfn>Filtragem</dfn></td><td>Impede que o dado saia ou seja exibido.</td><td>Não se aplica.</td><td>Serializer que nunca devolve o campo <code>password_hash</code>.</td></tr>
+      <tr><td>Segmentação</td><td>Separa dados sensíveis em sistemas/redes à parte.</td><td>Não se aplica.</td><td>Banco de cartões numa VPC isolada.</td></tr>
+      <tr><td>Restrição de permissão</td><td>Só quem precisa acessa.</td><td>Não se aplica.</td><td>Policy IAM só de leitura num prefixo do bucket.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Papéis de proteção de dados</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Papel</th><th>Responsabilidade</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Data owner</dfn> (dono)</td><td>Executivo responsável pelo dado; define classificação e quem acessa.</td><td>Diretor financeiro, dono dos dados de folha.</td></tr>
+      <tr><td><dfn>Data controller</dfn> (controlador)</td><td>Organização que decide <em>por que</em> e <em>como</em> o dado pessoal é tratado (termo da LGPD/GDPR).</td><td>A loja que coleta o CPF do cliente.</td></tr>
+      <tr><td><dfn>Data processor</dfn> e <dfn>subprocessor</dfn></td><td>Trata o dado em nome do controlador; o subprocessador é contratado pelo processador.</td><td>Provedor de e-mail marketing; a nuvem que ele usa.</td></tr>
+      <tr><td><dfn>Data custodian</dfn> (custodiante)</td><td>Aplica os controles no dia a dia: backup, criptografia, permissões.</td><td>Time de infraestrutura ou DBA.</td></tr>
+      <tr><td><dfn>Data steward</dfn> (curador)</td><td>Cuida da qualidade, do significado e da conformidade dos metadados.</td><td>Time de governança de dados.</td></tr>
+      <tr><td><dfn>Data operator</dfn></td><td>Opera os sistemas que processam o dado (papel novo na 801; definição varia nas fontes).</td><td>Operador de sistema de produção.</td></tr>
+    </tbody>
+  </table></div>
+  <p>O <strong>ciclo de vida</strong> do dado na 801: criação, gestão, distribuição, retenção e descarte. A pergunta da prova é quase sempre "em que fase falta controle?" (por exemplo, um backup antigo nunca descartado viola a política de retenção).</p>
+
+  <h2 id="3-4">3.4 · Resiliência e recuperação</h2>
+
+  <h3>Alta disponibilidade, balanceamento e cluster</h3>
+  <p><dfn>Alta disponibilidade</dfn> (<em>HA</em>) é desenhar o sistema para ficar de pé apesar de falhas de componentes, geralmente medida em "noves" (99,99% ≈ 52 minutos fora por ano). As duas técnicas que confundem:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Load balancing</th><th>Clustering</th></tr></thead>
+    <tbody>
+      <tr><td>Ideia</td><td>Distribui requisições entre servidores independentes.</td><td>Vários nós trabalham como um sistema só, compartilhando estado ou armazenamento.</td></tr>
+      <tr><td>Estado</td><td>Melhor para serviços sem estado (stateless).</td><td>Feito para serviços com estado (banco, filesystem).</td></tr>
+      <tr><td>Modos</td><td>Ativo-ativo (todos atendem).</td><td>Ativo-passivo (um espera para assumir) ou ativo-ativo.</td></tr>
+      <tr><td>Exemplo</td><td>ALB na frente de 6 pods da API.</td><td>Postgres com réplica que assume via Patroni; cluster de failover do Windows.</td></tr>
+    </tbody>
+  </table></div>
+  <p><dfn>Autoscaling</dfn> adiciona e remove capacidade conforme a carga. Além de custo, é resiliência: absorve picos (inclusive parte de um DDoS) sem intervenção manual.</p>
+
+  <h3>Sites de recuperação</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Site</th><th>Tem o quê</th><th>Tempo para assumir</th><th>Custo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Hot site</dfn></td><td>Hardware, software e dados quase em tempo real. Pronto para virar.</td><td>Minutos a poucas horas.</td><td>Alto.</td></tr>
+      <tr><td><dfn>Warm site</dfn></td><td>Hardware e conectividade; dados e configuração precisam ser carregados.</td><td>Horas a dias.</td><td>Médio.</td></tr>
+      <tr><td><dfn>Cold site</dfn></td><td>Espaço, energia, refrigeração. Sem equipamento pronto.</td><td>Dias a semanas.</td><td>Baixo.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Em nuvem, o equivalente é: hot = multi-região ativa-ativa; warm = <em>pilot light</em> ou réplica reduzida; cold = backup mais IaC para recriar tudo. <strong>Considerações ambientais</strong> entram aqui: o site de recuperação não pode estar sujeito ao mesmo desastre (mesma bacia de enchente, mesma rede elétrica). Daí <dfn>dispersão geográfica</dfn>: distância suficiente entre sites.</p>
+
+  <h3>Diversidade de plataforma e multicloud</h3>
+  <p><dfn>Diversidade de plataforma</dfn> é não depender de um só fornecedor, hardware ou hipervisor, para que um bug ou um zero-day não derrube tudo ao mesmo tempo. O incidente do CrowdStrike em julho de 2024, em que uma atualização derrubou milhões de máquinas Windows, é o exemplo moderno de por que monocultura é risco. Multicloud aplica a mesma ideia a provedores.</p>
+
+  <h3>Continuidade, recuperação de desastre e capacidade</h3>
+  <ul>
+    <li><dfn>Continuidade de negócio</dfn> (<em>BC</em>, e o plano de <dfn>continuidade de operações</dfn>, COOP): como o negócio <strong>continua funcionando</strong> durante a crise, inclusive com processos manuais.</li>
+    <li><dfn>Recuperação de desastre</dfn> (<em>DR</em>): como a <strong>TI volta</strong> depois do desastre. DR é um pedaço de BC.</li>
+    <li><dfn>Planejamento de capacidade</dfn>: garantir <strong>pessoas</strong> (quem cobre se o time inteiro adoecer?), <strong>tecnologia</strong> (licenças, software) e <strong>infraestrutura</strong> (servidores, banda) suficientes para a demanda normal e para a crise.</li>
+  </ul>
+
+  <h3>Testes de resiliência</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Teste</th><th>Como é</th><th>Impacto em produção</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Tabletop</dfn></td><td>Reunião em que as pessoas discutem, passo a passo, o que fariam num cenário.</td><td>Nenhum.</td></tr>
+      <tr><td><dfn>Simulação</dfn></td><td>Ensaia o cenário com mais realismo (phishing simulado, ataque simulado), sem mexer nos sistemas reais.</td><td>Baixo.</td></tr>
+      <tr><td><dfn>Processamento paralelo</dfn></td><td>Roda o sistema de recuperação ao mesmo tempo que o de produção e compara resultados.</td><td>Baixo; o primário continua.</td></tr>
+      <tr><td><dfn>Failover</dfn></td><td>Derruba de verdade o primário e confirma que o secundário assume.</td><td>Alto; é o teste mais realista.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Backups</h3>
+  <ul>
+    <li><strong>Onsite vs. offsite</strong>: onsite restaura rápido, mas morre no mesmo incêndio; offsite sobrevive ao desastre do prédio. Regra <dfn>3-2-1</dfn>: 3 cópias, em 2 mídias, 1 fora do local.</li>
+    <li><strong>Frequência e tipos</strong>: <em>full</em> (tudo), <em>incremental</em> (o que mudou desde o último backup de qualquer tipo; backup rápido, restauração lenta porque precisa do full mais todos os incrementais), <em>diferencial</em> (o que mudou desde o último full; restaura com o full mais o último diferencial). A frequência define seu RPO.</li>
+    <li><strong>Criptografia</strong>: backup é um alvo valioso; criptografe e guarde as chaves separadas.</li>
+    <li><dfn>Snapshot</dfn>: foto do estado de um volume ou VM num instante. Rápido, mas geralmente no mesmo storage: não substitui backup offsite.</li>
+    <li><dfn>Replicação</dfn>: cópia contínua para outro lugar. Ótima para disponibilidade, péssima contra ransomware: replica a criptografia maliciosa também.</li>
+    <li><dfn>Journaling</dfn>: registrar cada alteração num log antes de aplicá-la, permitindo voltar a um ponto exato (é como o WAL do Postgres).</li>
+    <li><dfn>Imutabilidade</dfn>: backup que ninguém consegue alterar ou apagar durante o período de retenção (S3 Object Lock, WORM). É a principal defesa contra ransomware que caça backups.</li>
+    <li><strong>Retenção e escopo</strong>: quanto tempo guardar e o que entra no backup.</li>
+    <li><strong>Teste de restauração</strong>: backup que nunca foi restaurado é hipótese, não backup.</li>
+  </ul>
+
+  <h3>Energia</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Equipamento</th><th>Protege contra</th><th>Duração</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>UPS</dfn> (<em>Uninterruptible Power Supply</em>, nobreak)</td><td>Queda e oscilação curtas; dá tempo de desligar com segurança ou de o gerador ligar.</td><td>Minutos.</td></tr>
+      <tr><td><dfn>Gerador</dfn></td><td>Falta de energia prolongada.</td><td>Horas a dias (enquanto houver combustível).</td></tr>
+      <tr><td><dfn>RPS</dfn> (<em>Redundant Power Supply</em>, fonte redundante)</td><td>Falha da fonte de um servidor; duas fontes, idealmente em circuitos diferentes.</td><td>Contínua.</td></tr>
+      <tr><td><dfn>Protetor de surto</dfn></td><td>Picos de tensão (raio) que queimam equipamento.</td><td>Instantânea.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A combinação típica é UPS + gerador: o UPS segura os segundos até o gerador estabilizar.</p>
+
+  <h3>Métricas de recuperação</h3>
+  <ul>
+    <li><dfn>RPO</dfn> (<em>Recovery Point Objective</em>): quanto <strong>dado</strong> você aceita perder, medido em tempo. RPO de 1 hora exige backup ou replicação pelo menos de hora em hora. Olha para <strong>trás</strong>.</li>
+    <li><dfn>RTO</dfn> (<em>Recovery Time Objective</em>): em quanto <strong>tempo</strong> o serviço precisa voltar. Olha para <strong>frente</strong>.</li>
+    <li><dfn>MTTR</dfn> (<em>Mean Time To Repair</em>): tempo médio para consertar algo que quebrou.</li>
+    <li><dfn>MTBF</dfn> (<em>Mean Time Between Failures</em>): tempo médio entre falhas de algo que é consertado. Quanto maior, mais confiável.</li>
+  </ul>
+  <pre><code><span class="c">// Linha do tempo de um incidente</span>
+último backup ─────── desastre ─────────────── serviço volta
+ 10:00                  13:00                     17:00
+ &lt;────── dado perdido: 3h ──────&gt;&lt;──── indisponível: 4h ────&gt;
+         (comparar com o RPO)            (comparar com o RTO)</code></pre>
+
+  <h2 id="pegadinhas">Pegadinhas de prova</h2>
+  <div class="callout warn">
+    <span class="callout-title">Pegadinhas de prova</span>
+    <ul>
+      <li><strong>IDS vs. IPS</strong>: IDS detecta e alerta (passivo, fora do caminho); IPS bloqueia (ativo, inline). Se o cenário diz "precisa impedir automaticamente", é IPS. Se diz "sem risco de afetar o tráfego", é IDS.</li>
+      <li><strong>Fail-open vs. fail-closed</strong>: pergunte o que importa mais no cenário. Disponibilidade (e-commerce, OT) tende a fail-open; sigilo (pagamentos, dado restrito) tende a fail-closed.</li>
+      <li><strong>Hot vs. warm vs. cold</strong>: o critério é o tempo para assumir e o custo. "Menor custo, aceita dias parado" é cold; "pode demorar algumas horas e precisa carregar dados" é warm.</li>
+      <li><strong>RPO vs. RTO</strong>: RPO = Ponto (dados, quanto perde); RTO = Tempo (quanto demora a voltar). Frequência de backup responde ao RPO.</li>
+      <li><strong>Tokenização vs. criptografia vs. mascaramento</strong>: token não tem relação matemática com o original (precisa do cofre); criptografia reverte com a chave; mascaramento só esconde parte e não volta.</li>
+      <li><strong>Hashing não é criptografia</strong>: não tem chave e não reverte. Base64 é codificação, nem é segurança.</li>
+      <li><strong>Snapshot e replicação não são backup</strong> contra ransomware. A resposta é backup offsite, imutável e testado.</li>
+      <li><strong>AH vs. ESP</strong>: AH não criptografa, só autentica. Se precisa de confidencialidade, é ESP.</li>
+      <li><strong>WAF vs. NGFW</strong>: ataque a aplicação web (SQLi, XSS) é WAF. Controle de aplicação e usuário no perímetro é NGFW.</li>
+      <li><strong>Load balancing vs. clustering</strong>: requisições sem estado distribuídas é balanceamento; nós compartilhando estado que assumem um do outro é cluster.</li>
+      <li><strong>Data owner vs. custodian</strong>: o dono decide (classificação, acesso); o custodiante executa (backup, criptografia).</li>
+      <li><strong>BC vs. DR</strong>: continuidade mantém o negócio rodando; DR traz a TI de volta.</li>
+    </ul>
+  </div>
+
+  <h2 id="prova">Como isso cai na prova</h2>
+  <p>A maior parte é <strong>múltipla escolha baseada em cenário</strong>: um parágrafo descrevendo uma empresa e um problema, e quatro alternativas que muitas vezes são todas tecnicamente corretas. A diferença está no qualificador:</p>
+  <ul>
+    <li><strong>BEST</strong> (melhor): mais de uma resolve, escolha a que resolve com menos efeito colateral e mais diretamente o problema citado.</li>
+    <li><strong>FIRST</strong> (primeiro): ordem importa. Em geral, entender e conter vem antes de consertar.</li>
+    <li><strong>MOST likely</strong> (mais provável): use as pistas do texto, não o caso extremo.</li>
+    <li><strong>LEAST</strong> (menos) e <strong>most cost-effective</strong> (melhor custo-benefício): o custo também é critério.</li>
+  </ul>
+  <p>Releia o cenário procurando restrições: "orçamento limitado", "sem downtime", "legado sem patch", "requisito regulatório". Elas eliminam alternativas.</p>
+  <p>As <strong>PBQs</strong> neste domínio costumam ser: posicionar dispositivos (firewall, WAF, IDS, load balancer, jump server) num diagrama de rede; associar método de proteção de dados ao cenário; escolher o tipo de site ou de backup para um RPO/RTO; montar zonas de segurança. Elas costumam vir no começo da prova; muita gente recomenda marcar para revisão, fazer as de múltipla escolha e voltar com calma.</p>
+  <div class="callout">
+    <span class="callout-title">Sobre as questões abaixo</span>
+    <p>As questões da prova real são confidenciais (os candidatos assinam um acordo de confidencialidade). Todas as questões desta página são <strong>originais</strong>, escritas para este guia sobre temas que candidatos relatam com frequência em 2024–2026. Nenhuma é real, nem vem de "dumps" ou de guias pagos.</p>
+  </div>
+
+  <h3>Questões de prática</h3>
+  <p><strong>1.</strong> Uma startup roda a API em funções serverless num provedor público. Um auditor encontrou uma função com permissão de administrador total na conta. Segundo o modelo de responsabilidade compartilhada, de quem é a correção?</p>
+  <ol type="A"><li>Do provedor, porque em serverless ele gerencia tudo.</li><li>Do cliente, porque a configuração de identidade e acesso é sempre do cliente.</li><li>Compartilhada igualmente entre os dois.</li><li>Do auditor, que deve abrir chamado com o provedor.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Em qualquer modelo (IaaS, PaaS, SaaS, serverless), dados e identidades são do cliente.</p>
+    <ul><li>A: o provedor cuida do runtime e do sistema operacional, não das permissões que você atribui.</li><li>C: a responsabilidade é compartilhada no todo, mas cada camada tem um dono; IAM é do cliente.</li><li>D: o auditor aponta, não corrige, e o problema não é do provedor.</li></ul>
+  </details>
+
+  <p><strong>2.</strong> Uma fábrica tem controladores industriais que não recebem mais atualização do fabricante e não podem parar. Qual é a MELHOR medida?</p>
+  <ol type="A"><li>Instalar um EDR nos controladores.</li><li>Aplicar um patch não oficial encontrado num fórum.</li><li>Isolar os controladores numa rede segmentada, com acesso só por um ponto controlado e monitoramento passivo.</li><li>Substituir todos os controladores nesta semana.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>C.</strong> Controle compensatório que respeita a restrição de disponibilidade.</p>
+    <ul><li>A: pode quebrar a garantia de tempo real e muitas vezes nem é suportado.</li><li>B: risco de parar a produção e sem garantia de integridade.</li><li>D: pode ser o ideal no longo prazo, mas viola a restrição de não parar; o controle compensatório vem primeiro.</li></ul>
+  </details>
+
+  <p><strong>3.</strong> O IPS de uma loja online travou e o tráfego continuou passando sem inspeção. Que modo de falha estava configurado?</p>
+  <ol type="A"><li>Fail-open, priorizando a disponibilidade das vendas.</li><li>Fail-closed, priorizando confidencialidade.</li><li>Modo passivo, porque IPS só alerta.</li><li>Fail-safe, para proteger vidas.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>A.</strong> Em falha, deixou o tráfego passar.</p>
+    <ul><li>B: fail-closed teria bloqueado todo o tráfego.</li><li>C: IPS inline é ativo; quem só alerta é o IDS.</li><li>D: termo de segurança física (portas de emergência), não se aplica.</li></ul>
+  </details>
+
+  <p><strong>4.</strong> Uma empresa precisa guardar números de cartão para cobranças recorrentes e quer tirar o máximo possível de sistemas do escopo do PCI DSS. Qual técnica é a MAIS indicada?</p>
+  <ol type="A"><li>Hashing.</li><li>Mascaramento.</li><li>Criptografia em todos os sistemas.</li><li>Tokenização.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>D.</strong> Os sistemas internos guardam só tokens sem relação matemática com o cartão; o cofre de tokens é o único no escopo.</p>
+    <ul><li>A: hash não reverte, e a cobrança precisa do número; além disso, o espaço de números de cartão é pequeno o bastante para força bruta.</li><li>B: protege a exibição, mas o dado completo continua armazenado.</li><li>C: protege, mas quem guarda o dado criptografado e acessa a chave continua no escopo.</li></ul>
+  </details>
+
+  <p><strong>5.</strong> A política diz que, num desastre, a empresa pode perder no máximo 15 minutos de pedidos. Que métrica está sendo definida?</p>
+  <ol type="A"><li>RTO.</li><li>RPO.</li><li>MTTR.</li><li>MTBF.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Fala de quanto dado se perde, medido em tempo para trás.</p>
+    <ul><li>A: seria o tempo para o serviço voltar.</li><li>C: média de tempo de reparo, métrica operacional.</li><li>D: intervalo médio entre falhas, mede confiabilidade.</li></ul>
+  </details>
+
+  <p><strong>6.</strong> Depois de um ataque de ransomware, a empresa descobriu que a réplica do banco na outra região também estava criptografada. O que MELHOR teria evitado a perda?</p>
+  <ol type="A"><li>Mais réplicas em outras regiões.</li><li>Snapshots diários no mesmo storage.</li><li>Backups imutáveis e offsite, com restauração testada.</li><li>Um UPS de maior capacidade.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>C.</strong> Imutabilidade impede o atacante de alterar ou apagar a cópia.</p>
+    <ul><li>A: replicação copia a criptografia maliciosa.</li><li>B: quem tem acesso ao storage apaga ou criptografa os snapshots.</li><li>D: energia não tem relação com o problema.</li></ul>
+  </details>
+
+  <p><strong>7.</strong> Funcionários remotos precisam acessar só três aplicações internas, e a empresa não quer colocá-los dentro da rede inteira. Qual solução atende MELHOR?</p>
+  <ol type="A"><li>ZTNA, como parte de uma solução SSE.</li><li>VPN full tunnel.</li><li>Publicar as aplicações na internet atrás de um WAF.</li><li>VPN site-to-site com IPsec.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>A.</strong> Acesso por aplicação, verificando identidade e saúde do dispositivo a cada acesso.</p>
+    <ul><li>B: coloca o usuário na rede, o oposto do pedido.</li><li>C: aumenta a superfície de ataque.</li><li>D: liga redes, não usuários individuais.</li></ul>
+  </details>
+
+  <p><strong>8.</strong> Uma empresa quer o site de recuperação de MENOR custo e aceita até duas semanas para retomar as operações. Qual escolher?</p>
+  <ol type="A"><li>Hot site.</li><li>Warm site.</li><li>Multicloud ativo-ativo.</li><li>Cold site.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>D.</strong> Só espaço, energia e refrigeração; o mais barato e o mais lento.</p>
+    <ul><li>A: o mais caro, para recuperação em minutos.</li><li>B: custo intermediário, para horas ou dias; desnecessário se duas semanas são aceitáveis.</li><li>C: equivale a hot, caro demais para o requisito.</li></ul>
+  </details>
+
+  <h3>Exercício estilo PBQ: posicione os dispositivos</h3>
+  <p>Cenário: uma empresa tem uma loja web pública, uma API interna, um banco de dados com dados de cartão e administradores que trabalham remotamente. Ela comprou: um NGFW, um WAF, um load balancer, um sensor de IDS e um jump server. Associe cada dispositivo à posição <strong>mais adequada</strong>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Posição</th><th>Dispositivo (preencha)</th></tr></thead>
+    <tbody>
+      <tr><td>1. Entre a internet e a screened subnet</td><td>?</td></tr>
+      <tr><td>2. Na screened subnet, imediatamente na frente dos servidores web, inspecionando HTTP</td><td>?</td></tr>
+      <tr><td>3. Distribuindo requisições entre os três servidores web</td><td>?</td></tr>
+      <tr><td>4. Recebendo cópia (port mirroring) do tráfego que chega à rede do banco</td><td>?</td></tr>
+      <tr><td>5. Único ponto de entrada administrativo para a rede interna, com MFA e gravação de sessão</td><td>?</td></tr>
+    </tbody>
+  </table></div>
+  <details><summary>Solução comentada</summary>
+    <ol>
+      <li><strong>NGFW</strong>: controla o que entra no perímetro por porta, aplicação e usuário. É o controle entre zonas.</li>
+      <li><strong>WAF</strong>: o único que entende parâmetros HTTP para bloquear SQLi e XSS; fica colado na aplicação web (o reverse proxy pode ser o próprio WAF).</li>
+      <li><strong>Load balancer</strong>: disponibilidade dos servidores web; pode terminar TLS antes do WAF inspecionar.</li>
+      <li><strong>Sensor de IDS</strong>: em tap/port mirroring ele só observa, então não arrisca a disponibilidade do banco e gera alertas sobre tráfego anormal na zona mais sensível. Se o enunciado pedisse bloquear, seria um IPS inline.</li>
+      <li><strong>Jump server</strong>: concentra o acesso administrativo num host endurecido e auditado, em vez de abrir SSH/RDP para cada servidor.</li>
+    </ol>
+    <p>Erro comum: colocar o WAF na borda no lugar do NGFW. O WAF não filtra protocolos que não são web, e deixar só ele na borda abriria todo o resto.</p>
+  </details>
+
+  <h2 id="revisar">Para revisar</h2>
+  <p>Links conferidos em 2026-11-25:</p>
+  <ul>
+    <li><a href="https://www.comptia.org/en-us/certifications/security/v8/">Página oficial do Security+ V8 (SY0-801)</a>: formato da prova (até 90 questões, 90 minutos, nota 750 de 900) e link para o <a href="https://lecbyo.files.cmp.optimizely.com/download/77f3bd3223ac11f180820e495f189928">PDF oficial dos objetivos</a>, a fonte desta página.</li>
+    <li><a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/">Curso gratuito do Professor Messer (SY0-701)</a>: 121 vídeos. É da 701, mas cobre quase todo o conteúdo deste domínio; quando esta página foi escrita, não encontrei um curso gratuito dele específico da 801.</li>
+    <li><a href="https://www.cisa.gov/resources-tools/services/cisa-tabletop-exercise-packages">Pacotes de tabletop da CISA</a>: cenários prontos e gratuitos para entender, na prática, como funciona um exercício tabletop.</li>
+    <li><a href="https://www.cisecurity.org/cis-benchmarks">CIS Benchmarks</a>: guias de configuração segura por plataforma, úteis para ver o que "endurecer" significa em concreto (o download pede cadastro).</li>
+  </ul>
+  <p>Próximo passo: o <a href="d4-operacoes.html">Domínio 4</a>, o mais pesado da prova, onde boa parte desses dispositivos vira operação do dia a dia.</p>
+
+  <nav class="pager"><a href="d2-ameacas.html">← Domínio 2 · Ameaças</a><a href="d4-operacoes.html">Domínio 4 · Operações →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

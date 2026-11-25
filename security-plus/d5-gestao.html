@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domínio 5 · Gestão e supervisão do programa de segurança · Trilha Sec</title>
+<meta name="description" content="Security+ domínio 5 (14% da SY0-801): governança, gestão de risco com SLE, ALE e ARO, risco de terceiros, conformidade e LGPD, auditoria, pentest e conscientização.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · Domínio 5 · 14%</span>
+  <h1>Domínio 5 · Gestão e supervisão do programa de segurança</h1>
+  <p class="lead">O lado "gestor" da prova: que documentos governam a segurança, como calcular e tratar risco, como contratar fornecedores sem herdar o risco deles, o que a LGPD e a GDPR exigem, como funcionam auditoria e pentest, e como treinar pessoas.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Este é o domínio que parece menos técnico, e por isso muita gente de dev estuda por último e perde ponto. Ele cobra vocabulário de empresa: quem decide, quem assina, quem paga a conta se der errado. Você já vive isso sem os nomes. O <em>SLA</em> do provedor de nuvem, o <em>NDA</em> que assinou ao entrar, o pentest anual que o cliente grande exige, o treinamento de phishing obrigatório: tudo isso é domínio 5. A prova quer que você pense como quem responde pelo programa de segurança, não como quem escreve o código.</p>
+  </div>
+
+  <h2 id="versao">Qual versão esta página segue</h2>
+  <p>Esta página segue o documento oficial de objetivos da <strong>SY0-801</strong> (versão 2.0 do documento), em que o domínio 5 pesa <strong>14%</strong>. Na SY0-701 ele pesava 20%. Os seis objetivos da SY0-801 viram as seções desta página. Como a SY0-701 continua valendo até 11/06/2027, os itens que só aparecem nela também estão aqui, marcados com <span class="tag">só 701</span>. Os itens novos na 801 levam <span class="tag">novo 801</span>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Objetivo SY0-801</th><th>O que entrou</th><th>O que saiu ou mudou de lugar</th></tr></thead>
+    <tbody>
+      <tr><td><strong>5.1</strong> Artefatos de governança, risco e conformidade</td><td>Diretrizes (<em>guidelines</em>: benchmarks, avisos, guias de implementação, arquitetura de referência), <em>baselines</em>, RFC, SOP, runbooks, políticas de BYOD, mesa limpa, classificação e retenção de dados, descarte, divulgação de vulnerabilidades e privacidade</td><td>Estruturas de governança (conselhos, comitês, centralizado/descentralizado) e considerações externas não aparecem mais. Gestão de mudanças foi para o 1.2, playbooks para o 4.7 e papéis de dados (dono, custodiante, controlador) para o 3.3</td></tr>
+      <tr><td><strong>5.2</strong> Processos de gestão de risco</td><td>Identificação de ativos, pontuação, categorização, mitigações atuais, risco residual, envolvimento de stakeholders, supervisão da gestão</td><td>KRI, limiar de risco, tolerância, tipos de apetite (expansivo/conservador/neutro), exceção/isenção e fator de exposição não estão mais listados. RTO, RPO, MTTR e MTBF foram para o 3.4. SLE, ALE e ARO continuam</td></tr>
+      <tr><td><strong>5.3</strong> Risco de terceiros</td><td>RFP, RFI, RFQ, EOI, SLO, registro de fornecedores, monitoramento de nível de serviço, atestado de conformidade, limitações (pessoal, ROI, <em>lock-in</em>, jurisdição)</td><td>BPA e WO não estão mais listados. Questionários foram para o 5.5</td></tr>
+      <tr><td><strong>5.4</strong> Conformidade</td><td>Treinamento de conformidade (manuseio de dados, AML/CTF, antissuborno), <em>acknowledgements</em>, direitos de privacidade (opt-in/opt-out, correção, restrição e impedimento de tratamento), <em>legal hold</em>, ordens judiciais</td><td><em>Due diligence/due care</em> e relatórios interno/externo não são mais itens explícitos</td></tr>
+      <tr><td><strong>5.5</strong> Auditoria e avaliação</td><td>Coleta de dados (amostragem, entrevistas, asserção, ATT&amp;CK, Cyber Kill Chain, Diamond Model), escopo (carta de auditoria, frequência), gap analysis, benchmarking, testes funcionais e comportamentais</td><td>Pentest continua igual</td></tr>
+      <tr><td><strong>5.6</strong> Conscientização</td><td>Tipos de treinamento (inicial, contínuo, direcionado, corretivo), meios (LMS, portal, um-para-um, um-para-muitos), pontuação de risco comportamental, BEC, BYOD</td><td>"Campanhas de phishing" e "reconhecer comportamento anômalo" deixaram de ser itens próprios</td></tr>
+    </tbody>
+  </table></div>
+  <p>Por que tanta coisa "saiu"? Na maior parte dos casos ela só mudou de domínio, e a CompTIA avisa que a lista de exemplos não é exaustiva. Na prática, estude tudo desta página para qualquer uma das duas versões.</p>
+
+  <h2 id="governanca">5.1 Governança: os documentos que mandam</h2>
+  <p><dfn>Governança</dfn> é o conjunto de regras, papéis e decisões que dizem <em>como</em> a empresa faz segurança e <em>quem</em> responde por ela. A prova cobra principalmente a hierarquia de documentos. Pense nela como camadas de abstração, do mais genérico ao mais concreto:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Documento</th><th>O que é</th><th>Obrigatório?</th><th>Analogia de dev</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Política</dfn> (<em>policy</em>)</td><td>Declaração de alto nível do que a empresa exige e por quê. Aprovada pela diretoria, muda pouco</td><td>Sim</td><td>O "README de princípios" da engenharia: "todo serviço em produção tem autenticação"</td></tr>
+      <tr><td><dfn>Padrão</dfn> (<em>standard</em>)</td><td>Regra mensurável que torna a política concreta</td><td>Sim</td><td>A regra do linter: "senhas com no mínimo 14 caracteres", "TLS 1.2 ou superior"</td></tr>
+      <tr><td><dfn>Baseline</dfn> <span class="tag">novo 801</span></td><td>Configuração mínima aprovada para um tipo de sistema</td><td>Sim</td><td>A imagem base de container aprovada, ou um benchmark CIS aplicado</td></tr>
+      <tr><td><dfn>Procedimento</dfn> (<em>procedure</em>), <dfn>SOP</dfn> e <dfn>runbook</dfn></td><td>Passo a passo de como executar uma tarefa. SOP (<em>standard operating procedure</em>) é o procedimento operacional padrão. Runbook é o roteiro operacional, muitas vezes automatizável</td><td>Sim, para quem executa</td><td>O runbook de on-call: "se o alerta X disparar, rode Y"</td></tr>
+      <tr><td><dfn>Diretriz</dfn> (<em>guideline</em>)</td><td>Recomendação, boa prática. Ninguém é punido por não seguir</td><td>Não</td><td>O guia de estilo com "prefira", "evite"</td></tr>
+      <tr><td><dfn>Plano</dfn> (<em>plan</em>)</td><td>O que fazer numa situação específica, como desastre ou interrupção</td><td>Sim, quando a situação ocorre</td><td>O plano de failover de região</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="politicas">Políticas que a prova cita</h3>
+  <ul>
+    <li><dfn>AUP</dfn> (<em>Acceptable Use Policy</em>, política de uso aceitável): o que o funcionário pode e não pode fazer com os recursos da empresa. Exemplo: "proibido instalar software sem aprovação", "proibido colar código da empresa em ferramenta de IA não aprovada". É o documento que a pessoa assina no onboarding.</li>
+    <li><strong>Política de segurança da informação</strong>: a política-mãe. Define objetivos, papéis e a autoridade do time de segurança. As outras políticas derivam dela.</li>
+    <li><strong>Continuidade de negócios</strong> (<dfn>BC</dfn>, <em>business continuity</em>): como a empresa continua operando durante uma interrupção. É sobre o <em>negócio</em>: atender cliente por telefone se o sistema cair, por exemplo.</li>
+    <li><strong>Recuperação de desastres</strong> (<dfn>DR</dfn>, <em>disaster recovery</em>): como restaurar a TI depois do desastre. É um subconjunto da continuidade, focado em sistemas. Veja resiliência no <a href="d3-arquitetura.html">domínio 3</a>.</li>
+    <li><strong>Resposta a incidentes</strong> (<dfn>IR</dfn>, <em>incident response</em>): quem faz o quê quando há incidente. O processo em si está na <a href="../05-blue-team.html#ir">página 05</a> e no <a href="d4-operacoes.html">domínio 4</a>.</li>
+    <li><dfn>BYOD</dfn> (<em>Bring Your Own Device</em>) <span class="tag">novo 801</span>: regras para usar celular ou notebook pessoal no trabalho. Geralmente exige MDM (gerenciamento de dispositivo móvel) e o direito de apagar os dados corporativos.</li>
+    <li><strong>Mesa limpa</strong> (<em>clean desk</em>) <span class="tag">novo 801</span>: nada sensível largado na mesa ou na tela ao sair. Parece banal, mas é a defesa contra <em>shoulder surfing</em> e foto de post-it com senha.</li>
+    <li><strong>Classificação e retenção de dados</strong> <span class="tag">novo 801</span>: que rótulo cada dado recebe (público, confidencial, restrito) e por quanto tempo é guardado.</li>
+    <li><strong>Controle de acesso</strong>: como acessos são concedidos, revisados e removidos.</li>
+    <li><strong>Descarte de dados</strong> <span class="tag">novo 801</span>: como destruir dados e mídias (sobrescrita, destruição física, certificado de destruição).</li>
+    <li><strong>Divulgação de vulnerabilidades</strong> (<em>vulnerability disclosure</em>) <span class="tag">novo 801</span>: como um pesquisador de fora reporta uma falha sem ser processado. Em geral vira uma página <code>/security</code> e um arquivo <code>security.txt</code>.</li>
+    <li><strong>Privacidade</strong> <span class="tag">novo 801</span>: como a empresa trata dados pessoais, ligada à LGPD (veja a <a href="#conformidade">seção 5.4</a>).</li>
+    <li><strong>SDLC</strong> (<em>Software Development Life Cycle</em>) e <strong>gestão de mudanças</strong> <span class="tag">só 701 neste domínio</span>: na 701 eram políticas do 5.1. Na 801, gestão de mudanças (CAB, backout plan, janela de manutenção) está no 1.2, coberto no <a href="d1-conceitos-gerais.html">domínio 1</a>, e o ciclo seguro de desenvolvimento está na <a href="../04-devsecops.html">página 04</a>.</li>
+  </ul>
+
+  <h3 id="padroes">Padrões e diretrizes</h3>
+  <p>Os padrões que a prova cita são de <strong>senha</strong>, <strong>controle de acesso</strong>, <strong>segurança física</strong> e <strong>criptografia</strong> (por exemplo, "AES-256 para dados em repouso"). A 801 inclui também <dfn>RFC</dfn> (<em>Request for Comments</em>), os documentos que definem protocolos da internet, como TLS e HTTP. Faz sentido: um padrão interno costuma dizer "siga a RFC tal".</p>
+  <p>As <strong>diretrizes</strong> <span class="tag">novo 801</span> incluem <strong>benchmarks</strong> (como os do CIS, o Center for Internet Security), <strong>avisos</strong> de segurança de fornecedores e governos, <strong>guias de implementação</strong> e <strong>arquiteturas de referência</strong>, como os desenhos de "landing zone" seguros que os provedores de nuvem publicam.</p>
+
+  <h3 id="procedimentos">Procedimentos</h3>
+  <p>Além de SOP e runbook, a 701 citava três procedimentos <span class="tag">só 701</span>:</p>
+  <ul>
+    <li><strong>Gestão de mudanças</strong>: o passo a passo para pedir, aprovar, testar e aplicar uma mudança.</li>
+    <li><strong>Onboarding e offboarding</strong>: entrada e saída de pessoas. O offboarding é o que mais importa para segurança: revogar acessos <em>no mesmo dia</em>, recolher equipamentos, girar segredos que a pessoa conhecia.</li>
+    <li><dfn>Playbook</dfn>: roteiro de resposta para um tipo de incidente ("phishing reportado", "ransomware detectado"). Na 801 aparece no 4.7.</li>
+  </ul>
+
+  <h3 id="estruturas">Estruturas e papéis de governança</h3>
+  <p>Na 701 o 5.1 cobrava também quem governa e quais forças externas pesam <span class="tag">só 701</span>:</p>
+  <ul>
+    <li><strong>Considerações externas</strong>: regulatórias (um órgão regulador, como o Banco Central para bancos), legais (leis, como a LGPD), do setor (como o PCI DSS, padrão de segurança para quem processa cartão) e geográficas, em nível local, regional, nacional ou global. Uma empresa brasileira que atende clientes europeus responde à LGPD <em>e</em> à GDPR.</li>
+    <li><strong>Monitoramento e revisão</strong>: políticas têm dono e data de revisão. Política que ninguém revisa há cinco anos é sintoma de governança fraca.</li>
+    <li><strong>Estruturas</strong>: <dfn>conselho</dfn> (<em>board</em>, a instância máxima que responde aos acionistas), <dfn>comitês</dfn> (grupos com mandato específico, como um comitê de risco), <strong>entidades governamentais</strong> e o modelo <strong>centralizado</strong> (um time central decide tudo, mais consistente e mais lento) ou <strong>descentralizado</strong> (cada unidade decide, mais ágil e menos uniforme).</li>
+  </ul>
+  <p>Os papéis sobre dados continuam caindo, agora pelo objetivo 3.3:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Papel</th><th>O que faz</th><th>Exemplo concreto</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Dono</dfn> (<em>data owner</em>)</td><td>Executivo que responde pelo dado: decide classificação e quem acessa</td><td>Diretora financeira, dona dos dados de faturamento</td></tr>
+      <tr><td><dfn>Controlador</dfn> (<em>controller</em>)</td><td>Organização que decide <em>por que</em> e <em>como</em> dados pessoais são tratados</td><td>A sua empresa, que coleta o CPF do cliente</td></tr>
+      <tr><td><dfn>Processador</dfn> (<em>processor</em>; "operador" na LGPD)</td><td>Trata dados pessoais <em>em nome</em> do controlador, seguindo instruções dele</td><td>O serviço de e-mail transacional que envia a nota fiscal</td></tr>
+      <tr><td><dfn>Subprocessador</dfn> <span class="tag">novo 801</span></td><td>Contratado pelo processador para ajudar no tratamento</td><td>O provedor de nuvem onde o serviço de e-mail roda</td></tr>
+      <tr><td><dfn>Custodiante</dfn> (<em>custodian</em>)</td><td>Guarda e protege o dado no dia a dia: backup, permissão, criptografia</td><td>O time de plataforma que administra o banco</td></tr>
+      <tr><td><dfn>Steward</dfn> (curador)</td><td>Cuida da qualidade, do significado e do uso correto do dado</td><td>O analista que mantém o dicionário de dados e as regras de qualidade</td></tr>
+      <tr><td><dfn>Operador</dfn> (<em>data operator</em>) <span class="tag">novo 801</span></td><td>Quem opera sistemas que tocam o dado. Cuidado: na LGPD, "operador" é o processador</td><td>Quem executa jobs de ETL</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="risco">5.2 Gestão de risco</h2>
+  <p>A <a href="../01-fundamentos.html#risco">página 01</a> já definiu risco como probabilidade × impacto. Aqui a prova cobra o <em>processo</em> em volta dessa fórmula: identificar, avaliar, analisar, registrar, tratar e reportar.</p>
+
+  <h3 id="identificacao">Identificação e avaliação</h3>
+  <ul>
+    <li><strong>Identificação de risco</strong>: listar ativos (o que tenho de valor?), ameaças e vulnerabilidades. Na 801 aparecem <strong>identificação de ativos</strong> e <strong>stakeholder ownership</strong>: cada risco precisa de alguém da área de negócio que responda por ele.</li>
+    <li><strong>Avaliação de risco</strong> (<em>risk assessment</em>): na 801, <strong>pontuação</strong> (dar nota ao risco) e <strong>categorização</strong> (agrupar: operacional, financeiro, legal, tecnológico). Na 701, a frequência <span class="tag">só 701</span>: <dfn>ad hoc</dfn> (quando surge necessidade, como um zero-day), <dfn>recorrente</dfn> (em intervalos fixos, como todo trimestre), <dfn>pontual</dfn> (<em>one-time</em>, para um projeto ou aquisição) e <dfn>contínua</dfn> (automatizada e permanente, como CSPM vigiando a nuvem).</li>
+  </ul>
+
+  <h3 id="analise">Análise: qualitativa e quantitativa</h3>
+  <p>A <dfn>análise qualitativa</dfn> usa escalas como baixo/médio/alto e uma matriz de probabilidade × impacto. É rápida e subjetiva. A <dfn>análise quantitativa</dfn> põe valor em dinheiro. É mais trabalhosa e permite comparar o risco com o custo do controle. Os termos que a prova cobra:</p>
+  <ul>
+    <li><dfn>Probabilidade</dfn> (<em>likelihood/probability</em>): chance de o evento ocorrer. A prova trata os dois termos quase como sinônimos. <em>Likelihood</em> costuma ser qualitativa ("provável") e <em>probability</em>, numérica ("30%").</li>
+    <li><dfn>Impacto</dfn>: o estrago se ocorrer (financeiro, reputacional, legal, de vidas).</li>
+    <li><dfn>AV</dfn> (<em>asset value</em>): quanto vale o ativo.</li>
+    <li><dfn>EF</dfn> (<em>exposure factor</em>, fator de exposição) <span class="tag">só 701 no texto</span>: porcentagem do ativo perdida num evento. Ainda é necessário para calcular o SLE.</li>
+    <li><dfn>SLE</dfn> (<em>single loss expectancy</em>): perda esperada em <strong>um</strong> evento.</li>
+    <li><dfn>ARO</dfn> (<em>annualized rate of occurrence</em>): quantas vezes por ano se espera que o evento ocorra. Uma vez a cada 4 anos dá ARO = 0,25.</li>
+    <li><dfn>ALE</dfn> (<em>annualized loss expectancy</em>): perda esperada por <strong>ano</strong>.</li>
+  </ul>
+  <pre><code>SLE = AV × EF
+ALE = SLE × ARO</code></pre>
+
+  <h3 id="exemplo">Exemplo resolvido</h3>
+  <p>Sua empresa guarda o banco de clientes num servidor. O ativo (hardware, dados e trabalho de reconstrução) vale <strong>R$ 200.000</strong>. Um ataque de ransomware destruiria 40% desse valor, porque parte é recuperável do backup. Pelo histórico do setor, esse ataque ocorre uma vez a cada dois anos.</p>
+  <pre><code>AV  = R$ 200.000
+EF  = 40% = 0,4
+SLE = 200.000 × 0,4 = R$ 80.000    <span class="c">(perda num único ataque)</span>
+ARO = 1 a cada 2 anos = 0,5
+ALE = 80.000 × 0,5  = R$ 40.000    <span class="c">(perda esperada por ano)</span></code></pre>
+  <p>Agora a decisão. Um EDR mais backup imutável custa <strong>R$ 25.000 por ano</strong> e reduz o ARO para 0,1 (uma vez a cada dez anos).</p>
+  <pre><code>ALE depois do controle = 80.000 × 0,1 = R$ 8.000
+Redução do ALE         = 40.000 − 8.000 = R$ 32.000 por ano
+Ganho líquido          = 32.000 − 25.000 = <span class="ok">R$ 7.000 por ano → vale a pena</span></code></pre>
+  <p>A regra: <strong>um controle vale a pena quando custa por ano menos do que reduz no ALE</strong>. Se o controle custasse R$ 40.000 por ano, você estaria pagando mais para se proteger do que o risco custa. Nesse caso, aceitar ou transferir o risco seria mais racional.</p>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>É o mesmo raciocínio de decidir se vale a pena uma segunda região de nuvem: quanto custa uma hora fora do ar, quantas horas por ano você espera ficar fora, e quanto custa a redundância. A diferença é que aqui a conta tem nome e cai na prova.</p>
+  </div>
+  <p>Na 801, a análise também cita <strong>dono do risco</strong> (<em>owner</em>) e <strong>mitigações atuais</strong>: antes de propor controle novo, registre o que já existe, porque o risco que você mede já é o que sobrou depois delas.</p>
+
+  <h3 id="registro">Registro de risco</h3>
+  <p>O <dfn>registro de risco</dfn> (<em>risk register</em>) é a planilha (ou ferramenta de GRC) com todos os riscos conhecidos: descrição, probabilidade, impacto, nota, dono, tratamento escolhido e prazo. É o "backlog" do risco. Na 801 entram <strong>comunicação</strong> (quem recebe o registro e com que frequência) e <strong>revisões</strong> periódicas. Na 701 também caem <span class="tag">só 701</span>:</p>
+  <ul>
+    <li><dfn>KRI</dfn> (<em>key risk indicator</em>, indicador-chave de risco): métrica que avisa que o risco está crescendo antes de virar incidente. Exemplo: "% de servidores com patch crítico atrasado há mais de 30 dias".</li>
+    <li><dfn>Dono do risco</dfn> (<em>risk owner</em>): a pessoa que responde pelo risco e decide o tratamento. Costuma ser alguém do negócio, não da segurança.</li>
+    <li><dfn>Limiar de risco</dfn> (<em>risk threshold</em>): o nível a partir do qual o risco exige ação ou escalonamento. Como o limiar de um alerta.</li>
+  </ul>
+
+  <h3 id="apetite">Apetite e tolerância a risco</h3>
+  <p><dfn>Apetite a risco</dfn> (<em>risk appetite</em>) é quanto risco a organização <em>quer</em> assumir em busca dos seus objetivos. É estratégico e definido pela diretoria. <dfn>Tolerância a risco</dfn> (<em>risk tolerance</em>) <span class="tag">só 701</span> é o desvio aceitável em torno desse apetite, num caso específico. É tático e mensurável. Na 701, o apetite pode ser <strong>expansivo</strong> (<em>expansionary</em>, aceita mais risco para crescer, como uma startup), <strong>conservador</strong> (aceita pouco risco, como um banco) ou <strong>neutro</strong>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Apetite (<em>appetite</em>)</th><th>Tolerância (<em>tolerance</em>)</th></tr></thead>
+    <tbody>
+      <tr><td>Pergunta</td><td>Quanto risco queremos assumir?</td><td>Quanto desvio aguentamos neste caso?</td></tr>
+      <tr><td>Nível</td><td>Estratégico, organização toda</td><td>Tático, por risco ou métrica</td></tr>
+      <tr><td>Quem define</td><td>Diretoria ou conselho</td><td>Gestores, dentro do apetite</td></tr>
+      <tr><td>Exemplo</td><td>"Baixo apetite para risco que exponha dados de clientes"</td><td>"Até 4 horas de indisponibilidade por trimestre no checkout"</td></tr>
+    </tbody>
+  </table></div>
+  <p>O <dfn>risco residual</dfn> <span class="tag">novo 801</span> é o que sobra depois dos controles. O <dfn>risco inerente</dfn> é o risco antes de qualquer controle. A pergunta de gestão é sempre: o residual está dentro do apetite?</p>
+
+  <h3 id="tratamento">Tratamento: as quatro estratégias</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Estratégia</th><th>O que é</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Mitigar</strong> (<em>mitigate</em>)</td><td>Aplicar controles para reduzir probabilidade ou impacto</td><td>Adicionar MFA, WAF, backup</td></tr>
+      <tr><td><strong>Transferir</strong> (<em>transfer</em>)</td><td>Passar o impacto financeiro para outra parte</td><td>Seguro cibernético, contrato com cláusula de responsabilidade</td></tr>
+      <tr><td><strong>Aceitar</strong> (<em>accept</em>)</td><td>Decidir conscientemente conviver com o risco, porque tratá-lo custa mais que o dano</td><td>Sistema interno legado sem dado sensível que vai ser desligado em 6 meses</td></tr>
+      <tr><td><strong>Evitar</strong> (<em>avoid</em>)</td><td>Eliminar a atividade que gera o risco</td><td>Deixar de guardar número de cartão e usar um gateway de pagamento</td></tr>
+    </tbody>
+  </table></div>
+  <p>Na 701, aceitar tem dois sabores <span class="tag">só 701</span>: <dfn>exceção</dfn> (<em>exception</em>), uma permissão temporária para não cumprir uma política, com prazo e controle compensatório, e <dfn>isenção</dfn> (<em>exemption</em>), uma dispensa mais ampla ou permanente daquele requisito. Na prática, a exceção é o <code>// eslint-disable-next-line</code> com justificativa e data para remover.</p>
+  <p>Transferir risco <strong>não transfere a responsabilidade</strong>. O seguro paga a multa, mas o nome no jornal continua sendo o da sua empresa.</p>
+
+  <h3 id="negocio">Considerações de negócio e BIA</h3>
+  <p>A 801 agrupa aqui o que liga risco a negócio: <strong>BIA</strong>, apetite, risco residual, envolvimento de stakeholders, supervisão da gestão (<em>management oversight</em>, a gestão acompanha e responde pelas decisões de risco) e fatores regulatórios e legais.</p>
+  <p>A <dfn>BIA</dfn> (<em>business impact analysis</em>, análise de impacto no negócio) responde: se este processo parar, quanto dói e em quanto tempo? Ela identifica os processos críticos e define as metas de recuperação. Essas métricas estão no 3.4 da 801 e no 5.2 da 701, e caem nas duas:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Métrica</th><th>Pergunta</th><th>Mede</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>RTO</dfn> (<em>recovery time objective</em>)</td><td>Em quanto tempo preciso voltar a funcionar?</td><td>Tempo de parada tolerado</td><td>Checkout de volta em até 2 horas</td></tr>
+      <tr><td><dfn>RPO</dfn> (<em>recovery point objective</em>)</td><td>Quanto dado posso perder?</td><td>Janela de dados perdidos, olhando para trás</td><td>No máximo 15 minutos de pedidos, logo backup ou replicação a cada 15 minutos</td></tr>
+    </tbody>
+  </table></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Métrica</th><th>Pergunta</th><th>Quer que seja</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>MTTR</dfn> (<em>mean time to repair</em>)</td><td>Quanto tempo, em média, leva para consertar?</td><td>Baixo</td><td>Trocar um disco leva em média 4 horas</td></tr>
+      <tr><td><dfn>MTBF</dfn> (<em>mean time between failures</em>)</td><td>Quanto tempo, em média, funciona entre uma falha e outra?</td><td>Alto</td><td>O disco falha em média a cada 50.000 horas</td></tr>
+    </tbody>
+  </table></div>
+  <p>Note que o MTTR da prova é <em>repair</em> (consertar componente), diferente do MTTR de resposta a incidentes da <a href="../05-blue-team.html#metricas">página 05</a>. E o MTTR precisa ser menor que o RTO: se consertar leva 4 horas e o RTO é 2, você precisa de redundância, não de conserto mais rápido.</p>
+
+  <h3 id="relatorio">Relatório de risco</h3>
+  <p>O risco precisa chegar a quem decide numa linguagem que essa pessoa entende. Para a diretoria, isso significa dinheiro, tendência e decisão pedida ("o ALE do ransomware é R$ 40 mil; recomendamos o controle X por R$ 25 mil"), não uma lista de CVEs.</p>
+
+  <h2 id="terceiros">5.3 Risco de terceiros</h2>
+  <p>Quando você contrata um fornecedor, herda o risco dele. A <a href="../04-devsecops.html#supply-chain">página 04</a> tratou a cadeia de suprimentos de software. Aqui é o mesmo problema visto pelo contrato e pelo processo de compra.</p>
+
+  <h3 id="selecao">Seleção do fornecedor</h3>
+  <p>A 801 cita os documentos da compra <span class="tag">novo 801</span>, na ordem em que costumam aparecer:</p>
+  <ol>
+    <li><dfn>EOI</dfn> (<em>expression of interest</em>): convite aberto para fornecedores dizerem se têm interesse.</li>
+    <li><dfn>RFI</dfn> (<em>request for information</em>): "conte-me o que vocês oferecem". Coleta informação, sem preço fechado.</li>
+    <li><dfn>RFP</dfn> (<em>request for proposal</em>): "proponha uma solução para este problema". Pede proposta técnica e comercial completa.</li>
+    <li><dfn>RFQ</dfn> (<em>request for quote</em>): "quanto custa exatamente isto?". O escopo já está definido e só falta o preço.</li>
+  </ol>
+  <p>Em qualquer etapa valem duas ideias:</p>
+  <ul>
+    <li><dfn>Due diligence</dfn> (diligência prévia): investigar o fornecedor <em>antes</em> de contratar. Saúde financeira, histórico de incidentes, certificações, onde ficam os dados.</li>
+    <li><dfn>Conflito de interesse</dfn>: quem escolhe o fornecedor não pode ter ganho pessoal com a escolha. O gerente que contrata a empresa do cunhado é o exemplo clássico.</li>
+  </ul>
+
+  <h3 id="acordos">Tipos de acordo</h3>
+  <p>A prova adora pedir o acordo certo para um cenário. A chave é perguntar: é juridicamente vinculante? É sobre o relacionamento todo ou sobre um trabalho específico?</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Acordo</th><th>O que é</th><th>Vinculante?</th><th>Quando aparece</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>MOU</dfn> (<em>memorandum of understanding</em>)</td><td>Declaração de intenção de trabalhar junto</td><td>Geralmente não</td><td>Duas universidades ou dois órgãos combinam cooperar</td></tr>
+      <tr><td><dfn>MOA</dfn> (<em>memorandum of agreement</em>)</td><td>Mais formal que o MOU: define responsabilidades de cada parte</td><td>Mais forte que o MOU; pode ser vinculante conforme o texto</td><td>Duas partes definem quem faz o quê num projeto conjunto</td></tr>
+      <tr><td><dfn>MSA</dfn> (<em>master services agreement</em>)</td><td>Contrato-guarda-chuva com os termos gerais de toda a relação (pagamento, responsabilidade, propriedade intelectual)</td><td>Sim</td><td>Relação longa com um fornecedor, com vários projetos</td></tr>
+      <tr><td><dfn>SOW</dfn> (<em>statement of work</em>) / <dfn>WO</dfn> (<em>work order</em>)</td><td>O trabalho específico sob o MSA: escopo, entregáveis, prazos, preço</td><td>Sim</td><td>"Pentest da API de pagamentos em março, entregando relatório"</td></tr>
+      <tr><td><dfn>SLA</dfn> (<em>service-level agreement</em>)</td><td>Nível de serviço garantido, com penalidade se não cumprir</td><td>Sim</td><td>"99,9% de disponibilidade por mês, senão crédito de 10%"</td></tr>
+      <tr><td><dfn>SLO</dfn> (<em>service-level objective</em>) <span class="tag">novo 801</span></td><td>A meta interna de nível de serviço. O SLA é a promessa ao cliente com multa; o SLO é o alvo, normalmente mais rígido que o SLA</td><td>Não, por si só</td><td>"Meta interna de 99,95% para ter folga sobre o SLA de 99,9%"</td></tr>
+      <tr><td><dfn>NDA</dfn> (<em>non-disclosure agreement</em>)</td><td>Acordo de confidencialidade</td><td>Sim</td><td>Antes de mostrar a arquitetura a um fornecedor em avaliação</td></tr>
+      <tr><td><dfn>BPA</dfn> (<em>business partners agreement</em>) <span class="tag">só 701</span></td><td>Acordo entre sócios ou parceiros de negócio: participação, lucros, decisões</td><td>Sim</td><td>Duas empresas formam uma parceria comercial</td></tr>
+    </tbody>
+  </table></div>
+  <p>Se você vem de SRE, SLO e SLA são velhos conhecidos. A prova cobra a mesma diferença que você já usa.</p>
+
+  <h3 id="avaliacao-fornecedor">Avaliação e monitoramento do fornecedor</h3>
+  <ul>
+    <li><dfn>Cláusula de direito de auditoria</dfn> (<em>right-to-audit clause</em>): o contrato dá a você o direito de auditar o fornecedor. Sem ela, você só pode pedir, e ele pode negar.</li>
+    <li><strong>Pentest</strong>: exigir que o fornecedor faça pentest e mostre o resumo, ou ter o direito de testá-lo.</li>
+    <li><strong>Atestado de conformidade</strong> (<em>compliance attestation</em>) e avaliações independentes: relatórios como o <strong>SOC 2 Tipo II</strong> (auditoria independente de controles ao longo de um período) ou a certificação ISO 27001. Na 701 aparecem como "evidência de auditorias internas" e "avaliações independentes".</li>
+    <li><strong>Análise da cadeia de suprimentos</strong> <span class="tag">só 701 neste objetivo</span>: os fornecedores do seu fornecedor também são risco seu.</li>
+    <li><strong>Monitoramento de nível de serviço</strong> e <strong>registro de fornecedores</strong> (<em>vendor registry</em>) <span class="tag">novo 801</span>: acompanhar o SLA de verdade e manter um inventário de todos os fornecedores, com que dados cada um acessa. É o equivalente a manter um SBOM, só que de empresas.</li>
+    <li><strong>Questionários</strong>: o formulário de segurança que o fornecedor responde. Na 801 está no 5.5.</li>
+    <li><dfn>Regras de engajamento</dfn> (<em>rules of engagement</em>): o que um teste (como pentest) pode e não pode fazer: alvos, horários, técnicas proibidas, contato de emergência. Sem isso, um pentest é indistinguível de um ataque.</li>
+  </ul>
+
+  <h3 id="limitacoes">Limitações e restrições <span class="tag">novo 801</span></h3>
+  <p>A 801 reconhece que a escolha do fornecedor tem limites: falta de pessoal para avaliar, recursos disponíveis, ambiente técnico, fatores legais e regulatórios, <strong>geografia e jurisdição</strong> (onde os dados ficam e que lei vale lá), <dfn>ROI</dfn> (<em>return on investment</em>, retorno sobre o investimento), <dfn>vendor lock-in</dfn> (ficar preso ao fornecedor porque sair custa caro demais) e <strong>mecanismos de garantia</strong> (<em>assurance mechanisms</em>, como seguro, garantia contratual e certificações que dão confiança no fornecedor).</p>
+
+  <h2 id="conformidade">5.4 Conformidade</h2>
+  <p><dfn>Conformidade</dfn> (<em>compliance</em>) é estar de acordo com leis, regulamentos, contratos e políticas internas, <strong>e conseguir provar isso</strong>. A segunda parte é a que dá trabalho.</p>
+
+  <h3 id="treinamento-conformidade">Treinamento de conformidade <span class="tag">novo 801</span></h3>
+  <ul>
+    <li><strong>Manuseio de dados</strong>: como tratar cada classificação de dado.</li>
+    <li><dfn>AML/CTF</dfn> (<em>anti-money laundering/counter-terrorism financing</em>): prevenção à lavagem de dinheiro e ao financiamento do terrorismo. No Brasil, é a Lei 9.613/1998, com comunicação de operações suspeitas ao COAF. Obrigatório para bancos, fintechs e corretoras.</li>
+    <li><strong>Antissuborno</strong> (<em>anti-bribery</em>): no Brasil, a Lei Anticorrupção (12.846/2013); nos EUA, o FCPA.</li>
+  </ul>
+
+  <h3 id="monitoramento-conformidade">Monitoramento e relatório</h3>
+  <ul>
+    <li><dfn>Atestado</dfn> (<em>attestation</em>): declaração formal, assinada, de que os controles existem e funcionam. Pode vir de um gestor interno ou de um auditor externo.</li>
+    <li><dfn>Acknowledgement</dfn> (ciência) <span class="tag">novo 801</span>: o registro de que a pessoa leu e aceitou uma política. É o "li e concordo" do onboarding, que vira prova numa investigação.</li>
+    <li><strong>Relatório interno e externo</strong>: interno para a diretoria e o comitê de auditoria; externo para reguladores, clientes e autoridades. Exemplo de externo obrigatório: comunicar incidente com dado pessoal à ANPD.</li>
+    <li><dfn>Due diligence</dfn> e <dfn>due care</dfn> <span class="tag">só 701 no texto</span>: diligência é <em>investigar e saber</em> (avaliar riscos, conhecer obrigações); cuidado devido é <em>agir</em> (implementar e manter os controles). Uma forma de lembrar: diligence = descobrir, care = cuidar.</li>
+    <li><strong>Automação</strong>: verificar conformidade continuamente com ferramentas (políticas como código, CSPM), em vez de uma planilha uma vez por ano. Para quem vem de dev, é o caminho natural.</li>
+  </ul>
+
+  <h3 id="consequencias">Consequências de não conformidade</h3>
+  <p>A prova lista seis: <strong>multas</strong> (financeiras), <strong>sanções</strong> (restrições impostas por governo ou regulador, como proibição de operar), <strong>dano à reputação</strong>, <strong>perda de licença</strong> (um banco perder a autorização do Banco Central, uma empresa perder a certificação PCI e não poder mais processar cartão), <strong>impactos contratuais</strong> (cliente rescinde ou cobra multa contratual) e <strong>consequências legais</strong> (processos, responsabilização de executivos). Como referência: a LGPD prevê multa de até 2% do faturamento no Brasil, limitada a R$ 50 milhões por infração; a GDPR, até € 20 milhões ou 4% do faturamento global anual, o que for maior.</p>
+
+  <h3 id="privacidade">Privacidade</h3>
+  <p>A prova usa o vocabulário da <dfn>GDPR</dfn> (regulamento europeu de proteção de dados). A <a href="../01-fundamentos.html#frameworks">LGPD</a> brasileira foi inspirada nela, e os conceitos batem quase um a um:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Termo na prova (GDPR)</th><th>Na LGPD</th><th>O que é</th></tr></thead>
+    <tbody>
+      <tr><td><em>Data subject</em></td><td>Titular</td><td>A pessoa a quem o dado se refere</td></tr>
+      <tr><td><em>Controller</em></td><td>Controlador</td><td>Decide por que e como tratar o dado</td></tr>
+      <tr><td><em>Processor</em></td><td>Operador</td><td>Trata o dado em nome do controlador</td></tr>
+      <tr><td><em>DPO</em> (<em>data protection officer</em>)</td><td>Encarregado</td><td>Ponto de contato entre a empresa, os titulares e a autoridade</td></tr>
+      <tr><td>Autoridade supervisora</td><td>ANPD</td><td>Órgão que fiscaliza e multa</td></tr>
+    </tbody>
+  </table></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Controlador (<em>controller</em>)</th><th>Processador/operador (<em>processor</em>)</th></tr></thead>
+    <tbody>
+      <tr><td>Decide a finalidade?</td><td>Sim</td><td>Não, segue instruções</td></tr>
+      <tr><td>Exemplo</td><td>Uma loja online que coleta nome, CPF e endereço para entregar pedidos</td><td>A plataforma de e-mail marketing que a loja contrata para enviar newsletters</td></tr>
+      <tr><td>Responde ao titular?</td><td>Sim, é a parte principal</td><td>Responde junto se descumprir a lei ou as instruções</td></tr>
+      <tr><td>Se usar o dado para fins próprios</td><td>(já decide os fins)</td><td>Passa a ser tratado como controlador daquele uso</td></tr>
+    </tbody>
+  </table></div>
+  <p>Os direitos e conceitos que a prova cita:</p>
+  <ul>
+    <li><dfn>Direito ao esquecimento</dfn> (<em>right to be forgotten</em>): o titular pode pedir a eliminação dos seus dados. Na LGPD, o direito de eliminação (art. 18) vale para dados tratados com consentimento, com exceções como obrigação legal de guardar. Para dev, isso significa saber <em>onde</em> o dado está: banco, réplicas, data lake, logs e backups.</li>
+    <li><dfn>Opt-in</dfn> e <dfn>opt-out</dfn> <span class="tag">novo 801</span>: opt-in exige ação ativa para consentir (caixa desmarcada que a pessoa marca); opt-out assume consentimento até a pessoa recusar. A GDPR exige opt-in para consentimento.</li>
+    <li><strong>Correção de dados</strong> <span class="tag">novo 801</span>: direito de corrigir dado errado ou desatualizado (art. 18 da LGPD também).</li>
+    <li><strong>Restrição de tratamento</strong> e <strong>impedimento de tratamento</strong> <span class="tag">novo 801</span>: o titular pode pedir que o dado seja guardado mas não usado (restrição), ou se opor a um tratamento específico, como marketing (impedimento).</li>
+    <li><strong>Propriedade</strong> (<em>ownership</em>): quem é dono do dado e responde por ele.</li>
+    <li><strong>Inventário e retenção de dados</strong>: saber que dados pessoais existem, onde, por quê e por quanto tempo. Sem inventário, nenhum outro direito pode ser cumprido.</li>
+    <li><strong>Implicações legais</strong>: as leis variam por jurisdição. Dados de europeus seguem a GDPR mesmo num servidor no Brasil.</li>
+  </ul>
+
+  <h3 id="legal">Conformidade legal <span class="tag">novo 801</span></h3>
+  <ul>
+    <li><dfn>Legal hold</dfn> (retenção legal): ordem para <strong>preservar</strong> dados relevantes a um processo ou investigação, suspendendo as rotinas de descarte. Se a política diz "apagar logs depois de 90 dias" e chega um legal hold, você para de apagar aqueles logs.</li>
+    <li><strong>Ordens judiciais</strong> (<em>legal orders</em>): pedidos formais da Justiça para entregar ou bloquear dados.</li>
+    <li><strong>Requisitos de retenção de dados</strong>: leis que obrigam a guardar por um tempo mínimo. Exemplo brasileiro: o Marco Civil da Internet obriga provedores de aplicação a guardar registros de acesso por 6 meses.</li>
+  </ul>
+
+  <h2 id="auditoria">5.5 Auditoria e avaliação</h2>
+  <p>Uma <dfn>auditoria</dfn> compara o que a empresa faz com um critério (lei, norma, política) e emite uma conclusão formal. Uma <dfn>avaliação</dfn> (<em>assessment</em>) é mais ampla e menos formal: mede a postura e aponta melhorias.</p>
+
+  <h3 id="coleta">Coleta de dados e escopo <span class="tag">novo 801</span></h3>
+  <ul>
+    <li><dfn>Amostragem</dfn> (<em>sampling</em>): o auditor não olha os 10.000 acessos; sorteia 50 e confere se todos têm aprovação.</li>
+    <li><strong>Questionários e entrevistas</strong>: perguntar a quem opera.</li>
+    <li><dfn>Asserção</dfn> (<em>assertion</em>): a afirmação da gestão que o auditor vai testar ("todos os acessos de produção são revisados trimestralmente").</li>
+    <li><strong>Fontes de referência</strong>: <a href="../05-blue-team.html#attack">MITRE ATT&amp;CK</a> (catálogo de técnicas de ataque), <dfn>Cyber Kill Chain</dfn> (modelo da Lockheed Martin com as 7 fases de um ataque, do reconhecimento à ação no objetivo) e <dfn>Diamond Model</dfn> (modelo que liga quatro vértices de uma intrusão: adversário, capacidade, infraestrutura e vítima).</li>
+    <li><dfn>Carta de auditoria</dfn> (<em>audit charter</em>): documento que dá autoridade e define o escopo da função de auditoria. Junto vem a <strong>frequência</strong> das auditorias.</li>
+  </ul>
+
+  <h3 id="tipos-auditoria">Tipos de engajamento</h3>
+  <ul>
+    <li><dfn>Gap analysis</dfn> <span class="tag">novo 801</span>: comparar o estado atual com o desejado (por exemplo, com a ISO 27001) e listar as lacunas. Costuma ser o primeiro passo antes de buscar uma certificação.</li>
+    <li><strong>Interna</strong>: feita pela própria empresa. <strong>Conformidade</strong> (verificar se as políticas estão sendo seguidas), <dfn>comitê de auditoria</dfn> (grupo do conselho que supervisiona auditorias e relatórios, independente da gestão operacional) e <dfn>autoavaliação</dfn> (<em>self-assessment</em>: o próprio time responde um checklist; barata e pouco independente).</li>
+    <li><strong>Externa</strong>: feita por terceiros. <strong>Regulatória</strong> (o regulador audita, como o Banco Central num banco), <strong>exames</strong> (<em>examinations</em>, inspeções formais, comuns no setor financeiro), <strong>avaliações</strong> e <dfn>auditoria independente de terceiros</dfn> (uma auditoria contratada que emite parecer, como SOC 2 ou certificação ISO).</li>
+    <li><dfn>Benchmarking</dfn> <span class="tag">novo 801</span>: comparar sua postura com a de empresas parecidas ou com um padrão do setor.</li>
+    <li><strong>Atestado</strong> <span class="tag">só 701 neste objetivo</span>: o parecer formal do auditor sobre os controles.</li>
+  </ul>
+
+  <h3 id="frameworks-padroes">Frameworks e padrões <span class="tag">novo 801</span></h3>
+  <p>A 801 separa padrões <strong>do setor</strong> (PCI DSS para cartões), <strong>internacionais</strong> (ISO/IEC 27001) e <strong>regionais</strong> (GDPR na Europa, LGPD no Brasil). Também cita <strong>testes funcionais</strong> (o controle funciona? por exemplo, o bloqueio de conta dispara após 5 tentativas?) e <strong>testes comportamentais</strong> (as pessoas seguem o processo? por exemplo, alguém abre a porta para um desconhecido?).</p>
+
+  <h3 id="pentest">Teste de intrusão (pentest)</h3>
+  <p>Um <dfn>pentest</dfn> é um ataque autorizado, com regras de engajamento, para encontrar e provar falhas. A prova classifica pelo que o testador sabe e pelo tipo de time:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Ambiente</th><th>Nome antigo</th><th>O testador recebe</th><th>Simula</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Conhecido</strong> (<em>known environment</em>)</td><td>White box</td><td>Tudo: código, arquitetura, credenciais</td><td>Um insider, ou uma revisão profunda com tempo curto</td></tr>
+      <tr><td><strong>Parcialmente conhecido</strong> (<em>partially known</em>)</td><td>Gray box</td><td>Parte: uma conta de usuário comum, a lista de URLs</td><td>Um cliente ou funcionário mal-intencionado</td></tr>
+      <tr><td><strong>Desconhecido</strong> (<em>unknown environment</em>)</td><td>Black box</td><td>Nada além do nome da empresa ou do domínio</td><td>Um atacante externo real</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Ofensivo</strong> (red team), <strong>defensivo</strong> (blue team) e <strong>integrado</strong> (purple team, os dois colaborando). As cores estão na <a href="../05-blue-team.html#cores">página 05</a>.</li>
+    <li><strong>Físico</strong>: tentar entrar no prédio (tailgating, crachá clonado, fechadura).</li>
+    <li><strong>Reconhecimento passivo</strong>: coletar informação sem tocar nos sistemas do alvo: OSINT (inteligência de fontes abertas), DNS público, LinkedIn, certificados em logs de transparência, vagas de emprego que revelam a stack.</li>
+    <li><strong>Reconhecimento ativo</strong>: interagir com o alvo: varredura de portas com nmap, enumeração de diretórios. Gera logs e pode ser detectado.</li>
+  </ul>
+
+  <h2 id="conscientizacao">5.6 Conscientização em segurança</h2>
+  <p>Este é o único objetivo do domínio 5 que começa com "<em>Given a scenario</em>", então espere questões de cenário: "um funcionário fez X, qual treinamento é o MAIS adequado?".</p>
+
+  <h3 id="tipos-treinamento">Tipos e meios de treinamento <span class="tag">novo 801</span></h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tipo</th><th>Quando</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Inicial</strong> (<em>onboarding</em>)</td><td>Na entrada</td><td>AUP, mesa limpa, como reportar phishing</td></tr>
+      <tr><td><strong>Contínuo</strong> (<em>ongoing</em>)</td><td>Periódico, para todos</td><td>Módulo anual, simulações mensais</td></tr>
+      <tr><td><strong>Direcionado</strong> (<em>targeted</em>)</td><td>Para um grupo de risco específico</td><td>Financeiro aprende sobre BEC; devs aprendem sobre segredos no código</td></tr>
+      <tr><td><strong>Corretivo</strong> (<em>corrective</em>)</td><td>Depois que a pessoa errou</td><td>Quem clicou na simulação de phishing faz um módulo curto</td></tr>
+    </tbody>
+  </table></div>
+  <p>Os meios: <dfn>LMS</dfn> (<em>learning management system</em>, a plataforma de cursos online), <strong>portais de autoatendimento</strong>, <strong>um-para-um</strong> (conversa individual, bom para corretivo) e <strong>um-para-muitos</strong> (palestra, webinar).</p>
+
+  <h3 id="temas">Temas comuns</h3>
+  <ul>
+    <li><strong>Engenharia social e phishing</strong>: reconhecer urgência artificial, remetente parecido, link estranho. A 701 cita <strong>campanhas de phishing</strong> <span class="tag">só 701 como item</span>: simulações periódicas que medem quem clica e quem reporta.</li>
+    <li><dfn>BEC</dfn> (<em>business email compromise</em>) <span class="tag">novo 801</span>: fraude em que o atacante se passa (ou assume a conta) de um executivo ou fornecedor e pede uma transferência ou troca de dados bancários. É o golpe que mais causa prejuízo financeiro direto. O treinamento ensina a confirmar por outro canal.</li>
+    <li><strong>Gestão de senhas e credenciais</strong>: gerenciador de senhas, passkeys, não reutilizar.</li>
+    <li><strong>Mídia removível e cabos</strong>: pendrive achado no estacionamento não vai no notebook. Cabos USB também podem esconder hardware malicioso.</li>
+    <li><strong>Consciência situacional</strong> (<em>situational awareness</em>): perceber o entorno, como alguém olhando sua tela no aeroporto ou alguém sem crachá no andar.</li>
+    <li><strong>Segurança operacional</strong> (<dfn>OPSEC</dfn>): não vazar informação útil a atacantes, como postar foto do crachá ou falar do projeto no LinkedIn.</li>
+    <li><strong>Trabalho remoto e híbrido</strong>: Wi-Fi público, VPN, não deixar o notebook desbloqueado em casa com visita.</li>
+    <li><strong>BYOD</strong> e <strong>temas emergentes</strong> <span class="tag">novo 801</span>: como deepfake de voz pedindo transferência, ou colar dado sensível em ferramenta de IA.</li>
+    <li><strong>Ameaça interna</strong> e <strong>políticas e manuais</strong> <span class="tag">só 701</span>: reconhecer sinais de risco interno e conhecer o handbook.</li>
+  </ul>
+
+  <h3 id="anomalo">Reconhecer comportamento anômalo <span class="tag">só 701</span></h3>
+  <p>A 701 separa três tipos: <strong>arriscado</strong> (<em>risky</em>: desabilitar o antivírus para "o build rodar mais rápido"), <strong>inesperado</strong> (<em>unexpected</em>: um colega do RH acessando o repositório de código às 3h) e <strong>não intencional</strong> (<em>unintentional</em>: mandar a planilha de salários para o destinatário errado).</p>
+
+  <h3 id="metricas-treinamento">Relatório e monitoramento da efetividade</h3>
+  <p>Treinamento sem métrica é teatro. As métricas que importam: taxa de clique em simulações (deve cair), <strong>taxa de reporte</strong> (deve subir, e é a mais valiosa), tempo até o primeiro reporte. A 801 cita <strong>relatórios gerenciais</strong> e <dfn>pontuação de risco comportamental</dfn> (<em>personnel behavior risk scoring</em>): uma nota por pessoa ou área, combinando cliques, reportes e treinamentos atrasados, para direcionar o treinamento. Na 701 o ciclo é <strong>desenvolvimento</strong> (criar o programa a partir dos riscos) e <strong>execução</strong> (rodar, medir e ajustar).</p>
+
+  <div class="callout warn">
+    <span class="callout-title">Pegadinhas do domínio 5</span>
+    <ul>
+      <li><strong>Política × padrão × procedimento × diretriz.</strong> Se tem número ("mínimo 14 caracteres"), é padrão. Se é passo a passo, é procedimento. Se é opcional ("recomenda-se"), é diretriz.</li>
+      <li><strong>MOU não é contrato.</strong> Se o cenário pede algo "juridicamente vinculante", MOU é a resposta errada.</li>
+      <li><strong>MSA × SOW.</strong> O MSA é o guarda-chuva; o SOW é cada projeto embaixo dele.</li>
+      <li><strong>SLA × SLO.</strong> O SLA tem penalidade e é para o cliente; o SLO é a meta.</li>
+      <li><strong>RTO × RPO.</strong> RTO é tempo de parada (para frente); RPO é dado perdido (para trás). Se a pergunta fala em "frequência de backup", é RPO.</li>
+      <li><strong>Seguro é transferência</strong>, não mitigação. Parar de oferecer o serviço é evitar, não mitigar.</li>
+      <li><strong>ARO menor que 1</strong> é normal: "uma vez a cada 5 anos" é 0,2. Não confunda ARO com probabilidade em porcentagem.</li>
+      <li><strong>Controlador × processador.</strong> Quem decide a finalidade é controlador, mesmo que não toque no dado. O provedor de nuvem que hospeda o banco é processador.</li>
+      <li><strong>Desconhecido ≠ sem regras.</strong> Mesmo um pentest em ambiente desconhecido precisa de regras de engajamento e autorização por escrito.</li>
+      <li><strong>Reconhecimento passivo não toca o alvo.</strong> Rodar nmap, mesmo "só de leve", é ativo.</li>
+    </ul>
+  </div>
+
+  <h2 id="questoes">Questões de prática</h2>
+  <p>Questões originais, escritas para este guia no estilo da prova. Não são questões reais.</p>
+
+  <details><summary>1. Um servidor de arquivos vale R$ 150.000. Um incêndio destruiria 60% do seu valor, e a seguradora estima um incêndio a cada 20 anos naquele prédio. Qual é o ALE?</summary>
+    <p><strong>Resposta: R$ 4.500.</strong> SLE = 150.000 × 0,6 = 90.000. ARO = 1/20 = 0,05. ALE = 90.000 × 0,05 = 4.500. O erro comum é usar 20 como ARO (o que daria R$ 1,8 milhão) ou parar no SLE.</p>
+  </details>
+
+  <details><summary>2. Uma empresa vai contratar um fornecedor para vários projetos nos próximos três anos e quer definir de uma vez os termos de pagamento, responsabilidade e propriedade intelectual. Cada projeto terá escopo próprio. Qual combinação de documentos é a MAIS adequada? (A) MOU + SLA (B) MSA + SOW (C) NDA + MOA (D) BPA + RFQ</summary>
+    <p><strong>Resposta: B.</strong> O MSA define os termos gerais da relação longa; cada projeto vira um SOW com escopo, entregas e prazo. MOU não é vinculante e SLA trata de nível de serviço (A). NDA cobre só confidencialidade e MOA define responsabilidades num esforço conjunto, não uma relação comercial com vários projetos (C). BPA é acordo de parceria de negócio e RFQ é um pedido de cotação, não um contrato (D).</p>
+  </details>
+
+  <details><summary>3. A diretoria decide que os sistemas de pagamento precisam voltar a funcionar em até 4 horas após um desastre e que no máximo 5 minutos de transações podem ser perdidos. Quais métricas foram definidas, nessa ordem?</summary>
+    <p><strong>Resposta: RTO = 4 horas, RPO = 5 minutos.</strong> Tempo para voltar é RTO; quantidade de dados perdidos é RPO. O RPO de 5 minutos implica replicação quase contínua, porque um backup diário perderia até 24 horas de transações.</p>
+  </details>
+
+  <details><summary>4. Uma fintech guarda número completo de cartão para "facilitar recompras". Após uma avaliação de risco, decide parar de armazenar e passar a usar tokens do gateway de pagamento. Que estratégia de risco foi aplicada?</summary>
+    <p><strong>Resposta: evitar.</strong> A atividade que gerava o risco (guardar o número do cartão) deixou de existir. Não é mitigação, porque não foi adicionado um controle em volta do dado; o dado sumiu. Também não é transferência, embora o gateway passe a guardar o dado: a pergunta foca na eliminação da atividade. Se a alternativa "transferir" aparecer junto, lembre que transferência clássica na prova é seguro ou cláusula contratual de responsabilidade.</p>
+  </details>
+
+  <details><summary>5. Uma loja online contrata uma plataforma de CRM para guardar os dados de clientes. A loja define quais dados coletar e para quê; o CRM só armazena e processa conforme as instruções. Na LGPD, qual o papel de cada um?</summary>
+    <p><strong>Resposta: a loja é controladora; o CRM é operador (processor).</strong> Quem decide finalidade e meios é o controlador. Se o CRM passasse a usar esses dados para treinar um produto próprio, seria controlador desse novo uso, e provavelmente estaria violando o contrato e a lei.</p>
+  </details>
+
+  <details><summary>6. Uma empresa contrata um pentest e entrega ao testador apenas uma conta de cliente comum e a URL do aplicativo, sem código nem diagrama. Que tipo de ambiente é esse, e qual é a vantagem em relação a não fornecer nada?</summary>
+    <p><strong>Resposta: ambiente parcialmente conhecido (gray box).</strong> A vantagem é eficiência: o testador não gasta o tempo pago descobrindo como criar conta e já testa o que um cliente mal-intencionado faria, como IDOR e escalada de privilégio. Um teste em ambiente desconhecido simularia melhor um atacante externo, mas gastaria parte do tempo em reconhecimento.</p>
+  </details>
+
+  <details><summary>7. Uma empresa está sendo processada por um ex-funcionário. O jurídico pede que os e-mails e logs de acesso dele sejam preservados, embora a política apague logs após 90 dias. O que deve ser feito FIRST?</summary>
+    <p><strong>Resposta: aplicar um legal hold aos dados relevantes, suspendendo o descarte automático para eles.</strong> A obrigação de preservar dados de um litígio se sobrepõe à política de retenção. Apagar os dados depois de saber do processo pode ser considerado destruição de provas. Não é preciso suspender o descarte da empresa inteira, só dos dados no escopo do pedido.</p>
+  </details>
+
+  <details><summary>8. Depois de uma simulação de phishing, 12% dos funcionários do financeiro clicaram no link, contra 3% no resto da empresa. Além disso, o financeiro recebe pedidos frequentes de troca de dados bancários de fornecedores. Qual é a ação MAIS adequada? (A) Repetir o treinamento anual para toda a empresa (B) Treinamento direcionado ao financeiro sobre BEC, com confirmação de pedidos por outro canal (C) Bloquear links externos no e-mail de toda a empresa (D) Punir quem clicou</summary>
+    <p><strong>Resposta: B.</strong> O risco está concentrado num grupo e num golpe específico (BEC), então o treinamento direcionado com um controle de processo (ligar para o número já cadastrado do fornecedor antes de mudar dados bancários) ataca a causa. Repetir o treinamento geral (A) gasta tempo de quem já vai bem. Bloquear todos os links (C) quebra o trabalho e não resolve BEC, que muitas vezes nem tem link. Punir (D) reduz a taxa de reporte, que é a métrica mais valiosa.</p>
+  </details>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Consigo explicar a diferença entre política, padrão, procedimento e diretriz com um exemplo de cada?</summary><p>Política: "todo acesso a produção exige MFA". Padrão: "MFA com chave FIDO2 ou app TOTP; SMS não é aceito". Procedimento: "para pedir acesso, abra o ticket X, aguarde aprovação do gestor, registre a chave no portal Y". Diretriz: "recomenda-se ter uma segunda chave de backup".</p></details>
+  <details><summary>Sei calcular SLE, ALE e decidir se um controle vale a pena?</summary><p>SLE = AV × EF; ALE = SLE × ARO. O controle vale a pena se o seu custo anual for menor que a redução de ALE que ele provoca. Refaça o <a href="#exemplo">exemplo resolvido</a> com outros números.</p></details>
+  <details><summary>Sei qual acordo usar para cada cenário (MOU, MOA, MSA, SOW, SLA, SLO, NDA)?</summary><p>Volte à <a href="#acordos">tabela de acordos</a>. Teste: um órgão público e uma universidade querem registrar a intenção de colaborar, sem obrigações legais. Resposta: MOU.</p></details>
+
+  <nav class="pager"><a href="d4-operacoes.html">← Domínio 4</a><a href="simulado.html">Simulado →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores · CompTIA e Security+ são marcas da CompTIA, Inc.; este guia não é afiliado a ela</p>
+</body>
+</html>

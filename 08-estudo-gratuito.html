@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudar para as certificações de graça · Trilha Sec</title>
+<meta name="description" content="Material gratuito e oficial para cada certificação da página 06: objetivos da prova, cursos em vídeo, trilhas oficiais e simulados, conferidos em novembro de 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 08</span>
+  <h1>Estudar para as certificações de graça</h1>
+  <p class="lead">Ao fim desta página você vai saber, para cada certificação da <a href="06-certificacoes.html">página 06</a>, onde estão os objetivos oficiais, quais vídeos, cursos e simulados gratuitos existem hoje e em que ordem usá-los.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz como dev</span>
+    <p>Estudar para uma prova é parecido com implementar contra uma especificação. Os objetivos oficiais são a especificação; o curso em vídeo é a documentação; o laboratório é o ambiente de desenvolvimento; o simulado é a suíte de testes. Ninguém escreve código lendo só a documentação e pulando os testes, e com prova é igual.</p>
+  </div>
+
+  <h2 id="como-estudar">Como estudar para uma prova sem pagar curso</h2>
+  <p>Toda certificação séria publica de graça os <dfn>objetivos da prova</dfn> (em inglês, <em>exam objectives</em>, <em>exam outline</em> ou <em>blueprint</em>): a lista oficial de assuntos que podem cair, muitas vezes com o peso de cada área em porcentagem. Esse documento é o que separa estudo focado de estudo à deriva. Use os recursos nesta ordem:</p>
+  <ol>
+    <li><strong>Objetivos.</strong> Baixe e leia antes de tudo. Transforme cada item numa linha de checklist. Assim você sabe o que estudar e, mais importante, o que <em>não</em> precisa estudar.</li>
+    <li><strong>Vídeo ou curso.</strong> Para ter a primeira explicação de cada item. Assista em velocidade maior nos assuntos que você já domina como dev (HTTP, Git, Linux básico) e devagar no resto.</li>
+    <li><strong>Prática.</strong> Faça os exercícios dos laboratórios gratuitos da <a href="07-laboratorios.html">página 07</a>. Prática fixa o conteúdo e, nas provas práticas (CKA, BSCP, BTL1, SAL1), é o próprio conteúdo da prova.</li>
+    <li><strong>Simulado.</strong> Um <dfn>simulado</dfn> (em inglês, <em>practice exam</em> ou <em>practice assessment</em>) é uma prova de treino no formato da real. Faça só no fim, para medir se está pronto e descobrir onde errou. Fazer simulado cedo demais vira decoreba de perguntas.</li>
+  </ol>
+  <p>Volte ao checklist de objetivos a cada semana e marque o que já domina. Quando todas as linhas estiverem marcadas e o simulado passar com folga, marque a prova.</p>
+
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum: "dumps"</span>
+    <p><dfn>Dumps</dfn> são sites e arquivos que vendem (ou dão) perguntas vazadas da prova real, memorizadas e copiadas por quem já fez. Fuja deles, por três motivos:</p>
+    <ul>
+      <li>Usar dumps viola o <strong>acordo de confidencialidade</strong> que você aceita antes de toda prova. A certificadora pode anular o resultado, cassar certificações que você já tem e banir você de provas futuras.</li>
+      <li>Muitos sites de "PDF grátis dos objetivos" ou "simulado grátis" são na verdade vitrines para vender dumps. Baixe objetivos só do site oficial, pelos links desta página.</li>
+      <li>Passar decorando não ensina nada. Na primeira entrevista técnica, isso aparece.</li>
+    </ul>
+  </div>
+
+  <h2 id="mudancas-2026">Antes de começar: o que mudou em 2026</h2>
+  <p>Algumas provas da página 06 trocaram de versão ou de nome neste ano. Isso importa porque material gratuito costuma atrasar alguns meses em relação à prova nova.</p>
+  <ul>
+    <li><strong>Security+</strong>: a versão nova, SY0-801 (V8), entrou em 17/11/2026. O curso gratuito mais conhecido ainda cobre a SY0-701 (detalhes abaixo).</li>
+    <li><strong>CySA+</strong>: a versão nova, CS0-004 (V4), saiu em 23/06/2026. A V3 em inglês sai de circulação em 22/12/2026, segundo a CompTIA.</li>
+    <li><strong>AZ-500</strong> (Microsoft): foi desativada em 31/08/2026. A substituta é a <strong>SC-500</strong> (Cloud and AI Security Engineer Associate).</li>
+    <li><strong>Cisco CyberOps Associate</strong>: hoje se chama <strong>CCNA Cybersecurity</strong>. A prova continua sendo a 200-201, agora com o código CCNACBR.</li>
+  </ul>
+
+  <p>Nas tabelas abaixo, <strong>Tipo</strong> diz o que o recurso é: <span class="tag">objetivos</span> <span class="tag">vídeo</span> <span class="tag">curso</span> <span class="tag">simulado</span>. Todos os links foram abertos e conferidos em novembro de 2026. Quando um recurso pede cadastro, a observação diz isso; cadastro gratuito não é pagamento, mas exige criar conta.</p>
+
+  <h2 id="base">Base comum</h2>
+
+  <h3 id="security-plus">CompTIA Security+</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.comptia.org/en-us/certifications/security/v8/">Página oficial da Security+ V8 (SY0-801)</a></td><td>objetivos</td><td>Inglês</td><td>Tem o resumo dos objetivos e o link para o documento completo. Comece por aqui. A CompTIA vende cursos na mesma página; para os objetivos você não precisa comprar nada.</td></tr>
+      <tr><td><a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/">Professor Messer: curso Security+ SY0-701</a></td><td>vídeo</td><td>Inglês</td><td>Curso completo e gratuito, o mais usado por quem estuda para a Security+. Até 25/11/2026 <strong>não encontramos curso dele para a SY0-801</strong>. Se você for fazer a SY0-701 (ainda disponível, veja a página 06), ele serve inteiro. Se for fazer a SY0-801, use como base e confira item a item contra os objetivos novos. As apostilas e simulados do Messer são pagos.</td></tr>
+      <tr><td colspan="4">Simulado gratuito confiável para a SY0-801: <strong>não achamos</strong>. Os simulados oficiais e os do Messer são pagos. Desconfie de "simulado grátis" em sites desconhecidos (veja o aviso sobre dumps).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="network-plus">CompTIA Network+ (opcional)</h3>
+  <p>A página 06 não exige a Network+. Ela aparece aqui porque o conteúdo de redes é a base de Security+, CySA+ e CCNA Cybersecurity. Se redes é seu ponto fraco, assistir ao curso abaixo, mesmo sem fazer a prova, é um ótimo investimento de tempo.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.comptia.org/en-us/certifications/network/">Página oficial da Network+ (N10-009)</a></td><td>objetivos</td><td>Inglês</td><td>Resumo dos objetivos da versão atual.</td></tr>
+      <tr><td><a href="https://www.professormesser.com/network-plus/n10-009/n10-009-video/n10-009-training-course/">Professor Messer: curso Network+ N10-009</a></td><td>vídeo</td><td>Inglês</td><td>Gratuito e alinhado à versão atual da prova.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="isc2-cc">ISC2 CC (Certified in Cybersecurity)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.isc2.org/certifications/cc/cc-certification-exam-outline">Exam outline oficial da CC</a></td><td>objetivos</td><td>Inglês (também em espanhol, alemão, japonês e chinês)</td><td>PDF com os cinco domínios e seus pesos. A ISC2 trocou o outline em 2026, então use o PDF mais recente da página.</td></tr>
+      <tr><td colspan="4">Curso e simulado oficiais gratuitos: <strong>não achamos</strong>. O treinamento oficial gratuito acabou junto com o programa "One Million Certified" (inscrições encerradas em 20/05/2026); hoje os cursos da ISC2 são pagos. Use o outline oficial e os laboratórios da <a href="07-laboratorios.html">página 07</a>. Como boa parte dos conceitos se sobrepõe, o curso gratuito de Security+ do Professor Messer ajuda, mas confira cada tópico contra o outline da CC.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="devsecops-cloud">Trilha DevSecOps e Cloud</h2>
+
+  <h3 id="cka-cks">CKA e CKS (Linux Foundation / CNCF)</h3>
+  <p>As duas são provas práticas no terminal: você resolve tarefas num cluster Kubernetes real. Por isso, aqui o "simulado" é um ambiente, não uma lista de perguntas.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://github.com/cncf/curriculum">Currículo oficial da CNCF (GitHub)</a></td><td>objetivos</td><td>Inglês</td><td>PDFs com os domínios e pesos da CKA e da CKS, mantidos pela própria CNCF.</td></tr>
+      <tr><td><a href="https://www.youtube.com/watch?v=l57xKN6OBhY">freeCodeCamp: "Kubernetes Course – Certified Kubernetes Administrator Exam Preparation (2026 Update)"</a></td><td>vídeo</td><td>Inglês</td><td>Cerca de 2 horas, gratuito no YouTube. Bom para ter a visão geral da CKA antes de praticar.</td></tr>
+      <tr><td><a href="https://kubernetes.io/pt-br/docs/home/">Documentação oficial do Kubernetes</a></td><td>curso</td><td>Português (tradução parcial) e inglês</td><td>A documentação é o material de estudo mais importante, porque é a fonte que você pode consultar durante a prova (confira a lista atual de recursos permitidos no manual do candidato da Linux Foundation). Estude navegando nela, para encontrar as páginas rápido no dia. Na prova, a versão disponível é a em inglês.</td></tr>
+      <tr><td><a href="https://killer.sh/">killer.sh</a></td><td>simulado</td><td>Inglês</td><td><strong>Incluído na compra da prova, não é gratuito à parte.</strong> Segundo as páginas oficiais da <a href="https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/">CKA</a> e da <a href="https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/">CKS</a>, cada inscrição dá direito a duas sessões do simulador, com 36 horas de acesso cada. Guarde para as últimas semanas.</td></tr>
+      <tr><td colspan="4">Curso em vídeo gratuito e confiável específico para a <strong>CKS</strong>: <strong>não achamos</strong>. Use o currículo da CKS, a documentação e o Kubernetes Goat da <a href="07-laboratorios.html">página 07</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="aws-security">AWS Certified Security – Specialty</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://docs.aws.amazon.com/aws-certification/latest/security-specialty-03/security-specialty-03.html">Exam guide oficial (SCS-C03)</a></td><td>objetivos</td><td>Inglês</td><td>A versão atual da prova é a SCS-C03. Cuidado com material antigo escrito para a SCS-C02.</td></tr>
+      <tr><td><a href="https://skillbuilder.aws/category/exam-prep/security-specialty-SCS-C03">AWS Skill Builder: preparação para a SCS-C03</a></td><td>curso, simulado</td><td>Inglês</td><td>Pede cadastro gratuito. Segundo a <a href="https://aws.amazon.com/certification/certification-prep/">página de preparação da AWS</a>, o curso Exam Prep de cerca de 2 horas e o Official Practice Question Set (20 questões no estilo da prova) são gratuitos. O simulado completo (Official Practice Exam) e o curso "Enhanced" exigem assinatura paga.</td></tr>
+      <tr><td colspan="4">Para praticar, os laboratórios flAWS e CloudGoat estão na <a href="07-laboratorios.html">página 07</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="azure-google">Equivalentes em outras nuvens: SC-500 (ex-AZ-500) e Google PCSE</h3>
+  <p>A AZ-500 foi desativada em 31/08/2026 e não pode mais ser obtida. Quem mira segurança em Azure agora estuda para a <strong>SC-500</strong>. A Microsoft publica quase tudo de graça e em português:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/credentials/certifications/resources/study-guides/sc-500">Guia de estudo do exame SC-500</a></td><td>objetivos</td><td>Português</td><td>Lista oficial de habilidades medidas, com pesos.</td></tr>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/training/courses/sc-500t00">Curso SC-500T00 no Microsoft Learn</a></td><td>curso</td><td>Português</td><td>As trilhas autoguiadas (no seu ritmo) do Microsoft Learn são gratuitas. A versão com instrutor é paga e vendida por parceiros.</td></tr>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/credentials/certifications/cloud-and-ai-security-engineer-associate/">Página da certificação SC-500</a></td><td>simulado</td><td>Português (simulado em inglês)</td><td>Na seção "Prática para o exame" há a avaliação prática, que a Microsoft diz ser <a href="https://learn.microsoft.com/pt-br/credentials/certifications/practice-assessments-for-microsoft-certifications">sem custo e repetível quantas vezes quiser</a>. Pede login com conta Microsoft. Há também uma demonstração da interface da prova.</td></tr>
+      <tr><td><a href="https://cloud.google.com/learn/certification/cloud-security-engineer">Google Professional Cloud Security Engineer</a></td><td>objetivos, simulado</td><td>Inglês</td><td>A página oficial tem o <a href="https://services.google.com/fh/files/misc/professional_cloud_security_engineer_exam_guide_english.pdf">exam guide em PDF</a> e perguntas de exemplo gratuitas. Ela também indica uma trilha no Google Skills; não conseguimos confirmar que a trilha inteira, com laboratórios, seja gratuita.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="appsec">Trilha AppSec</h2>
+
+  <h3 id="bscp">Burp Suite Certified Practitioner (BSCP)</h3>
+  <p>A preparação inteira para o BSCP é gratuita, porque a PortSwigger usa a própria Web Security Academy (já listada na <a href="07-laboratorios.html">página 07</a>) como curso. O que é pago é a prova e a ferramenta usada nela.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://portswigger.net/web-security/certification/how-to-prepare">How to prepare for the BSCP</a></td><td>objetivos</td><td>Inglês</td><td>Faz o papel dos objetivos: diz quais laboratórios completar antes da prova (um de nível <em>practitioner</em> de cada tópico, sem olhar a solução, mais os laboratórios recomendados e os "mystery labs").</td></tr>
+      <tr><td><a href="https://portswigger.net/web-security/learning-paths">Learning paths da Web Security Academy</a></td><td>curso</td><td>Inglês</td><td>Os tópicos da Academy organizados numa ordem de estudo. Gratuito com conta.</td></tr>
+      <tr><td><a href="https://portswigger.net/web-security/mystery-lab-challenge">Mystery lab challenge</a></td><td>simulado</td><td>Inglês</td><td>Sorteia um laboratório sem dizer qual é a falha, como na prova. Ótimo para treinar a parte de descobrir o que testar.</td></tr>
+      <tr><td><a href="https://portswigger.net/web-security/certification/practice-exam">Practice exam do BSCP</a></td><td>simulado</td><td>Inglês</td><td>Sem preço na página, pede login na conta da Academy e pode ser refeito quantas vezes quiser. Tem 2 horas e uma aplicação; a prova real tem 4 horas e duas.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn">
+    <span class="callout-title">Custo escondido</span>
+    <p>Para fazer a prova real você precisa de uma licença ativa do <strong>Burp Suite Professional</strong>, que é pago (o <a href="https://portswigger.net/web-security/certification/frequently-asked-questions">FAQ oficial</a> explica o motivo). A versão gratuita, Community, serve para estudar na Academy, mas não para a prova. Coloque essa licença na conta antes de decidir.</p>
+  </div>
+
+  <h2 id="blue-team">Trilha Blue Team / SOC</h2>
+
+  <h3 id="sal1">TryHackMe SAL1</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://tryhackme.com/certification/security-analyst-level-1">Página oficial da SAL1</a></td><td>objetivos</td><td>Inglês</td><td>Descreve o formato e o que é cobrado.</td></tr>
+      <tr><td><a href="https://help.tryhackme.com/en/articles/10625102-general-exam-preparation-advice">Conselhos oficiais de preparação</a></td><td>objetivos</td><td>Inglês</td><td>O TryHackMe recomenda concluir as trilhas Cyber Security 101 e SOC Level 1. Atenção: a SOC Level 1 é, na maior parte, paga por assinatura.</td></tr>
+      <tr><td><a href="https://tryhackme.com/resources/blog/free-defensive-security-training">Lista de salas gratuitas de defesa</a></td><td>curso</td><td>Inglês</td><td>O próprio TryHackMe lista salas gratuitas de SOC: SIEM, análise de logs, phishing, threat intelligence, forense e resposta a incidentes. É o melhor caminho gratuito para cobrir boa parte do conteúdo.</td></tr>
+      <tr><td colspan="4">Simulado gratuito: <strong>não achamos</strong>. O formato da prova é parecido com o SOC simulado das salas pagas.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="btl1">BTL1 (Blue Team Level 1)</h3>
+  <p>A Security Blue Team agora se chama <strong>Centri</strong>, por isso os links abaixo levam a <code>centri.org</code>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.centri.org/certifications/blue-team-level-1">Página oficial da BTL1</a></td><td>objetivos, curso</td><td>Inglês</td><td>Mostra o programa completo (fundamentos, análise de phishing, threat intelligence, forense, SIEM, resposta a incidentes) e oferece uma demonstração gratuita do curso. O curso completo vem junto com a prova e é pago.</td></tr>
+      <tr><td><a href="https://www.centri.org/courses/blue-team-junior-analyst-pathway-bundle">Blue Team Junior Analyst Pathway</a></td><td>curso</td><td>Inglês</td><td>Trilha introdutória gratuita da própria Centri, sugerida por ela para quem ainda não sabe se a BTL1 é o momento certo.</td></tr>
+      <tr><td colspan="4">Para prática no formato da prova, use o Blue Team Labs Online e o CyberDefenders da <a href="07-laboratorios.html">página 07</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="cysa">CompTIA CySA+</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.comptia.org/en-us/certifications/cybersecurity-analyst/v4/">Página oficial da CySA+ V4 (CS0-004)</a></td><td>objetivos</td><td>Inglês</td><td>Versão lançada em 23/06/2026. Estude por ela, não pela CS0-003.</td></tr>
+      <tr><td colspan="4">Curso em vídeo e simulado gratuitos e confiáveis para a CS0-004: <strong>não achamos</strong>. O que encontramos de graça cobre versões antigas. Use os objetivos oficiais, as salas gratuitas do TryHackMe listadas na SAL1 e os laboratórios de SOC da <a href="07-laboratorios.html">página 07</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="sc-200">Microsoft SC-200</h3>
+  <p>Junto com a SC-500, é a certificação com o melhor material gratuito desta página: objetivos, curso e simulado oficiais, tudo de graça e quase tudo em português.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/credentials/certifications/resources/study-guides/sc-200">Guia de estudo do exame SC-200</a></td><td>objetivos</td><td>Português</td><td>Habilidades medidas, com pesos.</td></tr>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/training/courses/sc-200t00">Curso SC-200T00 no Microsoft Learn</a></td><td>curso</td><td>Português</td><td>Trilhas autoguiadas gratuitas sobre Microsoft Defender, Sentinel e KQL. A versão com instrutor é paga.</td></tr>
+      <tr><td><a href="https://learn.microsoft.com/pt-br/credentials/certifications/security-operations-analyst/">Página da certificação SC-200</a></td><td>simulado</td><td>Português (simulado em inglês)</td><td>A seção "Prática para o exame" leva à avaliação prática nova, gratuita e repetível. A avaliação antiga continua em <a href="https://aka.ms/SC200-LearnPA">aka.ms/SC200-LearnPA</a>, mas a Microsoft avisa que ela não é mais atualizada.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="ccna-cyber">Cisco CCNA Cybersecurity (antiga CyberOps Associate)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Tipo</th><th>Idioma</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://learningnetwork.cisco.com/s/ccnacbr-exam-topics">Exam topics da prova 200-201 CCNACBR</a></td><td>objetivos</td><td>Inglês</td><td>Lista oficial de tópicos da prova, publicada pela Cisco.</td></tr>
+      <tr><td><a href="https://www.netacad.com/courses/cyberops-associate">Curso CyberOps Associate na Cisco Networking Academy</a></td><td>curso</td><td>Inglês</td><td>Curso da própria Cisco voltado a esta prova. A Cisco diz que os cursos de cibersegurança da Networking Academy são gratuitos, mas não conseguimos confirmar na página deste curso se a inscrição individual é livre ou se depende de uma instituição parceira.</td></tr>
+      <tr><td><a href="https://www.netacad.com/career-paths/cybersecurity">Trilha Junior Cybersecurity Analyst (NetAcad)</a></td><td>curso</td><td>Inglês</td><td>Gratuita. Prepara para a CCST Cybersecurity, uma certificação de entrada da Cisco, e cobre a base de que a 200-201 precisa.</td></tr>
+      <tr><td><a href="https://www.netacad.com/pt/courses/introduction-to-cybersecurity">Introduction to Cybersecurity (NetAcad)</a></td><td>curso</td><td>Página em português</td><td>Curso curto e gratuito de introdução. Útil como primeiro contato, não como preparação para a prova.</td></tr>
+      <tr><td colspan="4">Simulado gratuito oficial: <strong>não achamos</strong>. O simulado da Cisco (Cisco U.) não aparece como gratuito na página da prova.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="giac">As GIAC, rapidamente (GCSA, GWEB, GCIH)</h2>
+  <p>A <dfn>GIAC</dfn> é a certificadora ligada ao SANS, instituto de treinamento em segurança conhecido pelos cursos caros. Os objetivos são públicos na página de cada prova (seção "Exam Certification Objectives &amp; Outcome Statements"):</p>
+  <ul>
+    <li><a href="https://www.giac.org/certifications/cloud-security-automation-gcsa">GIAC GCSA</a> (DevSecOps e Cloud)</li>
+    <li><a href="https://www.giac.org/certifications/certified-web-application-defender-gweb">GIAC GWEB</a> (AppSec)</li>
+    <li><a href="https://www.giac.org/certifications/certified-incident-handler-gcih">GIAC GCIH</a> (Blue Team)</li>
+  </ul>
+  <p>Curso e simulado gratuitos para as GIAC: <strong>não achamos material gratuito confiável</strong>. Os simulados oficiais são vendidos à parte. Use os objetivos oficiais e os laboratórios da <a href="07-laboratorios.html">página 07</a>, e lembre que, como diz a página 06, essas provas costumam valer quando a empresa paga.</p>
+
+  <h2 id="portugues">E em português?</h2>
+  <p>A maior parte do material gratuito e confiável está em inglês. O que conferimos em português:</p>
+  <ul>
+    <li><strong>Microsoft Learn</strong>: guias de estudo, cursos e páginas da SC-200 e da SC-500 (links acima). É, de longe, o maior acervo gratuito em português desta página.</li>
+    <li><strong>Documentação do Kubernetes</strong>: tem tradução parcial em português.</li>
+    <li><strong>Cisco Networking Academy</strong>: a página do Introduction to Cybersecurity está em português.</li>
+  </ul>
+  <p>Não encontramos um curso gratuito, completo e atualizado de Security+ ou CySA+ em português que pudéssemos recomendar com segurança. Se o inglês é uma barreira, as legendas automáticas do YouTube, com tradução para português, costumam ajudar a acompanhar os vídeos do Professor Messer e do freeCodeCamp. Estudar em inglês também treina o vocabulário técnico que aparece nas vagas e na documentação.</p>
+
+  <div class="callout">
+    <span class="callout-title">Antes de comprar a prova</span>
+    <p>Links e preços mudam. Esta página foi conferida em novembro de 2026; antes de pagar qualquer coisa, abra a página oficial da certificação e confira a versão da prova e o que está incluído na compra (simulador, segunda tentativa, curso).</p>
+  </div>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Em que ordem usar objetivos, vídeo, laboratório e simulado, e por que o simulado fica por último?</summary><p>Objetivos → vídeo → prática → simulado. Os objetivos dizem o que estudar; o vídeo dá a primeira explicação; a prática fixa o conteúdo. O simulado serve para medir se você está pronto. Se você fizer cedo demais, acaba decorando as perguntas em vez de aprender o assunto.</p></details>
+  <details><summary>Um site oferece "as perguntas reais da prova em PDF, grátis". Qual o risco?</summary><p>Isso é um dump. Usar perguntas vazadas viola o acordo de confidencialidade da prova; a certificadora pode anular o resultado, cassar certificações e banir você de provas futuras. E muitos desses sites existem para vender dumps pagos.</p></details>
+  <details><summary>O BSCP tem preparação gratuita. Então dá para tirar a certificação sem gastar nada além da prova?</summary><p>Não. A preparação (Web Security Academy, mystery labs e practice exam) é gratuita, mas a prova real exige uma licença ativa do Burp Suite Professional, que é paga. A versão Community não serve para a prova.</p></details>
+
+  <nav class="pager"><a href="07-laboratorios.html">← Laboratórios e plano</a><a href="./">Voltar ao mapa →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

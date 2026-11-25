@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domínio 1 · Conceitos gerais de segurança · Trilha Sec</title>
+<meta name="description" content="Guia Security+ (SY0-801/SY0-701), Domínio 1: controles de segurança, CIA, AAA, zero trust, deception, gestão de mudanças, criptografia e PKI, com questões originais comentadas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · Domínio 1 · 16%</span>
+  <h1>Domínio 1 · Conceitos gerais de segurança</h1>
+  <p class="lead">O vocabulário que o resto da prova assume que você domina: tipos de controle, CIA e AAA, zero trust, deception, gestão de mudanças e criptografia com PKI.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz como dev</span>
+    <p>Você já usa quase tudo deste domínio sem dar nome: o <code>bcrypt</code> do cadastro é <em>key stretching</em>, o certificado do Let's Encrypt é PKI, o PR com aprovação obrigatória e o rollback do deploy são gestão de mudanças. A prova cobra o <strong>nome exato</strong> de cada peça e a diferença entre peças parecidas. É isso que esta página treina.</p>
+  </div>
+
+  <h2 id="o-que-cobre">O que o domínio cobre e quanto pesa</h2>
+  <p>O Domínio 1 vale <strong>16%</strong> da SY0-801 (na SY0-701 valia 12%). Numa prova de até 90 questões, isso dá algo entre 12 e 15 questões. Parece pouco, mas os conceitos daqui reaparecem dentro de cenários dos outros domínios: uma questão de resposta a incidente (Domínio 4) pode depender de você saber o que é um controle <em>compensatório</em>.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Domínio</th><th>SY0-701</th><th>SY0-801</th></tr></thead>
+    <tbody>
+      <tr><td>1.0 Conceitos gerais de segurança</td><td>12%</td><td><strong>16%</strong></td></tr>
+      <tr><td>2.0 Ameaças, vulnerabilidades e ataques (na 701: "...e mitigações")</td><td>22%</td><td>24%</td></tr>
+      <tr><td>3.0 Arquitetura de segurança</td><td>18%</td><td>19%</td></tr>
+      <tr><td>4.0 Operações de segurança</td><td>28%</td><td>27%</td></tr>
+      <tr><td>5.0 Gestão e supervisão do programa de segurança</td><td>20%</td><td>14%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    <span class="callout-title">Qual lista de objetivos esta página segue</span>
+    <p>A SY0-801 foi lançada em 17/11/2026, e a SY0-701 continua disponível até 11/06/2027. A página oficial da CompTIA para a V8 lista três objetivos no Domínio 1: <strong>1.1</strong> comparar tipos de controles de segurança; <strong>1.2</strong> demonstrar o impacto da gestão de mudanças na segurança; <strong>1.3</strong> explicar a importância de soluções criptográficas adequadas. Os títulos das seções abaixo seguem essa lista da 801.</p>
+    <p>O que eu <strong>não</strong> consegui confirmar em fonte oficial pública foi a lista detalhada de sub-tópicos da 801. Por isso, o conteúdo dentro de cada seção segue a lista detalhada da <strong>SY0-701</strong> (objetivos 1.1 a 1.4), que é bem conhecida. Na 701, os "conceitos fundamentais" (CIA, AAA, zero trust, segurança física, deception, gap analysis) eram um objetivo separado, o 1.2. Um blog independente diz que eles foram absorvidos pelo 1.1 da 801, mas não confirmei isso no documento oficial. Na prática, estude tudo: se você faz a 701, cai exatamente isso; se faz a 801, a base é a mesma.</p>
+  </div>
+
+  <!-- ================================================================ -->
+  <h2 id="controles">1.1 · Tipos de controles de segurança</h2>
+  <p>Um <dfn>controle de segurança</dfn> é qualquer medida que reduz um risco: um firewall, uma política escrita, um guarda na portaria, um treinamento. A prova classifica controles em <strong>dois eixos independentes</strong>, e a maior parte das questões deste tópico é sobre não misturar os dois.</p>
+
+  <h3>Eixo 1: categoria (quem ou o que implementa)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Categoria</th><th>O que é</th><th>Exemplos</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Técnico</dfn> (<em>technical</em>, às vezes chamado de lógico)</td><td>Implementado por tecnologia: hardware, software, configuração.</td><td>Firewall, MFA, criptografia de disco, antivírus, regra de WAF.</td></tr>
+      <tr><td><dfn>Gerencial</dfn> (<em>managerial</em>, ou administrativo)</td><td>Decisões e documentos da gestão sobre como o risco é tratado.</td><td>Política de senhas, avaliação de risco, política de classificação de dados.</td></tr>
+      <tr><td><dfn>Operacional</dfn> (<em>operational</em>)</td><td>Executado por <strong>pessoas</strong> no dia a dia, não por sistemas.</td><td>Treinamento de conscientização, guardas fazendo ronda, procedimento de revisão de acessos feito por alguém.</td></tr>
+      <tr><td><dfn>Físico</dfn> (<em>physical</em>)</td><td>Limita o acesso físico a lugares e equipamentos.</td><td>Cerca, fechadura, crachá, catraca, câmera, cofre.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A diferença entre gerencial e operacional confunde muita gente. Pense assim: <strong>gerencial é o papel</strong> (a política que diz "acessos são revisados a cada trimestre"); <strong>operacional é a pessoa fazendo</strong> (o analista que, de fato, revisa a lista no trimestre).</p>
+
+  <h3>Eixo 2: tipo (o que o controle faz em relação ao incidente)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tipo</th><th>Objetivo</th><th>Exemplos</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Preventivo</dfn></td><td>Impedir que o incidente aconteça.</td><td>Firewall bloqueando porta, fechadura, MFA, validação de input.</td></tr>
+      <tr><td><dfn>Dissuasivo</dfn> (<em>deterrent</em>)</td><td>Desencorajar o atacante, sem impedir de fato.</td><td>Placa "área monitorada", banner de login avisando que acesso indevido é crime, iluminação externa.</td></tr>
+      <tr><td><dfn>Detectivo</dfn> (<em>detective</em>)</td><td>Identificar e registrar que algo aconteceu ou está acontecendo.</td><td>Logs, SIEM, IDS, câmera gravando, revisão de auditoria.</td></tr>
+      <tr><td><dfn>Corretivo</dfn> (<em>corrective</em>)</td><td>Reduzir o dano e voltar ao normal depois do incidente.</td><td>Restaurar backup, aplicar patch após exploração, antivírus colocando arquivo em quarentena.</td></tr>
+      <tr><td><dfn>Compensatório</dfn> (<em>compensating</em>)</td><td>Substituir um controle que não dá para aplicar, com proteção equivalente.</td><td>Sistema legado sem patch isolado numa VLAN própria; dois funcionários conferindo quando não há sistema de aprovação.</td></tr>
+      <tr><td><dfn>Diretivo</dfn> (<em>directive</em>)</td><td>Dizer às pessoas o que fazer (depende de elas obedecerem).</td><td>Política "não use pendrive", placa "uso obrigatório de crachá", procedimento documentado.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Os dois eixos se cruzam. Uma câmera de segurança é <strong>física</strong> (categoria) e <strong>detectiva</strong> (tipo). Uma política de senhas é <strong>gerencial</strong> e <strong>diretiva</strong>. Um bloqueio de conta após cinco tentativas é <strong>técnico</strong> e <strong>preventivo</strong>. Quando a questão pergunta "qual <em>tipo</em> de controle", ela quer o eixo 2; quando pergunta "qual <em>categoria</em>", quer o eixo 1.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Exemplo de dev para os seis tipos</span>
+    <p>Na sua API: rate limit é <strong>preventivo</strong>; a mensagem "tentativas são registradas e reportadas" no login é <strong>dissuasiva</strong>; o alerta no Datadog por pico de 401 é <strong>detectivo</strong>; o runbook de rotacionar a chave vazada é <strong>corretivo</strong>; um WAF na frente de um serviço que não dá para corrigir agora é <strong>compensatório</strong>; o <code>CONTRIBUTING.md</code> dizendo "nunca commite segredo" é <strong>diretivo</strong>.</p>
+  </div>
+
+  <!-- ================================================================ -->
+  <h2 id="conceitos">Conceitos fundamentais (1.2 na SY0-701)</h2>
+  <p>Estes conceitos eram o objetivo 1.2 da SY0-701 ("resumir conceitos fundamentais de segurança"). Eles continuam sendo a base de qualquer questão de cenário, então valem para as duas versões.</p>
+
+  <h3 id="cia">CIA e não repúdio</h3>
+  <p>A <dfn>tríade CIA</dfn> já apareceu em <a href="../01-fundamentos.html#cia">Fundamentos</a>: <strong>confidencialidade</strong> (só quem deve consegue ler), <strong>integridade</strong> (ninguém altera sem ser percebido) e <strong>disponibilidade</strong> (o sistema funciona quando precisa). Na prova, o truque é mapear cada controle para o pilar que ele protege: criptografia → confidencialidade; hash e assinatura → integridade; redundância, backup e proteção contra DDoS → disponibilidade.</p>
+  <p><dfn>Não repúdio</dfn> (<em>non-repudiation</em>) é a garantia de que alguém <strong>não pode negar</strong> que fez uma ação. Ele vem da <strong>assinatura digital</strong>: só o dono da chave privada consegue assinar, então a assinatura prova autoria. Repare que um hash sozinho dá integridade, mas não dá não repúdio, porque qualquer pessoa pode calcular o hash de qualquer arquivo.</p>
+
+  <h3 id="aaa">AAA: autenticação, autorização e contabilização</h3>
+  <ul>
+    <li><dfn>Autenticação</dfn> (<em>authentication</em>): provar quem você é. Senha, MFA, certificado.</li>
+    <li><dfn>Autorização</dfn> (<em>authorization</em>): decidir o que você pode fazer depois de autenticado. O famoso 401 vs 403 do HTTP: 401 é falha de autenticação, 403 é falha de autorização.</li>
+    <li><dfn>Contabilização</dfn> (<em>accounting</em>): registrar o que você fez, quando e por quanto tempo. São os logs de acesso e de auditoria.</li>
+  </ul>
+  <p>A SY0-701 cita dois casos de autenticação: de <strong>pessoas</strong> e de <strong>sistemas</strong>. Autenticar um sistema é, por exemplo, um dispositivo provando sua identidade com um certificado antes de entrar na rede (como o mTLS entre microsserviços). Ela também cita <dfn>modelos de autorização</dfn>: em vez de dar permissão a cada usuário individualmente, você dá permissão a um papel ou grupo (detalhes no Domínio 4, junto com RBAC e ABAC). Um servidor <dfn>RADIUS</dfn> (protocolo clássico que centraliza autenticação de VPN e Wi-Fi corporativo) é o exemplo típico de "servidor AAA".</p>
+
+  <h3 id="gap">Gap analysis</h3>
+  <p><dfn>Análise de lacunas</dfn> (<em>gap analysis</em>) compara <strong>onde você está</strong> com <strong>onde quer chegar</strong>, normalmente usando um framework como referência (NIST CSF, ISO 27001). O resultado é a lista de diferenças e um plano para fechá-las. Exemplo: "a ISO exige revisão de acessos trimestral; hoje não fazemos nenhuma; lacuna: criar o processo". Na prova, se o cenário fala em "comparar o estado atual com um padrão antes de uma certificação", a resposta é gap analysis.</p>
+
+  <h3 id="zero-trust">Zero trust</h3>
+  <p><dfn>Zero trust</dfn> é o modelo que abandona a ideia de "dentro da rede é confiável". Toda requisição é verificada, sempre, independentemente de onde vem. O modelo separa a arquitetura em dois planos, uma ideia que você conhece de Kubernetes ou de redes:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Plano</th><th>Função</th><th>Peças cobradas na prova</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Plano de controle</dfn> (<em>control plane</em>)</td><td>Decide. Define e avalia as políticas.</td><td><strong>Adaptive identity</strong> (a identidade é avaliada com contexto: local, horário, dispositivo, risco); <strong>threat scope reduction</strong> (reduzir o alcance de quem entra); <strong>policy-driven access control</strong>; <dfn>PDP</dfn> (<em>Policy Decision Point</em>), formado pelo <strong>policy engine</strong> (que decide conceder ou negar) e o <strong>policy administrator</strong> (que comunica a decisão e gera tokens/credenciais).</td></tr>
+      <tr><td><dfn>Plano de dados</dfn> (<em>data plane</em>)</td><td>Executa. É por onde o tráfego passa.</td><td><strong>Implicit trust zones</strong> (zonas onde, depois de passar pela verificação, há confiança); <strong>subject/system</strong> (quem pede acesso); <dfn>PEP</dfn> (<em>Policy Enforcement Point</em>): o ponto que bloqueia ou libera o tráfego conforme a decisão do PDP.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Analogia de dev: o PEP é o <strong>middleware</strong> ou o API gateway que barra a requisição; o PDP é o <strong>serviço de autorização</strong> que o middleware consulta (pense num OPA respondendo "allow: true/false"). Quem decide é o PDP; quem aplica é o PEP.</p>
+
+  <h3 id="fisica">Segurança física</h3>
+  <ul>
+    <li><dfn>Bollards</dfn>: pilares baixos que impedem um carro de entrar no prédio. Preventivo, físico.</li>
+    <li><dfn>Vestíbulo de controle de acesso</dfn> (<em>access control vestibule</em>, antigo <em>mantrap</em>): duas portas em sequência, a segunda só abre quando a primeira fecha. Impede <dfn>tailgating</dfn> (alguém entrar colado em quem tem crachá).</li>
+    <li><strong>Cercas</strong>, <strong>iluminação</strong> (dissuasiva e ajuda as câmeras), <strong>guardas</strong> e <strong>crachás de acesso</strong>.</li>
+    <li><strong>Videovigilância</strong> (câmeras com detecção de movimento, reconhecimento de objetos).</li>
+    <li><strong>Sensores</strong>: infravermelho (calor), pressão (peso no piso), micro-ondas (movimento numa área grande) e ultrassônico (som refletido).</li>
+  </ul>
+  <p>Guardas têm uma vantagem que nenhum sensor tem: <strong>julgamento</strong>. Se a questão descreve uma situação ambígua que exige decisão humana (um visitante sem crachá dizendo que é técnico), o controle mais adequado costuma ser um guarda ou recepcionista.</p>
+
+  <h3 id="deception">Deception e disruption (enganar o atacante)</h3>
+  <p>Tecnologias de <dfn>deception</dfn> colocam iscas no ambiente. Como nenhum usuário legítimo tem motivo para tocá-las, qualquer interação é um sinal forte de ataque, com quase zero falso positivo.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Isca</th><th>O que é</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Honeypot</dfn></td><td>Um <strong>sistema</strong> falso que parece valioso.</td><td>Uma VM exposta simulando um servidor SSH vulnerável.</td></tr>
+      <tr><td><dfn>Honeynet</dfn></td><td>Uma <strong>rede</strong> inteira de honeypots.</td><td>Vários servidores, banco e estação falsos interligados.</td></tr>
+      <tr><td><dfn>Honeyfile</dfn></td><td>Um <strong>arquivo</strong> isca com nome atraente.</td><td><code>senhas-producao.xlsx</code> num compartilhamento; abrir dispara alerta.</td></tr>
+      <tr><td><dfn>Honeytoken</dfn></td><td>Um <strong>dado</strong> falso rastreável.</td><td>Uma chave de API AWS falsa num repositório; se alguém usar, você sabe que houve vazamento e de onde.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A dica para separar honeyfile de honeytoken: honeyfile é o <strong>arquivo</strong> (alerta quando alguém abre); honeytoken é o <strong>dado</strong> (alerta quando alguém usa, mesmo fora da sua rede). Um registro falso de cliente inserido no banco também é honeytoken: se ele aparecer à venda num fórum, o banco vazou.</p>
+
+  <!-- ================================================================ -->
+  <h2 id="mudancas">1.2 · Gestão de mudanças e seu impacto na segurança</h2>
+  <p><dfn>Gestão de mudanças</dfn> (<em>change management</em>) é o processo formal para alterar sistemas em produção sem quebrar nada nem abrir brechas. Na SY0-701, o verbo era "explicar a importância"; na 801, a página oficial usa "demonstrar o impacto", o que sugere mais questões de cenário ("o que deveria ter sido feito?"). Por que isso é segurança? Porque mudança não controlada é uma das maiores fontes de incidente: a porta aberta "só para testar" que ninguém fechou, a regra de firewall que derrubou o serviço.</p>
+
+  <h3>Processos de negócio</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Peça</th><th>O que é</th><th>No seu dia a dia</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Processo de aprovação</dfn></td><td>Quem precisa autorizar a mudança antes dela acontecer (muitas vezes um <dfn>CAB</dfn>, <em>Change Advisory Board</em>, comitê que avalia mudanças).</td><td>PR que só faz merge com aprovação de code owner.</td></tr>
+      <tr><td><strong>Ownership</strong></td><td>Quem é o dono do sistema e responde pela mudança.</td><td>O time dono do serviço no catálogo.</td></tr>
+      <tr><td><strong>Stakeholders</strong></td><td>Quem é afetado e precisa ser consultado ou avisado.</td><td>Times que consomem sua API.</td></tr>
+      <tr><td><dfn>Análise de impacto</dfn></td><td>Avaliar o que pode dar errado e o risco de fazer (e de não fazer).</td><td>"Essa migração trava a tabela por 10 min?"</td></tr>
+      <tr><td><strong>Teste dos resultados</strong></td><td>Validar a mudança num ambiente de testes antes de produção.</td><td>Staging, sandbox.</td></tr>
+      <tr><td><dfn>Plano de reversão</dfn> (<em>backout plan</em>)</td><td>Como voltar ao estado anterior se der errado.</td><td>Rollback do deploy, migração <code>down</code>.</td></tr>
+      <tr><td><dfn>Janela de manutenção</dfn></td><td>Horário combinado de menor impacto para executar.</td><td>Deploy de mudança arriscada às 3h de domingo.</td></tr>
+      <tr><td><strong>Procedimento operacional padrão</strong> (<em>SOP</em>)</td><td>Passo a passo documentado de como mudanças são feitas.</td><td>O runbook de deploy.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Implicações técnicas</h3>
+  <ul>
+    <li><strong>Allow lists e deny lists</strong>: uma mudança pode exigir atualizar listas (um binário novo precisa entrar na allow list, senão não roda).</li>
+    <li><strong>Atividades restritas</strong>: o escopo aprovado é o limite. Mudar "só mais uma coisa" fora do escopo é proibido, mesmo que pareça inofensivo.</li>
+    <li><strong>Downtime</strong>, <strong>reinício de serviço</strong> e <strong>reinício de aplicação</strong>: alguns serviços precisam reiniciar para aplicar a mudança, e isso tem impacto.</li>
+    <li><strong>Aplicações legadas</strong>: às vezes ninguém mais entende como funcionam; precisam de cuidado redobrado.</li>
+    <li><strong>Dependências</strong>: mudar um componente pode exigir mudar outro (atualizar uma lib que exige versão nova do runtime).</li>
+  </ul>
+
+  <h3>Documentação e versionamento</h3>
+  <p>Toda mudança precisa <strong>atualizar diagramas</strong>, <strong>atualizar políticas e procedimentos</strong> e ter <dfn>controle de versão</dfn> (saber qual versão está em produção e voltar para a anterior). Documentação desatualizada é um risco por si só: na hora do incidente, o diagrama errado manda a equipe isolar o servidor errado.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Você já faz isso</span>
+    <p>GitOps é gestão de mudanças automatizada: o PR é a solicitação, a revisão é a aprovação, o CI é o teste, o histórico do git é o controle de versão e o <code>git revert</code> é o backout plan. A prova usa vocabulário de ITIL (o framework clássico de gestão de serviços de TI), mas a lógica é a mesma.</p>
+  </div>
+
+  <!-- ================================================================ -->
+  <h2 id="cripto">1.3 · Soluções criptográficas</h2>
+  <p>Este é o maior objetivo do domínio e o que mais gera questões de "par confuso". Se precisar de uma revisão mais leve antes, veja <a href="../01-fundamentos.html#cripto">Criptografia essencial</a> em Fundamentos.</p>
+
+  <h3 id="sim-assim">Simétrica vs assimétrica</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Simétrica</th><th>Assimétrica</th></tr></thead>
+    <tbody>
+      <tr><td>Chaves</td><td>Uma só, compartilhada entre as partes.</td><td>Par: <strong>pública</strong> (pode distribuir) e <strong>privada</strong> (nunca sai do dono).</td></tr>
+      <tr><td>Velocidade</td><td>Rápida, serve para muitos dados.</td><td>Lenta, usada para pouco dado (chaves, assinaturas).</td></tr>
+      <tr><td>Problema</td><td>Como entregar a chave ao outro lado com segurança?</td><td>Resolve a distribuição, mas é cara computacionalmente.</td></tr>
+      <tr><td>Algoritmos</td><td><dfn>AES</dfn> (padrão atual), 3DES (legado), ChaCha20.</td><td><dfn>RSA</dfn>, <dfn>ECC</dfn> (curvas elípticas: mesma segurança com chaves menores, bom para mobile e IoT), Diffie-Hellman.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Na prática os dois trabalham juntos: o TLS usa assimétrica para combinar uma <dfn>chave de sessão</dfn> e depois cifra o tráfego com simétrica (AES). Isso se chama criptografia <dfn>híbrida</dfn>.</p>
+  <p>Quem cifra com o quê? Para <strong>confidencialidade</strong>, você cifra com a chave <strong>pública do destinatário</strong> (só a privada dele abre). Para <strong>assinar</strong>, você usa a <strong>sua chave privada</strong> (qualquer um confere com sua pública). Essa inversão é pergunta clássica.</p>
+  <p><strong>Tamanho de chave</strong> (<em>key length</em>) importa: chave maior = mais combinações = mais difícil de quebrar por força bruta. AES-256 é mais forte que AES-128; RSA abaixo de 2048 bits é considerado fraco.</p>
+
+  <h3 id="troca-chaves">Troca de chaves</h3>
+  <p><dfn>Troca de chaves</dfn> (<em>key exchange</em>) resolve o problema da simétrica: como duas partes que nunca se falaram combinam um segredo por um canal inseguro. Duas formas:</p>
+  <ul>
+    <li><strong>Out-of-band</strong>: a chave vai por outro canal (por telefone, pessoalmente, num pendrive). Seguro, mas não escala.</li>
+    <li><strong>In-band</strong>: pelo próprio canal, protegida por assimétrica. O <dfn>Diffie-Hellman</dfn> (e sua versão com curvas, ECDHE) deixa os dois lados calcularem o mesmo segredo sem nunca transmiti-lo. Com chaves efêmeras (o "E" de ECDHE), cada sessão tem chave nova, o que dá <dfn>perfect forward secrecy</dfn>: roubar a chave privada do servidor amanhã não decifra o tráfego gravado hoje.</li>
+  </ul>
+
+  <h3 id="niveis">Onde cifrar: níveis e estados do dado</h3>
+  <p>A SY0-701 lista níveis de criptografia: <strong>disco inteiro</strong> (<em>full-disk</em>, como BitLocker e FileVault), <strong>partição</strong>, <strong>volume</strong>, <strong>arquivo</strong>, <strong>banco de dados</strong> (o banco inteiro, como TDE) e <strong>registro</strong> (só uma coluna ou linha sensível, como o CPF). Também lista <strong>transporte/comunicação</strong> (TLS, VPN, IPsec). O raciocínio cobrado: quanto mais granular, mais você protege contra quem já tem acesso ao sistema. Criptografia de disco protege o notebook roubado, mas não protege contra o próprio usuário logado ou um app comprometido; criptografia de registro protege a coluna de CPF até contra o DBA.</p>
+
+  <h3 id="hash">Hashing vs criptografia vs codificação</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Hashing</th><th>Criptografia</th><th>Codificação (encoding)</th></tr></thead>
+    <tbody>
+      <tr><td>Reversível?</td><td><strong>Não</strong> (mão única).</td><td>Sim, <strong>com a chave</strong>.</td><td>Sim, <strong>sem chave</strong> nenhuma.</td></tr>
+      <tr><td>Objetivo</td><td>Integridade, guardar senha.</td><td>Confidencialidade.</td><td>Formato/transporte, <strong>não é segurança</strong>.</td></tr>
+      <tr><td>Saída</td><td>Tamanho fixo (SHA-256 sempre dá 256 bits).</td><td>Proporcional à entrada.</td><td>Proporcional à entrada.</td></tr>
+      <tr><td>Exemplos</td><td>SHA-256, SHA-3; MD5 e SHA-1 (quebrados por colisão).</td><td>AES, RSA, ChaCha20.</td><td>Base64, URL encoding, hex.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Um <dfn>hash</dfn> é a "impressão digital" de um dado: mudou um bit, o hash muda completamente. Por isso se publica o SHA-256 de um instalador ao lado do download. Se você já viu um segredo do Kubernetes em Base64 e achou que estava "criptografado", este é o lembrete: Base64 é codificação, qualquer um decodifica.</p>
+
+  <h3 id="salt">Salting e key stretching</h3>
+  <p>Senhas são guardadas como hash, mas um hash simples tem dois problemas. Primeiro, usuários com a mesma senha têm o mesmo hash, e existem <dfn>rainbow tables</dfn> (tabelas pré-calculadas de hash → senha). Segundo, SHA-256 é rápido demais: uma GPU testa bilhões por segundo.</p>
+  <ul>
+    <li><dfn>Salting</dfn>: adicionar um valor aleatório único (o <em>salt</em>) a cada senha antes do hash. Mesma senha → hashes diferentes. Rainbow tables viram inúteis. O salt não é segredo; fica guardado ao lado do hash.</li>
+    <li><dfn>Key stretching</dfn>: aplicar o hash milhares de vezes (ou usar um algoritmo propositalmente lento e que gasta memória) para que cada tentativa custe caro. Exemplos: <strong>PBKDF2</strong>, <strong>bcrypt</strong>, <strong>scrypt</strong>, <strong>Argon2</strong>.</li>
+  </ul>
+  <p>Repare: salting combate <strong>tabelas pré-calculadas</strong>; key stretching combate <strong>força bruta</strong>. A prova pode pedir um ou outro, e a resposta "mais completa" costuma ser os dois juntos.</p>
+
+  <h3 id="assinatura">Assinatura digital</h3>
+  <p>Uma <dfn>assinatura digital</dfn> funciona assim: (1) calcula-se o hash do documento; (2) o hash é cifrado com a <strong>chave privada</strong> do autor; (3) quem recebe decifra com a <strong>chave pública</strong> do autor e compara com o hash que ele mesmo calculou. Se bater, você tem três garantias de uma vez: <strong>integridade</strong> (não mudou), <strong>autenticidade</strong> (veio de quem tem a chave privada) e <strong>não repúdio</strong> (o autor não pode negar). É o que acontece quando você assina commits com GPG ou imagens de contêiner com Sigstore/cosign (visto em <a href="../04-devsecops.html#supply-chain">DevSecOps</a>).</p>
+
+  <h3 id="ferramentas-cripto">Onde as chaves vivem: TPM, HSM, KMS e secure enclave</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Ferramenta</th><th>O que é</th><th>Pista no enunciado</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>TPM</dfn> (<em>Trusted Platform Module</em>)</td><td>Chip soldado na placa-mãe de <strong>um</strong> computador. Guarda chaves daquele aparelho e mede o boot.</td><td>"notebook", "BitLocker", "secure boot", "um único dispositivo".</td></tr>
+      <tr><td><dfn>HSM</dfn> (<em>Hardware Security Module</em>)</td><td>Equipamento dedicado (ou placa) de <strong>alta performance</strong> que gera, guarda e usa chaves para <strong>muitos sistemas</strong>; resistente a adulteração.</td><td>"data center", "CA", "milhares de operações", "a chave nunca sai do hardware".</td></tr>
+      <tr><td><dfn>KMS</dfn> (<em>Key Management System</em>)</td><td>Serviço que gerencia o ciclo de vida das chaves: criação, rotação, revogação, auditoria. Muitas vezes apoiado em HSM.</td><td>"centralizar e rotacionar chaves", AWS KMS, Cloud KMS.</td></tr>
+      <tr><td><dfn>Secure enclave</dfn></td><td>Área isolada <strong>dentro do processador</strong> que roda código e guarda segredos separados do sistema operacional.</td><td>"celular", "biometria", "mesmo se o SO estiver comprometido".</td></tr>
+    </tbody>
+  </table></div>
+  <p><dfn>Key escrow</dfn> é deixar uma cópia da chave com um terceiro confiável (ou com a própria empresa) para recuperar dados se a chave original se perder, ou para acesso legal. Útil, mas é um alvo valioso.</p>
+
+  <h3 id="ofuscacao">Obfuscação: esteganografia, tokenização e mascaramento</h3>
+  <p><dfn>Obfuscação</dfn> é tornar algo difícil de entender ou de achar, sem necessariamente cifrar.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Técnica</th><th>O que faz</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>Esteganografia</dfn></td><td><strong>Esconde</strong> a existência da mensagem dentro de outra coisa.</td><td>Texto escondido nos bits menos significativos de uma imagem; malware que baixa payload "dentro" de um PNG.</td></tr>
+      <tr><td><dfn>Tokenização</dfn></td><td><strong>Substitui</strong> o dado sensível por um valor sem relação matemática com ele; o original fica num cofre separado.</td><td>Gateway de pagamento devolve <code>tok_8f3a...</code> no lugar do número do cartão; sua base nunca vê o cartão.</td></tr>
+      <tr><td><dfn>Mascaramento de dados</dfn></td><td><strong>Esconde parte</strong> do dado na exibição.</td><td><code>***.***.123-45</code> no CPF; <code>**** 4242</code> no cartão.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Tokenização vs criptografia: o dado cifrado pode ser decifrado por quem tem a chave; o token não tem como ser "decifrado", só consultado no cofre. Por isso tokenização tira sistemas do escopo do <dfn>PCI DSS</dfn> (padrão de segurança obrigatório para quem processa cartão).</p>
+
+  <h3 id="blockchain">Blockchain e open public ledger</h3>
+  <p><dfn>Blockchain</dfn> é um registro distribuído em que cada bloco contém o hash do bloco anterior. Alterar um bloco antigo muda o hash dele, que quebra o vínculo com o próximo, e assim por diante: a adulteração fica evidente. O <dfn>open public ledger</dfn> (livro-razão público aberto) é a característica de que todos os participantes têm uma cópia e podem verificar. Na prova, blockchain aparece associado a <strong>integridade</strong> e <strong>transparência</strong>, não a confidencialidade (os dados de um ledger público são justamente públicos).</p>
+
+  <h3 id="pki">PKI e certificados</h3>
+  <p>A <dfn>PKI</dfn> (<em>Public Key Infrastructure</em>) é o conjunto de pessoas, processos e tecnologia que responde: "como sei que esta chave pública é mesmo do <code>meubanco.com</code>?". A resposta é um <dfn>certificado digital</dfn>: um documento (padrão X.509) que liga uma chave pública a uma identidade e é assinado por alguém em quem você confia.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Peça</th><th>O que é</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>CA</dfn> (<em>Certificate Authority</em>)</td><td>Quem assina os certificados. Uma CA <strong>raiz</strong> (<em>root</em>) assina CAs <strong>intermediárias</strong>, que assinam os certificados dos sites. O navegador confia nas raízes que vêm instaladas no sistema.</td></tr>
+      <tr><td><dfn>Raiz de confiança</dfn> (<em>root of trust</em>)</td><td>O ponto de partida inquestionável da cadeia: a CA raiz, ou um TPM/HSM no caso de hardware.</td></tr>
+      <tr><td><dfn>CSR</dfn> (<em>Certificate Signing Request</em>)</td><td>O pedido que você gera e envia à CA. Contém sua <strong>chave pública</strong> e seus dados (domínio, organização). A chave <strong>privada</strong> nunca vai junto.</td></tr>
+      <tr><td><dfn>CRL</dfn> (<em>Certificate Revocation List</em>)</td><td>Lista, publicada pela CA, dos certificados revogados antes de expirar (chave vazou, empresa fechou). O cliente baixa a lista inteira periodicamente.</td></tr>
+      <tr><td><dfn>OCSP</dfn> (<em>Online Certificate Status Protocol</em>)</td><td>Consulta em tempo real do status de <strong>um</strong> certificado. Mais leve que a CRL. Com <dfn>OCSP stapling</dfn>, o próprio servidor anexa a resposta OCSP (assinada pela CA) no handshake, poupando o cliente de consultar a CA.</td></tr>
+      <tr><td><strong>Certificado autoassinado</strong> (<em>self-signed</em>)</td><td>Assinado pela própria chave, sem CA. Ninguém de fora confia por padrão. Serve para laboratório e uso interno.</td></tr>
+      <tr><td><strong>Certificado de terceiro</strong></td><td>Assinado por uma CA pública confiável (DigiCert, Let's Encrypt).</td></tr>
+      <tr><td><dfn>Wildcard</dfn></td><td><code>*.empresa.com</code>: vale para qualquer subdomínio de <strong>um nível</strong> (<code>api.empresa.com</code>, mas não <code>v2.api.empresa.com</code>). Prático, mas se a chave vazar, todos os subdomínios ficam expostos.</td></tr>
+      <tr><td><dfn>SAN</dfn> (<em>Subject Alternative Name</em>)</td><td>Campo que lista vários nomes específicos num só certificado (<code>empresa.com</code>, <code>empresa.com.br</code>, <code>loja.empresa.com</code>).</td></tr>
+    </tbody>
+  </table></div>
+  <p>Ciclo de vida, do ponto de vista de quem administra: gera o par de chaves → cria o CSR → a CA valida e assina → instala o certificado → monitora a validade → renova ou <strong>revoga</strong> se a chave privada vazar. Revogar é o passo que a prova cobra quando o cenário diz "a chave privada do servidor foi comprometida".</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Já viu isso no terminal</span>
+<pre><code><span class="c"># gerar chave privada e CSR (o que vai para a CA é só o .csr)</span>
+openssl req -new -newkey rsa:2048 -nodes -keyout site.key -out site.csr
+<span class="c"># ver a cadeia e o OCSP stapling de um site</span>
+openssl s_client -connect exemplo.com:443 -status &lt; /dev/null</code></pre>
+  </div>
+
+  <!-- ================================================================ -->
+  <h2 id="pegadinhas">Pegadinhas de prova</h2>
+  <div class="callout warn">
+    <span class="callout-title">As confusões clássicas do Domínio 1</span>
+    <ul>
+      <li><strong>Categoria vs tipo</strong>: "físico" é categoria, "detectivo" é tipo. Uma câmera é as duas coisas. Leia se a pergunta quer <em>category</em> ou <em>type</em>.</li>
+      <li><strong>Dissuasivo vs preventivo</strong>: a placa "cão de guarda" desencoraja (dissuasivo); o muro impede (preventivo). Se dá para ignorar e seguir, não é preventivo.</li>
+      <li><strong>Diretivo vs gerencial</strong>: diretivo é tipo (diz o que fazer); gerencial é categoria (vem da gestão). A política de uso aceitável é ambos.</li>
+      <li><strong>Compensatório vs corretivo</strong>: compensatório substitui um controle que <em>não dá</em> para aplicar; corretivo age <em>depois</em> do incidente.</li>
+      <li><strong>Hash não dá não repúdio</strong>; assinatura digital dá. Hash não é criptografia; Base64 não é nada de segurança.</li>
+      <li><strong>Cifrar vs assinar</strong>: cifra-se com a pública do <em>destinatário</em>; assina-se com a privada do <em>remetente</em>.</li>
+      <li><strong>Salt vs key stretching</strong>: salt derrota rainbow table; stretching torna força bruta lenta.</li>
+      <li><strong>TPM vs HSM</strong>: TPM é um chip num aparelho; HSM é um appliance que atende muitos sistemas.</li>
+      <li><strong>CRL vs OCSP</strong>: lista completa baixada periodicamente vs consulta pontual em tempo real.</li>
+      <li><strong>CSR leva a chave pública</strong>, nunca a privada.</li>
+      <li><strong>Tokenização vs mascaramento vs criptografia</strong>: substituir por valor sem relação / esconder parte na tela / transformar com chave reversível.</li>
+      <li><strong>Honeyfile vs honeytoken</strong>: arquivo isca vs dado isca rastreável.</li>
+      <li><strong>PDP vs PEP</strong>: decide vs aplica.</li>
+    </ul>
+  </div>
+
+  <!-- ================================================================ -->
+  <h2 id="prova">Como isso cai na prova</h2>
+  <p>As questões quase nunca pedem uma definição seca ("o que é OCSP?"). Elas descrevem um <strong>cenário</strong> curto e pedem a melhor ação ou a classificação correta. Fique atento a três palavras que mudam a resposta:</p>
+  <ul>
+    <li><strong>BEST</strong> (melhor): várias opções funcionam; escolha a mais completa ou a que resolve a causa raiz.</li>
+    <li><strong>FIRST</strong> (primeiro): a ordem importa; normalmente é a ação que contém o dano ou segue o processo (ex.: no change management, seguir o backout plan antes de improvisar).</li>
+    <li><strong>MOST likely</strong> (mais provável): qual explicação bate melhor com as pistas do enunciado.</li>
+  </ul>
+  <p>Também há <dfn>PBQs</dfn> (<em>performance-based questions</em>): questões interativas, como arrastar controles para a categoria certa ou montar uma cadeia de certificados. Para o Domínio 1, treine classificar rapidamente qualquer controle nos dois eixos.</p>
+
+  <div class="callout">
+    <span class="callout-title">Sobre estas questões</span>
+    <p>As questões abaixo são <strong>originais</strong>, escritas para este guia sobre temas que candidatos relatam com frequência em 2024–2026. Não são questões reais da prova: o conteúdo do exame é protegido por acordo de confidencialidade (NDA), e "dumps" violam esse acordo e podem custar a certificação.</p>
+  </div>
+
+  <details><summary>1. Uma empresa instala na entrada do estacionamento uma placa grande com o texto "Área monitorada 24h por câmeras". Qual TIPO de controle a placa representa?</summary>
+    <p><strong>A)</strong> Detectivo · <strong>B)</strong> Dissuasivo · <strong>C)</strong> Preventivo · <strong>D)</strong> Compensatório</p>
+    <p><strong>Resposta: B.</strong> A placa existe para desencorajar quem pensa em cometer algo; ela, sozinha, não registra nada nem impede ninguém.</p>
+    <p>A está errada porque detectivo é a câmera gravando, não a placa. C está errada porque nada impede fisicamente a entrada. D está errada porque a placa não substitui outro controle que não pôde ser aplicado.</p>
+  </details>
+
+  <details><summary>2. Um servidor industrial roda um sistema operacional sem suporte que não pode ser atualizado sem invalidar a garantia do fabricante. A equipe o coloca numa VLAN isolada, com regras de firewall que permitem apenas o tráfego necessário e monitoramento extra. Como esse conjunto de medidas é classificado?</summary>
+    <p><strong>A)</strong> Corretivo · <strong>B)</strong> Diretivo · <strong>C)</strong> Compensatório · <strong>D)</strong> Dissuasivo</p>
+    <p><strong>Resposta: C.</strong> O controle ideal (aplicar patch) não é viável, então outras medidas entram para dar proteção equivalente. Essa é a definição de compensatório.</p>
+    <p>A está errada porque nenhum incidente aconteceu para ser corrigido. B está errada porque não é uma instrução para pessoas seguirem. D está errada porque o isolamento não serve para desencorajar, e sim para limitar o que um atacante consegue alcançar.</p>
+  </details>
+
+  <details><summary>3. Uma desenvolvedora baixa um binário de uma ferramenta de CLI e quer confirmar duas coisas: que o arquivo não foi alterado e que ele foi realmente publicado pelo fornecedor. Qual mecanismo atende às duas exigências?</summary>
+    <p><strong>A)</strong> Comparar o hash SHA-256 publicado no mesmo site · <strong>B)</strong> Verificar a assinatura digital do binário com a chave pública do fornecedor · <strong>C)</strong> Decodificar o binário em Base64 · <strong>D)</strong> Verificar se o site usa HTTPS</p>
+    <p><strong>Resposta: B.</strong> A assinatura digital prova integridade e autenticidade (só quem tem a chave privada do fornecedor conseguiria assiná-lo).</p>
+    <p>A dá só integridade: se o atacante trocou o binário no site, provavelmente trocou o hash também. C confunde codificação com segurança. D protege o transporte, mas não prova que o arquivo hospedado é o original.</p>
+  </details>
+
+  <details><summary>4. Após um vazamento, descobre-se que as senhas estavam armazenadas como SHA-256 simples, e os atacantes recuperaram a maioria rapidamente usando tabelas pré-calculadas. Qual é a MELHOR correção para o armazenamento de senhas?</summary>
+    <p><strong>A)</strong> Trocar SHA-256 por SHA-512 · <strong>B)</strong> Cifrar as senhas com AES-256 · <strong>C)</strong> Usar um algoritmo como Argon2 ou bcrypt, com salt único por senha · <strong>D)</strong> Codificar os hashes em Base64</p>
+    <p><strong>Resposta: C.</strong> O salt invalida as tabelas pré-calculadas e o algoritmo lento (key stretching) torna a força bruta cara.</p>
+    <p>A continua rápido e sem salt: as tabelas só precisam ser recalculadas. B torna as senhas reversíveis; quem roubar a chave lê todas. D não acrescenta segurança nenhuma.</p>
+  </details>
+
+  <details><summary>5. Durante a janela de manutenção aprovada, uma atualização de firewall faz o serviço de pagamentos parar de responder. O que a equipe deve fazer PRIMEIRO?</summary>
+    <p><strong>A)</strong> Depurar a regra em produção até achar o erro · <strong>B)</strong> Executar o backout plan documentado · <strong>C)</strong> Abrir uma nova solicitação de mudança no CAB · <strong>D)</strong> Atualizar os diagramas de rede</p>
+    <p><strong>Resposta: B.</strong> O plano de reversão existe exatamente para isso: voltar ao estado conhecido e restaurar a disponibilidade.</p>
+    <p>A prolonga a indisponibilidade e faz mudanças fora do escopo aprovado. C é burocracia para depois, não a primeira ação. D é parte do encerramento, não da contenção do problema.</p>
+  </details>
+
+  <details><summary>6. Um time quer que os navegadores verifiquem se o certificado do seu site foi revogado, sem precisar baixar listas grandes e sem que cada visitante consulte a CA. Qual é a MELHOR opção?</summary>
+    <p><strong>A)</strong> Publicar uma CRL com mais frequência · <strong>B)</strong> Habilitar OCSP stapling no servidor · <strong>C)</strong> Trocar por um certificado wildcard · <strong>D)</strong> Usar um certificado autoassinado</p>
+    <p><strong>Resposta: B.</strong> Com stapling, o servidor busca a resposta OCSP assinada pela CA e a entrega no handshake. O cliente não baixa lista nem consulta a CA.</p>
+    <p>A continua exigindo download de lista. C não tem relação com revogação. D faz o navegador desconfiar do site, que é o oposto do objetivo.</p>
+  </details>
+
+  <details><summary>7. Numa arquitetura zero trust, qual componente avalia a identidade, o dispositivo e o contexto da requisição e DECIDE se o acesso será concedido?</summary>
+    <p><strong>A)</strong> Policy Enforcement Point · <strong>B)</strong> Policy engine, parte do Policy Decision Point · <strong>C)</strong> Implicit trust zone · <strong>D)</strong> Subject</p>
+    <p><strong>Resposta: B.</strong> O policy engine, dentro do PDP no plano de controle, toma a decisão. O policy administrator comunica essa decisão.</p>
+    <p>A só aplica a decisão (libera ou bloqueia o tráfego). C é a zona do plano de dados depois da verificação. D é quem pede o acesso.</p>
+  </details>
+
+  <details><summary>8. A equipe de segurança cria num compartilhamento interno um arquivo chamado "folha-pagamento-diretoria.xlsx", sem dados reais, configurado para gerar alerta quando aberto. Como essa técnica se chama?</summary>
+    <p><strong>A)</strong> Honeypot · <strong>B)</strong> Honeynet · <strong>C)</strong> Honeyfile · <strong>D)</strong> Data masking</p>
+    <p><strong>Resposta: C.</strong> É um arquivo isca: ninguém legítimo deveria abri-lo, então qualquer acesso é suspeito.</p>
+    <p>A é um sistema inteiro falso, não um arquivo. B é uma rede de honeypots. D esconde parte de dados reais na exibição, não serve para detecção.</p>
+  </details>
+
+  <!-- ================================================================ -->
+  <h2 id="revisar">Para revisar</h2>
+  <p>O <strong>Professor Messer</strong> tem um curso completo e gratuito em vídeo para Security+. Conferido em 25/11/2026: ele ainda <strong>não</strong> publicou um curso da SY0-801; o site continua com o da SY0-701, que cobre os mesmos sub-tópicos desta página. Use os vídeos abaixo, todos do curso SY0-701:</p>
+  <ul>
+    <li><a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/">Índice do curso SY0-701</a> (todos os vídeos, gratuitos)</li>
+    <li>1.1: <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-controls-sy0-701/">Security Controls</a></li>
+    <li>Conceitos (1.2 na 701): <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/the-cia-triad-sy0-701/">The CIA Triad</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/non-repudiation-sy0-701/">Non-repudiation</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/authentication-authorization-and-accounting-sy0-701/">AAA</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/gap-analysis-sy0-701/">Gap Analysis</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/zero-trust-sy0-701/">Zero Trust</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/physical-security-sy0-701/">Physical Security</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/deception-and-disruption-sy0-701/">Deception and Disruption</a></li>
+    <li>Gestão de mudanças: <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/change-management-sy0-701/">Change Management</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/technical-change-management-sy0-701/">Technical Change Management</a></li>
+    <li>Criptografia: <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/public-key-infrastructure-sy0-701/">Public Key Infrastructure</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/encrypting-data-sy0-701/">Encrypting Data</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/key-exchange-sy0-701/">Key Exchange</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/encryption-technologies-sy0-701/">Encryption Technologies</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/obfuscation-sy0-701/">Obfuscation</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hashing-and-digital-signatures-sy0-701/">Hashing and Digital Signatures</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/blockchain-technology-sy0-701/">Blockchain Technology</a>, <a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/certificates-sy0-701/">Certificates</a></li>
+    <li><a href="https://www.comptia.org/en-us/certifications/security/v8/">Página oficial da Security+ V8 (SY0-801)</a> na CompTIA, com o resumo dos domínios e o link para baixar os objetivos</li>
+  </ul>
+
+  <nav class="pager"><a href="./">← Guia Security+</a><a href="d2-ameacas.html">Domínio 2 · Ameaças →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siglas da prova · Guia Security+ · Trilha Sec</title>
+<meta name="description" content="Glossário das siglas mais cobradas na Security+, agrupadas por tema, com o significado em inglês e uma explicação de uma frase em português.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · Siglas</span>
+  <h1>Siglas da prova</h1>
+  <p class="lead">241 siglas agrupadas por tema, cada uma com o nome em inglês e uma frase em português sobre o que ela é.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que um glossário inteiro</span>
+    <p>A prova raramente explica uma sigla. Ela escreve "configure o DMARC" ou "qual é o ALE?" e espera que você saiba. Muita questão difícil fica fácil quando você lembra o que as letras significam: SLE é <em>single</em> loss, ou seja, um evento; ALE é <em>annualized</em>, ou seja, por ano.</p>
+  </div>
+
+  <h2 id="como-usar">Como usar esta página</h2>
+  <ul>
+    <li>A CompTIA publica uma lista oficial de siglas junto com os objetivos. A da SY0-801 tem 106 siglas, bem menos que a da SY0-701. As siglas desta tabela que estão na lista oficial da SY0-801 levam <strong>★</strong>.</li>
+    <li>As outras são siglas clássicas que aparecem nos objetivos da SY0-701, no texto dos objetivos da SY0-801 ou no dia a dia da área. A CompTIA avisa que a lista oficial não é exaustiva, então estude as duas.</li>
+    <li>O glossário é nosso: as frases em português foram escritas para este guia. Ele não reproduz a lista da CompTIA nem cobre todas as siglas possíveis.</li>
+    <li>Estude cobrindo a coluna do meio e tentando dizer o significado. Depois, a da direita.</li>
+  </ul>
+  <p>Temas: <a href="#crypto">Criptografia e PKI</a> · <a href="#network">Rede, e-mail e sem fio</a> · <a href="#identity">Identidade e acesso</a> · <a href="#ops">Operações, monitoramento e resposta</a> · <a href="#risk">Risco, governança e conformidade</a> · <a href="#cloud">Nuvem, arquitetura e resiliência</a> · <a href="#attacks">Malware e ataques</a></p>
+
+  <h2 id="crypto">Criptografia e PKI</h2>
+  <p>Como dados são cifrados, assinados e como se confia numa chave pública. Base na <a href="../01-fundamentos.html#cripto">página 01</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>AES</strong></td><td>Advanced Encryption Standard</td><td>O algoritmo simétrico padrão: a mesma chave cifra e decifra. AES-256 é o que a prova espera para dados em repouso.</td></tr>
+      <tr><td><strong>3DES</strong></td><td>Triple Data Encryption Standard</td><td>DES aplicado três vezes; obsoleto. Se aparecer numa alternativa, costuma ser a errada.</td></tr>
+      <tr><td><strong>RSA</strong></td><td>Rivest–Shamir–Adleman</td><td>Algoritmo assimétrico (par de chaves pública e privada), usado em assinatura e troca de chaves.</td></tr>
+      <tr><td><strong>ECC</strong></td><td>Elliptic Curve Cryptography</td><td>Criptografia assimétrica com curvas elípticas: mesma segurança que RSA com chaves bem menores, boa para celular e IoT.</td></tr>
+      <tr><td><strong>DH</strong></td><td>Diffie-Hellman</td><td>Protocolo para duas partes combinarem uma chave secreta por um canal público sem nunca enviá-la.</td></tr>
+      <tr><td><strong>ECDHE</strong></td><td>Elliptic Curve Diffie-Hellman Ephemeral</td><td>Diffie-Hellman com curvas e chaves descartáveis por sessão; é o que dá forward secrecy ao TLS moderno.</td></tr>
+      <tr><td><strong>PFS</strong></td><td>Perfect Forward Secrecy</td><td>Garantia de que roubar a chave privada do servidor amanhã não decifra o tráfego gravado hoje.</td></tr>
+      <tr><td><strong>SHA</strong></td><td>Secure Hash Algorithm</td><td>Família de funções de hash; SHA-256 é o padrão atual, SHA-1 é considerado fraco.</td></tr>
+      <tr><td><strong>MD5</strong></td><td>Message Digest 5</td><td>Hash antigo e quebrado para segurança (colisões); só serve para checagem não adversarial.</td></tr>
+      <tr><td><strong>HMAC</strong></td><td>Hash-based Message Authentication Code</td><td>Hash combinado com uma chave secreta: prova integridade e que quem gerou tinha a chave (é o que assina um JWT HS256).</td></tr>
+      <tr><td><strong>PBKDF2</strong></td><td>Password-Based Key Derivation Function 2</td><td>Função que deriva chave de senha repetindo o hash muitas vezes, para tornar a força bruta cara.</td></tr>
+      <tr><td><strong>PKI</strong> ★</td><td>Public Key Infrastructure</td><td>O conjunto de CAs, certificados, políticas e processos que permite confiar em chaves públicas.</td></tr>
+      <tr><td><strong>CA</strong></td><td>Certificate Authority</td><td>Entidade que assina certificados e atesta que uma chave pública pertence a um nome.</td></tr>
+      <tr><td><strong>RA</strong></td><td>Registration Authority</td><td>Quem verifica a identidade do solicitante antes de a CA emitir o certificado.</td></tr>
+      <tr><td><strong>CSR</strong> ★</td><td>Certificate Signing Request</td><td>O pedido, com a chave pública e os dados do titular, enviado à CA para gerar um certificado.</td></tr>
+      <tr><td><strong>CRL</strong> ★</td><td>Certificate Revocation List</td><td>Lista publicada pela CA com os certificados revogados antes de expirar.</td></tr>
+      <tr><td><strong>OCSP</strong> ★</td><td>Online Certificate Status Protocol</td><td>Consulta em tempo real do status de um certificado; com stapling, o servidor já entrega a resposta.</td></tr>
+      <tr><td><strong>TLS</strong> ★</td><td>Transport Layer Security</td><td>O protocolo que protege o HTTPS e quase todo tráfego cifrado em trânsito; use 1.2 ou 1.3.</td></tr>
+      <tr><td><strong>SSL</strong></td><td>Secure Sockets Layer</td><td>O antecessor do TLS, todo obsoleto; o nome ainda sobrevive em "certificado SSL".</td></tr>
+      <tr><td><strong>IPSec</strong> ★</td><td>Internet Protocol Security</td><td>Conjunto de protocolos que cifra e autentica pacotes IP; base de muitas VPNs site a site.</td></tr>
+      <tr><td><strong>S/MIME</strong></td><td>Secure/Multipurpose Internet Mail Extensions</td><td>Padrão para assinar e cifrar e-mails com certificados X.509.</td></tr>
+      <tr><td><strong>PGP</strong></td><td>Pretty Good Privacy</td><td>Padrão de cifra e assinatura de e-mails e arquivos baseado em "teia de confiança"; GPG é a implementação livre.</td></tr>
+      <tr><td><strong>HSM</strong></td><td>Hardware Security Module</td><td>Equipamento dedicado que gera e guarda chaves sem deixá-las sair; usado por CAs e bancos.</td></tr>
+      <tr><td><strong>TPM</strong></td><td>Trusted Platform Module</td><td>Chip na placa-mãe que guarda chaves e mede o boot; é o que permite o BitLocker sem digitar senha.</td></tr>
+      <tr><td><strong>KMS</strong></td><td>Key Management Service</td><td>Serviço (geralmente da nuvem) que gera, guarda, gira e controla o uso de chaves.</td></tr>
+      <tr><td><strong>FDE</strong></td><td>Full Disk Encryption</td><td>Cifrar o disco inteiro; protege dados se o notebook for roubado desligado.</td></tr>
+      <tr><td><strong>SED</strong></td><td>Self-Encrypting Drive</td><td>Disco que cifra tudo sozinho no próprio hardware.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="network">Rede, e-mail e sem fio</h2>
+  <p>O que está na <a href="../02-redes-e-linux.html">página 02</a>, com os nomes que a prova usa.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>IP</strong> ★</td><td>Internet Protocol</td><td>O protocolo de endereçamento e roteamento de pacotes na internet.</td></tr>
+      <tr><td><strong>TCP</strong></td><td>Transmission Control Protocol</td><td>Transporte com conexão, ordem e retransmissão (handshake SYN, SYN-ACK, ACK).</td></tr>
+      <tr><td><strong>UDP</strong></td><td>User Datagram Protocol</td><td>Transporte sem conexão nem garantia de entrega; usado em DNS, VoIP, streaming.</td></tr>
+      <tr><td><strong>ICMP</strong></td><td>Internet Control Message Protocol</td><td>Mensagens de controle e erro da rede; é o que o ping usa.</td></tr>
+      <tr><td><strong>ARP</strong></td><td>Address Resolution Protocol</td><td>Descobre o endereço MAC de um IP na rede local; alvo do ARP spoofing.</td></tr>
+      <tr><td><strong>MAC</strong></td><td>Media Access Control</td><td>Endereço físico da placa de rede. Cuidado: em controle de acesso, MAC é Mandatory Access Control (veja Identidade).</td></tr>
+      <tr><td><strong>DNS</strong> ★</td><td>Domain Name System</td><td>Traduz nomes em IPs; alvo de envenenamento de cache e de túnel para exfiltração.</td></tr>
+      <tr><td><strong>DNSSEC</strong></td><td>Domain Name System Security Extensions</td><td>Assinaturas digitais nas respostas DNS para impedir respostas forjadas.</td></tr>
+      <tr><td><strong>DHCP</strong> ★</td><td>Dynamic Host Configuration Protocol</td><td>Entrega IP, gateway e DNS automaticamente; um servidor DHCP falso (rogue) desvia o tráfego.</td></tr>
+      <tr><td><strong>NTP</strong></td><td>Network Time Protocol</td><td>Sincroniza relógios; sem ele, correlacionar logs numa investigação vira adivinhação.</td></tr>
+      <tr><td><strong>LAN</strong> ★</td><td>Local Area Network</td><td>Rede local, como a de um escritório.</td></tr>
+      <tr><td><strong>VLAN</strong></td><td>Virtual Local Area Network</td><td>Divide um switch em redes lógicas separadas; ferramenta básica de segmentação.</td></tr>
+      <tr><td><strong>WAN</strong></td><td>Wide Area Network</td><td>Rede que liga locais distantes.</td></tr>
+      <tr><td><strong>SD-WAN</strong></td><td>Software-Defined Wide Area Network</td><td>WAN gerenciada por software, que escolhe o melhor link (MPLS, internet, 4G) por aplicação.</td></tr>
+      <tr><td><strong>SDN</strong></td><td>Software-Defined Networking</td><td>Rede em que o plano de controle é centralizado e programável, separado do encaminhamento.</td></tr>
+      <tr><td><strong>VPN</strong> ★</td><td>Virtual Private Network</td><td>Túnel cifrado sobre uma rede não confiável.</td></tr>
+      <tr><td><strong>NAT</strong></td><td>Network Address Translation</td><td>Traduz IPs privados em públicos na borda; esconde a rede interna, mas não é firewall.</td></tr>
+      <tr><td><strong>ACL</strong></td><td>Access Control List</td><td>Lista ordenada de regras permitir/negar, em firewall, roteador ou sistema de arquivos.</td></tr>
+      <tr><td><strong>DMZ</strong></td><td>Demilitarized Zone</td><td>Rede intermediária para servidores expostos à internet, separada da rede interna; também chamada de screened subnet.</td></tr>
+      <tr><td><strong>NGFW</strong></td><td>Next-Generation Firewall</td><td>Firewall que entende aplicação (camada 7), usuário e ameaças, não só IP e porta.</td></tr>
+      <tr><td><strong>UTM</strong> ★</td><td>Unified Threat Management</td><td>Um só equipamento com firewall, IPS, antivírus, filtro web e VPN; comum em empresas pequenas.</td></tr>
+      <tr><td><strong>WAF</strong> ★</td><td>Web Application Firewall</td><td>Firewall de camada 7 na frente de aplicações web, que bloqueia SQLi, XSS e afins.</td></tr>
+      <tr><td><strong>IDS</strong> ★</td><td>Intrusion Detection System</td><td>Detecta e alerta sobre tráfego ou atividade suspeita, sem bloquear.</td></tr>
+      <tr><td><strong>IPS</strong> ★</td><td>Intrusion Prevention System</td><td>Como o IDS, mas fica no caminho do tráfego e bloqueia.</td></tr>
+      <tr><td><strong>NIDS</strong> ★</td><td>Network-based Intrusion Detection System</td><td>IDS que observa o tráfego da rede (por porta espelhada ou tap).</td></tr>
+      <tr><td><strong>NIPS</strong> ★</td><td>Network-based Intrusion Prevention System</td><td>IPS em linha na rede.</td></tr>
+      <tr><td><strong>HIDS</strong> ★</td><td>Host-based Intrusion Detection System</td><td>IDS que roda na máquina e vigia arquivos, logs e processos.</td></tr>
+      <tr><td><strong>HIPS</strong> ★</td><td>Host-based Intrusion Prevention System</td><td>HIDS que também bloqueia ações na máquina.</td></tr>
+      <tr><td><strong>NAC</strong></td><td>Network Access Control</td><td>Só deixa o dispositivo entrar na rede depois de autenticar e checar postura (patch, antivírus).</td></tr>
+      <tr><td><strong>EAP</strong></td><td>Extensible Authentication Protocol</td><td>Framework de autenticação usado pelo 802.1X em redes com e sem fio.</td></tr>
+      <tr><td><strong>SNMP</strong> ★</td><td>Simple Network Management Protocol</td><td>Monitora e configura equipamentos de rede; use a versão 3, que tem autenticação e cifra.</td></tr>
+      <tr><td><strong>SSH</strong></td><td>Secure Shell</td><td>Acesso remoto cifrado a terminal; substituto seguro do Telnet (porta 22).</td></tr>
+      <tr><td><strong>RDP</strong></td><td>Remote Desktop Protocol</td><td>Área de trabalho remota do Windows (porta 3389); exposto na internet, é porta de entrada clássica de ransomware.</td></tr>
+      <tr><td><strong>VNC</strong> ★</td><td>Virtual Network Computing</td><td>Compartilhamento de tela remoto multiplataforma; mesmo cuidado que o RDP.</td></tr>
+      <tr><td><strong>SFTP</strong></td><td>SSH File Transfer Protocol</td><td>Transferência de arquivos por dentro do SSH.</td></tr>
+      <tr><td><strong>FTPS</strong></td><td>File Transfer Protocol Secure</td><td>FTP com TLS. Não confunda com SFTP, que é outro protocolo.</td></tr>
+      <tr><td><strong>LDAPS</strong></td><td>Lightweight Directory Access Protocol over SSL/TLS</td><td>LDAP cifrado (porta 636).</td></tr>
+      <tr><td><strong>IPFIX</strong> ★</td><td>Internet Protocol Flow Information Export</td><td>Padrão aberto de registros de fluxo (quem falou com quem, quanto), derivado do NetFlow.</td></tr>
+      <tr><td><strong>NIC</strong> ★</td><td>Network Interface Card</td><td>A placa de rede.</td></tr>
+      <tr><td><strong>SFP</strong> ★</td><td>Small Form-factor Pluggable</td><td>Módulo removível que dá a uma porta de switch a interface de fibra ou cobre.</td></tr>
+      <tr><td><strong>GBIC</strong> ★</td><td>Gigabit Interface Converter</td><td>Módulo transceptor mais antigo e maior, antecessor do SFP.</td></tr>
+      <tr><td><strong>WPA</strong></td><td>Wi-Fi Protected Access</td><td>Padrão de segurança Wi-Fi; WPA3 é o atual, WPA2 ainda é comum.</td></tr>
+      <tr><td><strong>SAE</strong></td><td>Simultaneous Authentication of Equals</td><td>O handshake do WPA3-Personal, que resiste a ataque de dicionário offline.</td></tr>
+      <tr><td><strong>PSK</strong></td><td>Pre-Shared Key</td><td>Senha única compartilhada da rede Wi-Fi (modo Personal).</td></tr>
+      <tr><td><strong>WPS</strong></td><td>Wi-Fi Protected Setup</td><td>Pareamento por botão ou PIN; o PIN é vulnerável a força bruta e deve ser desativado.</td></tr>
+      <tr><td><strong>SSID</strong></td><td>Service Set Identifier</td><td>O nome da rede Wi-Fi.</td></tr>
+      <tr><td><strong>WIPS</strong> ★</td><td>Wireless Intrusion Prevention System</td><td>Detecta e bloqueia pontos de acesso falsos e ataques Wi-Fi.</td></tr>
+      <tr><td><strong>RF</strong> ★</td><td>Radio Frequency</td><td>Sinal de rádio; vetor de interferência (jamming) e de interceptação.</td></tr>
+      <tr><td><strong>NFC</strong> ★</td><td>Near-field Communication</td><td>Comunicação a poucos centímetros, usada em pagamento por aproximação e crachás.</td></tr>
+      <tr><td><strong>RFID</strong></td><td>Radio-Frequency Identification</td><td>Etiquetas lidas por rádio, comuns em crachás; podem ser clonadas.</td></tr>
+      <tr><td><strong>SPF</strong> ★</td><td>Sender Policy Framework</td><td>Registro DNS que lista quais servidores podem enviar e-mail pelo seu domínio.</td></tr>
+      <tr><td><strong>DKIM</strong> ★</td><td>DomainKeys Identified Mail</td><td>Assinatura digital no cabeçalho do e-mail, verificada pela chave pública no DNS.</td></tr>
+      <tr><td><strong>DMARC</strong> ★</td><td>Domain-based Message Authentication, Reporting, and Conformance</td><td>Diz ao destinatário o que fazer quando SPF/DKIM falham (none, quarantine, reject) e envia relatórios.</td></tr>
+      <tr><td><strong>BIMI</strong> ★</td><td>Brand Indicators for Message Identification</td><td>Mostra o logotipo da marca em e-mails que passam no DMARC.</td></tr>
+      <tr><td><strong>SMS</strong> ★</td><td>Short Message Service</td><td>Mensagem de texto; vetor de smishing e um segundo fator fraco (SIM swap).</td></tr>
+      <tr><td><strong>RCS</strong> ★</td><td>Rich Communication Services</td><td>O sucessor do SMS, com recursos de mensageiro; também vetor de phishing.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="identity">Identidade e acesso</h2>
+  <p>Quem é você, o que pode fazer e como isso fica registrado. Ponte com a <a href="../01-fundamentos.html#auth">página 01</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>AAA</strong> ★</td><td>Authentication, Authorization, and Accounting</td><td>Provar quem é, decidir o que pode e registrar o que fez.</td></tr>
+      <tr><td><strong>IAM</strong></td><td>Identity and Access Management</td><td>A disciplina (e as ferramentas) de gerenciar identidades e permissões.</td></tr>
+      <tr><td><strong>PAM</strong></td><td>Privileged Access Management</td><td>Controle de contas administrativas: cofre de senhas, acesso just-in-time, gravação de sessão.</td></tr>
+      <tr><td><strong>MFA</strong> ★</td><td>Multifactor Authentication</td><td>Dois ou mais fatores de tipos diferentes: algo que você sabe, tem ou é.</td></tr>
+      <tr><td><strong>2FA</strong></td><td>Two-Factor Authentication</td><td>MFA com exatamente dois fatores.</td></tr>
+      <tr><td><strong>OTP</strong> ★</td><td>One-time Password</td><td>Código que vale uma vez só.</td></tr>
+      <tr><td><strong>TOTP</strong></td><td>Time-based One-Time Password</td><td>OTP que muda a cada 30 segundos, como no Google Authenticator.</td></tr>
+      <tr><td><strong>HOTP</strong></td><td>HMAC-based One-Time Password</td><td>OTP baseado num contador que avança a cada uso.</td></tr>
+      <tr><td><strong>FIDO</strong></td><td>Fast IDentity Online</td><td>Padrões (FIDO2, WebAuthn) de autenticação com chave criptográfica, base das passkeys; resiste a phishing.</td></tr>
+      <tr><td><strong>SSO</strong> ★</td><td>Single Sign-on</td><td>Um login dá acesso a vários sistemas.</td></tr>
+      <tr><td><strong>IdP</strong></td><td>Identity Provider</td><td>O sistema que autentica o usuário e emite a asserção ou o token (Entra ID, Okta, Keycloak).</td></tr>
+      <tr><td><strong>SAML</strong> ★</td><td>Security Assertion Markup Language</td><td>Padrão XML de SSO corporativo: o IdP envia uma asserção assinada à aplicação.</td></tr>
+      <tr><td><strong>OAuth</strong> ★</td><td>Open Authorization</td><td>Padrão de autorização delegada: um app recebe um token para agir em seu nome sem ver sua senha.</td></tr>
+      <tr><td><strong>OIDC</strong></td><td>OpenID Connect</td><td>Camada de autenticação sobre o OAuth 2.0 (o "Entrar com Google").</td></tr>
+      <tr><td><strong>LDAP</strong> ★</td><td>Lightweight Directory Access Protocol</td><td>Protocolo para consultar diretórios de usuários e grupos, como o Active Directory.</td></tr>
+      <tr><td><strong>RADIUS</strong></td><td>Remote Authentication Dial-In User Service</td><td>Protocolo AAA centralizado, comum em Wi-Fi corporativo e VPN.</td></tr>
+      <tr><td><strong>TACACS+</strong></td><td>Terminal Access Controller Access-Control System Plus</td><td>Protocolo AAA da Cisco para administrar equipamentos de rede; cifra o pacote inteiro.</td></tr>
+      <tr><td><strong>SCIM</strong></td><td>System for Cross-domain Identity Management</td><td>Padrão para criar e remover contas automaticamente em apps SaaS a partir do IdP.</td></tr>
+      <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control</td><td>Permissão por papel ("financeiro", "dev").</td></tr>
+      <tr><td><strong>ABAC</strong></td><td>Attribute-Based Access Control</td><td>Permissão por atributos (departamento, horário, local, sensibilidade do dado).</td></tr>
+      <tr><td><strong>DAC</strong></td><td>Discretionary Access Control</td><td>O dono do recurso decide quem acessa, como permissões de arquivo no Linux.</td></tr>
+      <tr><td><strong>MAC</strong></td><td>Mandatory Access Control</td><td>O sistema impõe acesso por rótulos de classificação, e o usuário não muda; SELinux é um exemplo.</td></tr>
+      <tr><td><strong>gMSA</strong> ★</td><td>Group Managed Service Account</td><td>Conta de serviço do Active Directory cuja senha o próprio AD gera e gira.</td></tr>
+      <tr><td><strong>GPO</strong></td><td>Group Policy Object</td><td>Conjunto de configurações aplicado pelo Active Directory a máquinas e usuários Windows.</td></tr>
+      <tr><td><strong>SELinux</strong> ★</td><td>Security-Enhanced Linux</td><td>Módulo de controle de acesso obrigatório do Linux que confina processos.</td></tr>
+      <tr><td><strong>CAPTCHA</strong> ★</td><td>Completely Automated Public Turing test to tell Computers and Humans Apart</td><td>Desafio para separar humanos de bots.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="ops">Operações, monitoramento e resposta</h2>
+  <p>O dia a dia do SOC e da gestão de vulnerabilidades, das páginas <a href="../04-devsecops.html">04</a> e <a href="../05-blue-team.html">05</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SOC</strong> ★</td><td>Security Operations Center</td><td>O time (e o lugar) que monitora e responde a alertas. Cuidado: SOC 2 é outra coisa (veja Risco).</td></tr>
+      <tr><td><strong>SIEM</strong> ★</td><td>Security Information and Event Management</td><td>Centraliza logs, correlaciona eventos e gera alertas.</td></tr>
+      <tr><td><strong>SOAR</strong> ★</td><td>Security Orchestration, Automation, and Response</td><td>Automatiza respostas com playbooks e integra ferramentas.</td></tr>
+      <tr><td><strong>EDR</strong> ★</td><td>Endpoint Detection and Response</td><td>Agente na máquina que registra comportamento, detecta e permite isolar.</td></tr>
+      <tr><td><strong>XDR</strong> ★</td><td>Extended Detection and Response</td><td>EDR estendido para correlacionar endpoint, rede, e-mail, nuvem e identidade.</td></tr>
+      <tr><td><strong>MDR</strong></td><td>Managed Detection and Response</td><td>Detecção e resposta como serviço terceirizado, com analistas do fornecedor.</td></tr>
+      <tr><td><strong>DLP</strong> ★</td><td>Data Loss Prevention</td><td>Detecta e bloqueia dado sensível saindo por e-mail, upload, USB.</td></tr>
+      <tr><td><strong>MDM</strong> ★</td><td>Mobile Device Management</td><td>Gerencia e impõe políticas em celulares e tablets (senha, cifra, apagar remotamente).</td></tr>
+      <tr><td><strong>CSPM</strong> ★</td><td>Cloud Security Posture Management</td><td>Varre contas de nuvem continuamente atrás de configurações erradas.</td></tr>
+      <tr><td><strong>UEBA</strong></td><td>User and Entity Behavior Analytics</td><td>Aprende o comportamento normal de usuários e máquinas e alerta sobre desvios.</td></tr>
+      <tr><td><strong>FIM</strong></td><td>File Integrity Monitoring</td><td>Alerta quando arquivos críticos mudam, comparando hashes.</td></tr>
+      <tr><td><strong>SCAP</strong> ★</td><td>Security Content Automation Protocol</td><td>Conjunto de padrões do NIST para automatizar checagem de configuração e vulnerabilidades.</td></tr>
+      <tr><td><strong>CVE</strong> ★</td><td>Common Vulnerabilities and Exposures</td><td>O identificador público de uma vulnerabilidade específica (CVE-2021-44228).</td></tr>
+      <tr><td><strong>CWE</strong> ★</td><td>Common Weakness Enumeration</td><td>O catálogo de tipos de falha (CWE-89 é SQL injection).</td></tr>
+      <tr><td><strong>CVSS</strong> ★</td><td>Common Vulnerability Scoring System</td><td>A nota de 0 a 10 da gravidade técnica de uma vulnerabilidade.</td></tr>
+      <tr><td><strong>NVD</strong> ★</td><td>National Vulnerability Database</td><td>A base do NIST que enriquece os CVEs com CVSS e produtos afetados.</td></tr>
+      <tr><td><strong>IoC</strong></td><td>Indicator of Compromise</td><td>Evidência de invasão: hash, IP, domínio, chave de registro.</td></tr>
+      <tr><td><strong>TTP</strong></td><td>Tactics, Techniques, and Procedures</td><td>Como um atacante opera; mais estável e útil para detecção que IoCs.</td></tr>
+      <tr><td><strong>OSINT</strong></td><td>Open-Source Intelligence</td><td>Informação coletada de fontes públicas; base do reconhecimento passivo.</td></tr>
+      <tr><td><strong>IR</strong></td><td>Incident Response</td><td>O processo de preparar, detectar, conter, erradicar, recuperar e aprender.</td></tr>
+      <tr><td><strong>CSIRT</strong></td><td>Computer Security Incident Response Team</td><td>O time formal de resposta a incidentes.</td></tr>
+      <tr><td><strong>PIR</strong> ★</td><td>Post-incident Reporting</td><td>O relatório depois do incidente (no uso comum, post-incident review), com causa raiz e lições.</td></tr>
+      <tr><td><strong>RCA</strong></td><td>Root Cause Analysis</td><td>Investigar a causa de fundo, não só o sintoma.</td></tr>
+      <tr><td><strong>MTTD</strong></td><td>Mean Time to Detect</td><td>Tempo médio entre o início de um ataque e a detecção.</td></tr>
+      <tr><td><strong>SOP</strong> ★</td><td>Standard Operating Procedure</td><td>Procedimento operacional padrão, escrito e repetível.</td></tr>
+      <tr><td><strong>CAB</strong> ★</td><td>Change Advisory Board</td><td>Grupo que avalia e aprova mudanças em produção.</td></tr>
+      <tr><td><strong>CI/CD</strong> ★</td><td>Continuous Integration and Continuous Deployment</td><td>O pipeline que testa e publica código automaticamente; também alvo de ataque.</td></tr>
+      <tr><td><strong>IaC</strong> ★</td><td>Infrastructure as Code</td><td>Infraestrutura descrita em arquivos versionados (Terraform), que podem ser escaneados.</td></tr>
+      <tr><td><strong>SAST</strong></td><td>Static Application Security Testing</td><td>Análise do código-fonte sem executar.</td></tr>
+      <tr><td><strong>DAST</strong></td><td>Dynamic Application Security Testing</td><td>Teste da aplicação rodando, de fora, como um atacante.</td></tr>
+      <tr><td><strong>SCA</strong></td><td>Software Composition Analysis</td><td>Encontra dependências com vulnerabilidades conhecidas e problemas de licença.</td></tr>
+      <tr><td><strong>SBOM</strong></td><td>Software Bill of Materials</td><td>A lista de todos os componentes de um software, com versões.</td></tr>
+      <tr><td><strong>IPAM</strong></td><td>IP Address Management</td><td>Inventário e controle dos endereços IP; ajuda a achar dispositivos desconhecidos.</td></tr>
+      <tr><td><strong>LMS</strong> ★</td><td>Learning Management System</td><td>Plataforma de cursos online usada para treinamento de conscientização.</td></tr>
+      <tr><td><strong>HR</strong> ★</td><td>Human Resources</td><td>RH; parte interessada em investigações e em onboarding e offboarding.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="risk">Risco, governança e conformidade</h2>
+  <p>O vocabulário do <a href="d5-gestao.html">domínio 5</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CIA</strong> ★</td><td>Confidentiality, Integrity, and Availability</td><td>A tríade do que a segurança protege.</td></tr>
+      <tr><td><strong>GRC</strong></td><td>Governance, Risk, and Compliance</td><td>A área que junta governança, gestão de risco e conformidade.</td></tr>
+      <tr><td><strong>SLE</strong> ★</td><td>Single Loss Expectancy</td><td>Perda esperada num único evento: AV × EF.</td></tr>
+      <tr><td><strong>ALE</strong> ★</td><td>Annualized Loss Expectancy</td><td>Perda esperada por ano: SLE × ARO.</td></tr>
+      <tr><td><strong>ARO</strong> ★</td><td>Annualized Rate of Occurrence</td><td>Quantas vezes por ano o evento deve ocorrer (uma vez a cada 4 anos = 0,25).</td></tr>
+      <tr><td><strong>AV</strong></td><td>Asset Value</td><td>Valor do ativo, na conta de risco. Fora dela, AV costuma ser antivírus.</td></tr>
+      <tr><td><strong>EF</strong></td><td>Exposure Factor</td><td>Porcentagem do ativo perdida num evento.</td></tr>
+      <tr><td><strong>KRI</strong></td><td>Key Risk Indicator</td><td>Métrica que avisa que um risco está crescendo.</td></tr>
+      <tr><td><strong>BIA</strong></td><td>Business Impact Analysis</td><td>Análise de quanto cada processo parado dói e em quanto tempo; define RTO e RPO.</td></tr>
+      <tr><td><strong>RTO</strong> ★</td><td>Recovery Time Objective</td><td>Tempo máximo até voltar a funcionar.</td></tr>
+      <tr><td><strong>RPO</strong> ★</td><td>Recovery Point Objective</td><td>Quantidade máxima de dados que se aceita perder, medida em tempo.</td></tr>
+      <tr><td><strong>MTTR</strong> ★</td><td>Mean Time to Repair</td><td>Tempo médio para consertar. (Em resposta a incidentes, também "to respond/recover".)</td></tr>
+      <tr><td><strong>MTBF</strong> ★</td><td>Mean Time Between Failures</td><td>Tempo médio de funcionamento entre falhas; quanto maior, mais confiável.</td></tr>
+      <tr><td><strong>BCP</strong></td><td>Business Continuity Plan</td><td>Como o negócio continua operando durante uma interrupção.</td></tr>
+      <tr><td><strong>DRP</strong></td><td>Disaster Recovery Plan</td><td>Como restaurar a TI depois de um desastre.</td></tr>
+      <tr><td><strong>AUP</strong> ★</td><td>Acceptable Use Policy</td><td>O que o funcionário pode e não pode fazer com os recursos da empresa.</td></tr>
+      <tr><td><strong>BYOD</strong> ★</td><td>Bring Your Own Device</td><td>Política para uso de dispositivos pessoais no trabalho.</td></tr>
+      <tr><td><strong>NDA</strong> ★</td><td>Non-disclosure Agreement</td><td>Acordo de confidencialidade.</td></tr>
+      <tr><td><strong>MOU</strong> ★</td><td>Memorandum of Understanding</td><td>Declaração de intenção de cooperar; em geral não vinculante.</td></tr>
+      <tr><td><strong>MOA</strong> ★</td><td>Memorandum of Agreement</td><td>Acordo mais formal que o MOU, com responsabilidades de cada parte.</td></tr>
+      <tr><td><strong>MSA</strong> ★</td><td>Master Services Agreement</td><td>Contrato-guarda-chuva com os termos gerais da relação com um fornecedor.</td></tr>
+      <tr><td><strong>SOW</strong> ★</td><td>Statement of Work</td><td>O escopo, entregas, prazos e preço de um trabalho específico.</td></tr>
+      <tr><td><strong>WO</strong></td><td>Work Order</td><td>Ordem de serviço para uma tarefa específica, geralmente sob um MSA.</td></tr>
+      <tr><td><strong>SLA</strong></td><td>Service-Level Agreement</td><td>Nível de serviço prometido ao cliente, com penalidade se descumprido.</td></tr>
+      <tr><td><strong>SLO</strong></td><td>Service-Level Objective</td><td>A meta de nível de serviço, normalmente mais rígida que o SLA.</td></tr>
+      <tr><td><strong>BPA</strong></td><td>Business Partners Agreement</td><td>Acordo entre parceiros de negócio sobre responsabilidades, lucros e decisões.</td></tr>
+      <tr><td><strong>RFI</strong> ★</td><td>Request for Information</td><td>Pedido de informações a fornecedores, sem proposta fechada.</td></tr>
+      <tr><td><strong>RFP</strong> ★</td><td>Request for Proposal</td><td>Pedido de proposta técnica e comercial para resolver um problema.</td></tr>
+      <tr><td><strong>RFQ</strong> ★</td><td>Request for Quote</td><td>Pedido de preço para um escopo já definido.</td></tr>
+      <tr><td><strong>EOI</strong> ★</td><td>Expression of Interest</td><td>Chamada para fornecedores manifestarem interesse.</td></tr>
+      <tr><td><strong>ROI</strong> ★</td><td>Return on Investment</td><td>Retorno sobre o investimento.</td></tr>
+      <tr><td><strong>RFC</strong> ★</td><td>Request for Comments</td><td>Documentos que definem os padrões da internet (TLS, HTTP, SMTP).</td></tr>
+      <tr><td><strong>AML/CTF</strong> ★</td><td>Anti-money Laundering/Counter-terrorism Financing</td><td>Prevenção à lavagem de dinheiro e ao financiamento do terrorismo.</td></tr>
+      <tr><td><strong>GDPR</strong></td><td>General Data Protection Regulation</td><td>O regulamento europeu de proteção de dados.</td></tr>
+      <tr><td><strong>LGPD</strong></td><td>Lei Geral de Proteção de Dados</td><td>A lei brasileira de proteção de dados (13.709/2018), inspirada na GDPR.</td></tr>
+      <tr><td><strong>DPO</strong></td><td>Data Protection Officer</td><td>Responsável pela proteção de dados; o "encarregado" da LGPD.</td></tr>
+      <tr><td><strong>PII</strong></td><td>Personally Identifiable Information</td><td>Dado que identifica uma pessoa, como nome, CPF, e-mail.</td></tr>
+      <tr><td><strong>PHI</strong></td><td>Protected Health Information</td><td>Dado de saúde protegido, termo da lei americana HIPAA.</td></tr>
+      <tr><td><strong>PIA</strong></td><td>Privacy Impact Assessment</td><td>Avaliação de impacto à privacidade de um projeto; na LGPD, parecido com o RIPD.</td></tr>
+      <tr><td><strong>HIPAA</strong></td><td>Health Insurance Portability and Accountability Act</td><td>Lei americana que protege dados de saúde.</td></tr>
+      <tr><td><strong>SOX</strong></td><td>Sarbanes-Oxley Act</td><td>Lei americana sobre controles financeiros de empresas de capital aberto.</td></tr>
+      <tr><td><strong>PCI DSS</strong></td><td>Payment Card Industry Data Security Standard</td><td>Padrão de segurança obrigatório para quem processa cartão.</td></tr>
+      <tr><td><strong>NIST</strong></td><td>National Institute of Standards and Technology</td><td>Instituto americano que publica o CSF e as SP 800.</td></tr>
+      <tr><td><strong>ISO</strong></td><td>International Organization for Standardization</td><td>Organização que publica normas como a ISO/IEC 27001.</td></tr>
+      <tr><td><strong>CIS</strong></td><td>Center for Internet Security</td><td>Organização que publica os CIS Controls e os benchmarks de configuração.</td></tr>
+      <tr><td><strong>SOC 2</strong></td><td>System and Organization Controls 2</td><td>Relatório de auditoria independente sobre controles de segurança de um prestador de serviço; o Tipo II cobre um período.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="cloud">Nuvem, arquitetura e resiliência</h2>
+  <p>O que está no <a href="d3-arquitetura.html">domínio 3</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>IaaS</strong></td><td>Infrastructure as a Service</td><td>Você recebe VMs, rede e disco; cuida do sistema operacional para cima.</td></tr>
+      <tr><td><strong>PaaS</strong></td><td>Platform as a Service</td><td>Você entrega o código; o provedor cuida do sistema e do runtime.</td></tr>
+      <tr><td><strong>SaaS</strong> ★</td><td>Software as a Service</td><td>Você usa o software pronto; cuida só dos dados e dos acessos.</td></tr>
+      <tr><td><strong>FaaS</strong></td><td>Function as a Service</td><td>Funções executadas sob demanda (serverless), como AWS Lambda.</td></tr>
+      <tr><td><strong>VPC</strong></td><td>Virtual Private Cloud</td><td>Rede privada isolada dentro da nuvem pública.</td></tr>
+      <tr><td><strong>VM</strong></td><td>Virtual Machine</td><td>Computador virtual sobre um hypervisor.</td></tr>
+      <tr><td><strong>VDI</strong></td><td>Virtual Desktop Infrastructure</td><td>Desktops que rodam no servidor e são acessados remotamente.</td></tr>
+      <tr><td><strong>CASB</strong></td><td>Cloud Access Security Broker</td><td>Fica entre usuários e serviços de nuvem para dar visibilidade e aplicar políticas (shadow IT, DLP).</td></tr>
+      <tr><td><strong>SASE</strong></td><td>Secure Access Service Edge</td><td>Rede (SD-WAN) e segurança (SSE) entregues juntas como serviço na nuvem.</td></tr>
+      <tr><td><strong>SSE</strong> ★</td><td>Security Service Edge</td><td>A parte de segurança do SASE: proxy web seguro, CASB e ZTNA na nuvem.</td></tr>
+      <tr><td><strong>ZTNA</strong></td><td>Zero Trust Network Access</td><td>Acesso a cada aplicação, verificado a cada vez, no lugar da VPN que libera a rede inteira.</td></tr>
+      <tr><td><strong>CDN</strong></td><td>Content Delivery Network</td><td>Rede de servidores que entrega conteúdo perto do usuário; ajuda a absorver DDoS.</td></tr>
+      <tr><td><strong>API</strong></td><td>Application Programming Interface</td><td>Interface para programas conversarem; superfície de ataque importante.</td></tr>
+      <tr><td><strong>HA</strong></td><td>High Availability</td><td>Projeto para eliminar pontos únicos de falha e manter o serviço no ar.</td></tr>
+      <tr><td><strong>UPS</strong> ★</td><td>Uninterruptible Power Supply</td><td>Nobreak: bateria que segura a carga em quedas curtas de energia.</td></tr>
+      <tr><td><strong>RPS</strong> ★</td><td>Redundant Power Supply</td><td>Segunda fonte de energia no mesmo equipamento.</td></tr>
+      <tr><td><strong>PDU</strong></td><td>Power Distribution Unit</td><td>Régua de energia de rack, às vezes gerenciável pela rede.</td></tr>
+      <tr><td><strong>RAID</strong></td><td>Redundant Array of Independent Disks</td><td>Combina discos para tolerar falha (RAID 1, 5, 6, 10); não é backup.</td></tr>
+      <tr><td><strong>SAN</strong></td><td>Storage Area Network</td><td>Rede dedicada de armazenamento em bloco.</td></tr>
+      <tr><td><strong>NAS</strong></td><td>Network-Attached Storage</td><td>Armazenamento de arquivos acessado pela rede.</td></tr>
+      <tr><td><strong>OT</strong> ★</td><td>Operational Technology</td><td>Tecnologia que controla processos físicos (fábricas, energia).</td></tr>
+      <tr><td><strong>ICS</strong></td><td>Industrial Control System</td><td>Sistema de controle industrial, parte da OT.</td></tr>
+      <tr><td><strong>SCADA</strong></td><td>Supervisory Control and Data Acquisition</td><td>Sistema que supervisiona e controla processos industriais distribuídos.</td></tr>
+      <tr><td><strong>PLC</strong></td><td>Programmable Logic Controller</td><td>Controlador que comanda máquinas numa linha de produção.</td></tr>
+      <tr><td><strong>RTOS</strong></td><td>Real-Time Operating System</td><td>Sistema operacional com tempo de resposta garantido, comum em embarcados.</td></tr>
+      <tr><td><strong>IoT</strong></td><td>Internet of Things</td><td>Dispositivos conectados (câmeras, sensores), muitas vezes difíceis de atualizar.</td></tr>
+      <tr><td><strong>AI</strong> ★</td><td>Artificial Intelligence</td><td>Inteligência artificial; na SY0-801 tem objetivo próprio de ameaças (2.6).</td></tr>
+      <tr><td><strong>LLM</strong> ★</td><td>Large Language Model</td><td>Modelo de linguagem grande; alvo de prompt injection e jailbreak.</td></tr>
+      <tr><td><strong>ML</strong></td><td>Machine Learning</td><td>Aprendizado de máquina, a base técnica da maior parte da IA atual.</td></tr>
+      <tr><td><strong>BIOS</strong> ★</td><td>Basic Input/Output System</td><td>Firmware antigo de inicialização do PC.</td></tr>
+      <tr><td><strong>UEFI</strong></td><td>Unified Extensible Firmware Interface</td><td>O sucessor do BIOS; suporta Secure Boot.</td></tr>
+      <tr><td><strong>OS</strong> ★</td><td>Operating System</td><td>Sistema operacional.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="attacks">Malware e ataques</h2>
+  <p>O vocabulário do <a href="d2-ameacas.html">domínio 2</a> e da <a href="../03-appsec.html">página 03</a>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>Significado em inglês</th><th>Em uma frase</th></tr></thead>
+    <tbody>
+      <tr><td><strong>APT</strong> ★</td><td>Advanced Persistent Threat</td><td>Ator sofisticado e com recursos (muitas vezes estatal) que fica muito tempo escondido.</td></tr>
+      <tr><td><strong>DoS</strong> ★</td><td>Denial of Service</td><td>Ataque que derruba ou degrada um serviço.</td></tr>
+      <tr><td><strong>DDoS</strong> ★</td><td>Distributed Denial of Service</td><td>DoS vindo de muitas origens ao mesmo tempo (botnet).</td></tr>
+      <tr><td><strong>BEC</strong> ★</td><td>Business Email Compromise</td><td>Fraude que imita ou assume o e-mail de executivo ou fornecedor para desviar pagamentos.</td></tr>
+      <tr><td><strong>SQL</strong> ★</td><td>Structured Query Language</td><td>A linguagem de bancos relacionais; SQLi é a injeção nela.</td></tr>
+      <tr><td><strong>XSS</strong></td><td>Cross-Site Scripting</td><td>Injetar script que roda no navegador de outro usuário.</td></tr>
+      <tr><td><strong>CSRF</strong></td><td>Cross-Site Request Forgery</td><td>Fazer o navegador logado da vítima enviar uma ação que ela não quis.</td></tr>
+      <tr><td><strong>SSRF</strong></td><td>Server-Side Request Forgery</td><td>Fazer o servidor buscar uma URL escolhida pelo atacante, como o endpoint de metadados da nuvem.</td></tr>
+      <tr><td><strong>XXE</strong></td><td>XML External Entity</td><td>Abuso de entidades externas em XML para ler arquivos ou fazer SSRF.</td></tr>
+      <tr><td><strong>IDOR</strong></td><td>Insecure Direct Object Reference</td><td>Acessar o objeto de outro usuário trocando um ID na requisição.</td></tr>
+      <tr><td><strong>RCE</strong></td><td>Remote Code Execution</td><td>Conseguir executar código no alvo à distância; o pior resultado possível.</td></tr>
+      <tr><td><strong>RAT</strong></td><td>Remote Access Trojan</td><td>Malware que dá ao atacante controle remoto da máquina.</td></tr>
+      <tr><td><strong>PUP</strong></td><td>Potentially Unwanted Program</td><td>Software indesejado, como adware empacotado, que não é exatamente malware.</td></tr>
+      <tr><td><strong>TOC/TOU</strong> ★</td><td>Time-of-check / Time-of-use</td><td>Condição de corrida em que o estado muda entre a verificação e o uso.</td></tr>
+      <tr><td><strong>MitM</strong></td><td>Man-in-the-Middle</td><td>Atacante no meio da comunicação; a CompTIA prefere o termo on-path.</td></tr>
+      <tr><td><strong>QR</strong> ★</td><td>Quick Response (code)</td><td>Código QR; vetor do quishing.</td></tr>
+      <tr><td><strong>USB</strong> ★</td><td>Universal Serial Bus</td><td>Pendrives e cabos podem carregar malware ou hardware malicioso.</td></tr>
+      <tr><td><strong>PDF</strong> ★</td><td>Portable Document Format</td><td>Formato de documento; anexos PDF são vetor de malware.</td></tr>
+      <tr><td><strong>RTF</strong> ★</td><td>Rich Text Format</td><td>Formato de documento usado para esconder exploits em anexos.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    <span class="callout-title">Siglas que a prova usa para confundir</span>
+    <ul>
+      <li><strong>MAC</strong>: endereço da placa de rede ou Mandatory Access Control. O contexto decide.</li>
+      <li><strong>SOC</strong> é o centro de operações; <strong>SOC 2</strong> é um relatório de auditoria.</li>
+      <li><strong>MTTR</strong>: <em>repair</em> em resiliência, <em>respond/recover</em> em resposta a incidentes.</li>
+      <li><strong>SFTP</strong> (por dentro do SSH) não é <strong>FTPS</strong> (FTP com TLS).</li>
+      <li><strong>SLA</strong> tem penalidade; <strong>SLO</strong> é a meta.</li>
+      <li><strong>RTO</strong> é tempo parado; <strong>RPO</strong> é dado perdido.</li>
+      <li><strong>AV</strong>: valor do ativo na conta de risco, antivírus no resto.</li>
+    </ul>
+  </div>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Sem olhar: o que significam SLE, ALE e ARO, e como se relacionam?</summary><p>Single Loss Expectancy, Annualized Loss Expectancy e Annualized Rate of Occurrence. ALE = SLE × ARO. O cálculo completo está no <a href="d5-gestao.html#exemplo">domínio 5</a>.</p></details>
+  <details><summary>Qual a diferença entre SPF, DKIM e DMARC?</summary><p>O SPF lista os servidores autorizados a enviar e-mail pelo domínio. O DKIM assina a mensagem. O DMARC diz o que fazer quando os dois falham e exige alinhamento com o remetente visível.</p></details>
+  <details><summary>CRL ou OCSP: qual consulta um certificado de cada vez, em tempo real?</summary><p>OCSP. A CRL é a lista completa de revogados, que precisa ser baixada.</p></details>
+
+  <nav class="pager"><a href="simulado.html">← Simulado</a><a href="../07-laboratorios.html">Laboratórios →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores · CompTIA e Security+ são marcas da CompTIA, Inc.; este guia não é afiliado a ela</p>
+</body>
+</html>

@@ -14,7 +14,9 @@ Guia gratuito, em português, para quem vem de engenharia de software migrar par
 | 04 | DevSecOps (pipeline, supply chain) |
 | 05 | Blue Team (SOC, Sigma, ATT&CK, resposta a incidentes) |
 | 06 | Certificações (2026) |
+| 06+ | Guia Security+ (5 domínios, simulado, siglas) |
 | 07 | Laboratórios gratuitos e plano de 12 semanas |
+| 08 | Estudar para as certificações de graça |
 
 Próximas partes: Nuvem e Kubernetes, Segurança de IA, Resposta a incidentes a fundo.
 

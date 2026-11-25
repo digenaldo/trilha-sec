@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia Security+ · Trilha Sec</title>
+<meta name="description" content="Guia preparatório gratuito, em português, para a CompTIA Security+ (SY0-701 e SY0-801): o que estudar, em que ordem, simulado comentado e siglas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · comece por aqui</span>
+  <h1>Guia preparatório: CompTIA Security+</h1>
+  <p class="lead">Tudo o que você precisa para passar na Security+: como é a prova, o que cai em cada domínio, um plano de estudo de seis semanas, simulado comentado e as siglas que a prova cobra.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que a Security+ e por que agora</span>
+    <p>A <dfn>Security+</dfn> é a certificação de entrada da <dfn>CompTIA</dfn>, uma associação americana que mantém provas de TI neutras, ou seja, que não dependem de fabricante. É a certificação que mais aparece em vagas de entrada em segurança. Para quem vem de dev, ela tem um papel específico: dar o vocabulário. Você já sabe fazer muita coisa da prova, mas talvez não com os nomes que o mercado usa. Saber que aquilo que você chama de "rollback" é um <em>backout plan</em> num processo de mudança é exatamente o que a prova testa.</p>
+  </div>
+
+  <h2 id="versao">Qual versão fazer: SY0-701 ou SY0-801?</h2>
+  <p>A CompTIA renova a prova a cada três anos, mais ou menos. Neste momento há duas versões válidas ao mesmo tempo:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Versão</th><th>Disponível</th><th>Quando escolher</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SY0-701</strong></td><td>Até 11/06/2027</td><td>Se você já começou a estudar por ela. Há muito mais material e simulados disponíveis, porque ela está no mercado desde 2023.</td></tr>
+      <tr><td><strong>SY0-801</strong></td><td>Desde 17/11/2026</td><td>Se você está começando agora, ou se vai fazer a prova depois de abril de 2027. Ainda há pouco material específico, mas a maior parte do conteúdo é a mesma.</td></tr>
+    </tbody>
+  </table></div>
+  <p>As duas valem a mesma certificação, com validade de três anos. A estrutura em cinco domínios é a mesma. O que muda é o peso de cada um:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Domínio</th><th>SY0-701</th><th>SY0-801</th><th>Página</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Conceitos gerais de segurança</td><td>12%</td><td><strong>16%</strong> ↑</td><td><a href="d1-conceitos-gerais.html">Domínio 1</a></td></tr>
+      <tr><td>2 · Ameaças, vulnerabilidades e ataques</td><td>22%</td><td><strong>24%</strong> ↑</td><td><a href="d2-ameacas.html">Domínio 2</a></td></tr>
+      <tr><td>3 · Arquitetura de segurança</td><td>18%</td><td><strong>19%</strong></td><td><a href="d3-arquitetura.html">Domínio 3</a></td></tr>
+      <tr><td>4 · Operações de segurança</td><td>28%</td><td><strong>27%</strong></td><td><a href="d4-operacoes.html">Domínio 4</a></td></tr>
+      <tr><td>5 · Gestão e supervisão do programa de segurança</td><td>20%</td><td><strong>14%</strong> ↓</td><td><a href="d5-gestao.html">Domínio 5</a></td></tr>
+    </tbody>
+  </table></div>
+  <p>Além dos pesos, a SY0-801 traz um objetivo novo sobre <strong>riscos de IA</strong> no Domínio 2, como injeção de prompt e vazamento de dados por modelos de linguagem. Ele é coberto na <a href="d2-ameacas.html">página do Domínio 2</a>.</p>
+  <p>Os pesos da SY0-801 estão no documento oficial de objetivos. Antes de começar, baixe o documento oficial de objetivos no <a href="https://www.comptia.org/en-us/certifications/security/v8/">site da CompTIA</a>. É gratuito (pede só um cadastro) e é a lista exata do que pode cair.</p>
+
+  <h2 id="formato">Como é a prova</h2>
+  <ul>
+    <li><strong>Até 90 questões em 90 minutos.</strong> Dá um minuto por questão, mas as práticas levam bem mais que isso.</li>
+    <li><strong>Nota mínima de 750</strong>, numa escala de 100 a 900. A nota não é uma porcentagem direta de acertos.</li>
+    <li><strong>Dois tipos de questão:</strong> múltipla escolha, com uma ou várias respostas certas, e <dfn>PBQs</dfn> (<em>performance-based questions</em>, questões práticas). Numa PBQ você arrasta itens, ordena passos, completa uma regra de firewall ou lê um log simulado.</li>
+    <li><strong>Onde fazer:</strong> pela Pearson VUE, num centro de provas ou online, em casa, com um fiscal pela webcam. A prova é em inglês, e há versões em outros idiomas cuja lista vale conferir no site.</li>
+    <li><strong>Preço:</strong> cerca de US$ 425 a 439 (veja a <a href="../06-certificacoes.html">página de certificações</a>). A certificação vale três anos e é renovada com créditos de educação continuada ou com uma certificação mais alta da CompTIA.</li>
+  </ul>
+  <p>O formato acima vale para a SY0-801 e está confirmado no documento oficial de objetivos. É o mesmo formato da SY0-701.</p>
+
+  <div class="callout warn">
+    <span class="callout-title">Sobre "questões que caíram"</span>
+    <p>As questões reais da prova são sigilosas. Quem faz a prova assina um acordo de confidencialidade, e sites que vendem "a prova que caiu" (os chamados <dfn>dumps</dfn>) violam esse acordo. A CompTIA pode cancelar a certificação de quem usa esse material. Por isso, as questões deste guia são <strong>originais</strong>. Elas foram escritas sobre os temas que os candidatos de 2024 a 2026 mais relatam ter visto (no nível de assunto, não de pergunta), no mesmo estilo de cenário da prova.</p>
+  </div>
+
+  <h2 id="estilo">O estilo das perguntas</h2>
+  <p>Quase toda questão é um pequeno cenário seguido de uma pergunta com palavra-chave em maiúsculas. Essa palavra é a questão:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Palavra</th><th>O que realmente pede</th></tr></thead>
+    <tbody>
+      <tr><td><strong>BEST</strong></td><td>Mais de uma alternativa funciona. Escolha a que resolve o problema descrito com menos efeito colateral.</td></tr>
+      <tr><td><strong>FIRST</strong></td><td>Ordem de um processo. Em resposta a incidentes, por exemplo, conter vem antes de erradicar.</td></tr>
+      <tr><td><strong>MOST likely</strong></td><td>Diagnóstico. Qual ataque ou causa explica melhor os sintomas do cenário.</td></tr>
+      <tr><td><strong>LEAST</strong></td><td>Inverta a lógica. Procure a alternativa que menos atende.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Uma dica que vale para a prova toda: responda pelo que o cenário diz, não pelo que você faria no seu trabalho. Se a pergunta fala em "custo baixo", a resposta tecnicamente mais forte pode estar errada.</p>
+
+  <h2 id="plano">Plano de estudo de seis semanas</h2>
+  <p>O plano considera de 6 a 8 horas por semana para quem já leu as páginas 01 a 05 deste guia. Se você está começando do zero, dobre o tempo.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Semana</th><th>Estudo</th><th>Prática</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="d1-conceitos-gerais.html">Domínio 1</a>: controles, criptografia, PKI e gestão de mudanças</td><td>Questões do domínio 1 e revisão das siglas de criptografia</td></tr>
+      <tr><td>2</td><td><a href="d2-ameacas.html">Domínio 2</a>: atores, vetores, malware e ataques</td><td>Questões do domínio 2 e laboratórios de ataques web da <a href="../07-laboratorios.html">página 07</a></td></tr>
+      <tr><td>3</td><td><a href="d3-arquitetura.html">Domínio 3</a>: nuvem, rede, proteção de dados e resiliência</td><td>Desenhar a rede de um sistema seu, com zonas, firewall e proxy (PBQ de topologia)</td></tr>
+      <tr><td>4</td><td><a href="d4-operacoes.html">Domínio 4</a>, primeira metade: hardening, vulnerabilidades e monitoramento</td><td>Escrever ACLs de firewall no papel e conferir com a solução</td></tr>
+      <tr><td>5</td><td>Domínio 4, segunda metade (identidade, resposta a incidentes, forense) e <a href="d5-gestao.html">Domínio 5</a></td><td>Calcular SLE, ALE e ARO e ordenar etapas de resposta a incidentes</td></tr>
+      <tr><td>6</td><td>Revisão das <a href="siglas.html">siglas</a> e dos pontos fracos</td><td><a href="simulado.html">Simulado completo</a> com tempo marcado. Agende a prova quando passar de 85% em dois simulados diferentes</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="metodo">Método: como estudar sem pagar curso</h2>
+  <ol>
+    <li><strong>Objetivos oficiais primeiro.</strong> Imprima o PDF da CompTIA e use como checklist. Cada item que você não consegue explicar em voz alta é um item a estudar.</li>
+    <li><strong>Leia a página do domínio aqui</strong> e depois assista à aula correspondente do curso gratuito do <a href="https://www.professormesser.com/">Professor Messer</a>, que é a referência gratuita mais usada para a Security+. Os vídeos são em inglês, com legenda automática no YouTube. Em novembro de 2026 o curso gratuito ainda cobre a SY0-701, mas como a maior parte do conteúdo é igual, ele serve para as duas versões. Mais material gratuito está na <a href="../08-estudo-gratuito.html">página 08</a>.</li>
+    <li><strong>Faça as questões do fim de cada página</strong> e anote por que errou. Errar por não saber o conceito é diferente de errar por ler a pergunta rápido demais.</li>
+    <li><strong>Pratique as PBQs com as mãos.</strong> Os laboratórios gratuitos da <a href="../07-laboratorios.html">página 07</a> treinam exatamente o tipo de raciocínio das questões práticas.</li>
+    <li><strong>Feche com o simulado.</strong> Use o resultado de cada domínio para voltar só ao que está fraco.</li>
+  </ol>
+
+  <h2 id="dia">No dia da prova</h2>
+  <ul>
+    <li><strong>Pule as PBQs no começo.</strong> Elas costumam vir primeiro e consomem muito tempo. Marque para revisão, responda as de múltipla escolha e volte depois.</li>
+    <li><strong>Use a marcação para revisão</strong> nas questões em que ficou em dúvida, mas não mude uma resposta sem um motivo concreto.</li>
+    <li><strong>Prova online:</strong> teste a câmera e a internet no dia anterior, deixe a mesa vazia e esteja num cômodo fechado. Uma interrupção pode encerrar a prova.</li>
+  </ul>
+
+  <h2 id="paginas">As páginas deste guia</h2>
+  <div class="grid">
+    <a class="card" href="d1-conceitos-gerais.html"><span class="n">D1 · 16%</span><h3>Conceitos gerais</h3><p>Controles, zero trust, gestão de mudanças, criptografia e PKI.</p></a>
+    <a class="card" href="d2-ameacas.html"><span class="n">D2 · 24%</span><h3>Ameaças e ataques</h3><p>Atores, vetores, vulnerabilidades, indicadores e mitigação.</p></a>
+    <a class="card" href="d3-arquitetura.html"><span class="n">D3 · 19%</span><h3>Arquitetura</h3><p>Nuvem, infraestrutura, proteção de dados e resiliência.</p></a>
+    <a class="card" href="d4-operacoes.html"><span class="n">D4 · 27%</span><h3>Operações</h3><p>Hardening, vulnerabilidades, monitoramento, identidade e resposta a incidentes.</p></a>
+    <a class="card" href="d5-gestao.html"><span class="n">D5 · 14%</span><h3>Gestão</h3><p>Governança, risco, terceiros, conformidade, auditoria e conscientização.</p></a>
+    <a class="card" href="simulado.html"><span class="n">Simulado</span><h3>40 questões comentadas</h3><p>Distribuídas pelo peso dos domínios, mais exercícios no estilo PBQ.</p></a>
+    <a class="card" href="siglas.html"><span class="n">Siglas</span><h3>Glossário da prova</h3><p>As siglas mais cobradas, explicadas em uma frase.</p></a>
+  </div>
+
+  <nav class="pager"><a href="../06-certificacoes.html">← Certificações</a><a href="d1-conceitos-gerais.html">Domínio 1 →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores · CompTIA e Security+ são marcas da CompTIA, Inc.; este guia não é afiliado a ela</p>
+</body>
+</html>

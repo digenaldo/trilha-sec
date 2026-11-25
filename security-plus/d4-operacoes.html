@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domínio 4 · Operações de segurança · Trilha Sec</title>
+<meta name="description" content="Guia do Domínio 4 do CompTIA Security+ (SY0-801, 27%): hardening, wireless, mobile, controles de mitigação, gestão de ativos e vulnerabilidades, monitoramento, IAM, automação, resposta a incidentes e fontes de dados para investigação, com questões originais de prática.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="../">▲ trilha-sec</a><span><a href="../#mapa">mapa</a> · <a href="../06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Guia Security+ · Domínio 4 · 27%</span>
+  <h1>Domínio 4 · Operações de segurança</h1>
+  <p class="lead">Ao fim desta página você vai conhecer o dia a dia operacional que a prova cobra (endurecer, monitorar, gerenciar identidades e vulnerabilidades, responder a incidentes) e saber escolher a ação certa num cenário.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz como dev</span>
+    <p>Este é o domínio mais "SRE" da prova: alertas, dashboards, automação, plantão, postmortem, gestão de dependências vulneráveis, IAM. Você já conhece metade com outro nome. A página <a href="../05-blue-team.html">Blue Team</a> cobre SOC, SIEM e resposta a incidentes com mais profundidade; aqui o foco é o vocabulário e as decisões que viram questão.</p>
+  </div>
+
+  <h2 id="visao">O que o domínio cobre</h2>
+  <p>O Domínio 4 é o <strong>maior da prova</strong>: 27% na SY0-801 (28% na SY0-701). Com até 90 questões, são umas 24 perguntas, quase uma em cada quatro. Oito objetivos:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Objetivo</th><th>Tema</th></tr></thead>
+    <tbody>
+      <tr><td>4.1</td><td>Dado um cenário, aplicar controles, técnicas e soluções de mitigação</td></tr>
+      <tr><td>4.2</td><td>Gestão de ativos de hardware, software e dados</td></tr>
+      <tr><td>4.3</td><td>Dado um cenário, executar gestão de vulnerabilidades</td></tr>
+      <tr><td>4.4</td><td>Conceitos e ferramentas de alerta e monitoramento</td></tr>
+      <tr><td>4.5</td><td>Dado um cenário, aplicar gestão de identidade e acesso</td></tr>
+      <tr><td>4.6</td><td>Dado um cenário, aplicar automação e orquestração</td></tr>
+      <tr><td>4.7</td><td>Atividades de resposta a incidentes</td></tr>
+      <tr><td>4.8</td><td>Dado um cenário, usar dados e artefatos numa investigação</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <span class="callout-title">Qual versão esta página segue</span>
+    <p>A estrutura segue o documento oficial de objetivos da <strong>SY0-801 (V8), versão 2.0</strong>, conferido em 2026-11-25. Itens que só estão na lista da SY0-701 aparecem marcados <span class="tag">701</span>, para quem ainda vai fazer a 701 (disponível até 2027-06-11).</p>
+    <p><strong>O que mudou da 701 para a 801 neste domínio:</strong></p>
+    <ul>
+      <li>O 4.1 da 801 junta três blocos da 701: técnicas para recursos computacionais (antigo 4.1), mitigação (antigo 2.5) e capacidades corporativas (antigo 4.5). Entraram: tecnologia de engano (honeypot, honeytoken; antes no Domínio 1), controle de aplicação, WIPS, rate limiting, BIMI, varredura de segredos em repositórios, captive portal e postura do dispositivo.</li>
+      <li>Wireless (WPA3, RADIUS, site survey, heat map) e os modelos de mobile (BYOD/COPE/CYOD) <strong>não aparecem nominalmente</strong> na lista da 801; só MDM e 802.1X. Mantive a seção porque cai na 701 e porque o assunto pode aparecer dentro de cenários.</li>
+      <li>4.3 ganhou IPAM, CSPM, revisão de código e revisão de relatório de pentest. 4.4 ganhou syslog, analisador de pacotes, port mirroring e sistemas de gerência de rede.</li>
+      <li>4.5 ganhou tipos de conta (inclusive acesso de emergência), passkey, código de backup, revisão de acesso e controle por tempo e just-in-time. ABAC não aparece na lista da 801 (aparece na 701).</li>
+      <li>4.6 ganhou <strong>IA</strong> (agentes, chatbots, análise preditiva, baselines aumentadas por IA) e guardrails.</li>
+      <li>4.7 trocou as fases da 701 por: preparação, identificação, investigação, contenção, <strong>negociação</strong>, erradicação/recuperação, <strong>notificação</strong> e pós-incidente.</li>
+      <li>4.8 ganhou logs de acesso físico, imagens de câmera, IPFIX, dump de memória e cópia bit a bit, partes interessadas (RH, jurídico) e técnicas de parsing de log. <em>Legal hold</em> foi para o Domínio 5 na 801.</li>
+    </ul>
+  </div>
+
+  <h2 id="4-1">4.1 · Controles e técnicas de mitigação</h2>
+  <p>É o objetivo mais largo da prova inteira. Os dispositivos de rede (firewall L4/L7, WAF, UTM, IDS/IPS inline vs. tap, 802.1X, proxy) já foram explicados no <a href="d3-arquitetura.html#3-2">Domínio 3</a>; aqui vem como operá-los e o resto do arsenal.</p>
+
+  <h3>Hardening e baselines seguras</h3>
+  <p><dfn>Hardening</dfn> (endurecimento) é reduzir a superfície de ataque de um sistema: remover o que não é usado, trocar padrões inseguros, aplicar patch. Uma <dfn>baseline segura</dfn> é a configuração-padrão aprovada que todo sistema daquele tipo deve seguir. O ciclo é: <strong>estabelecer</strong> (a partir de um benchmark, como os do CIS), <strong>implantar</strong> (via GPO, MDM, Ansible, imagem dourada) e <strong>manter</strong> (verificar desvios e atualizar). Alvos:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Alvo</th><th>Medidas típicas</th></tr></thead>
+    <tbody>
+      <tr><td>Mobile</td><td>MDM, criptografia do aparelho, bloqueio de tela, só loja oficial, limpeza remota.</td></tr>
+      <tr><td>Estações de trabalho</td><td>Patch automático, EDR, sem admin local, criptografia de disco (BitLocker/FileVault), firewall de host.</td></tr>
+      <tr><td>Switches e roteadores</td><td>Trocar senha padrão, desligar Telnet/HTTP e usar SSH/HTTPS, desativar portas sem uso, gerência out-of-band, firmware atualizado.</td></tr>
+      <tr><td>Nuvem</td><td>Bloquear acesso público a buckets, MFA na conta raiz, menor privilégio no IAM, logs de auditoria ligados, CSPM.</td></tr>
+      <tr><td>Servidores</td><td>Remover serviços e pacotes, contas de serviço mínimas, SELinux/AppArmor, FIM.</td></tr>
+      <tr><td>ICS/SCADA, embarcados, RTOS, IoT</td><td>Muitas vezes não aceitam agente nem patch: segmentar, trocar credenciais padrão, desligar serviços remotos, monitorar a rede passivamente.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Wireless <span class="tag">701</span></h3>
+  <ul>
+    <li><dfn>WPA3</dfn> (<em>Wi-Fi Protected Access 3</em>): substitui o WPA2. No modo pessoal troca a senha compartilhada vulnerável a ataque offline por <dfn>SAE</dfn> (<em>Simultaneous Authentication of Equals</em>), que impede adivinhar a senha a partir de um handshake capturado, e dá sigilo futuro (capturar o tráfego hoje não ajuda a decifrá-lo amanhã). Também traz criptografia em redes abertas (OWE).</li>
+    <li><strong>Enterprise vs. Personal</strong>: no modo Personal todos usam a mesma senha (PSK). No Enterprise cada usuário se autentica via 802.1X num servidor <dfn>RADIUS</dfn> (<em>Remote Authentication Dial-In User Service</em>), que implementa <dfn>AAA</dfn> (<em>Authentication, Authorization, Accounting</em>: quem é, o que pode, o que fez). Desligou um funcionário? Desativa a conta dele, e não precisa trocar a senha do Wi-Fi da empresa inteira.</li>
+    <li><dfn>Site survey</dfn>: estudo do local para planejar onde ficam os access points, achar interferência e redes não autorizadas (<em>rogue APs</em>). O resultado costuma ser um <dfn>heat map</dfn>: mapa da planta com a intensidade do sinal por área, que mostra cobertura fraca e sinal "vazando" para o estacionamento.</li>
+  </ul>
+
+  <h3>Mobile</h3>
+  <p><dfn>MDM</dfn> (<em>Mobile Device Management</em>) é a plataforma que aplica políticas aos aparelhos: exige PIN, criptografa, instala apps, separa perfil pessoal e corporativo (<em>containerização</em>) e apaga remotamente se o aparelho for perdido. Modelos de propriedade <span class="tag">701</span>:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Modelo</th><th>Quem compra</th><th>Controle da empresa</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>BYOD</dfn> (<em>Bring Your Own Device</em>)</td><td>Funcionário, aparelho pessoal.</td><td>Menor; normalmente só o perfil corporativo. Privacidade do funcionário é questão.</td></tr>
+      <tr><td><dfn>CYOD</dfn> (<em>Choose Your Own Device</em>)</td><td>Empresa, de uma lista aprovada que o funcionário escolhe.</td><td>Alto.</td></tr>
+      <tr><td><dfn>COPE</dfn> (<em>Corporate-Owned, Personally Enabled</em>)</td><td>Empresa; o funcionário pode usar para fins pessoais.</td><td>Alto, aparelho é da empresa.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Métodos de conexão e riscos: celular (dados fora do controle da rede corporativa), Wi-Fi (redes públicas falsas, <em>evil twin</em>), Bluetooth (pareamento indevido) e NFC (comunicação a centímetros, usada em pagamento).</p>
+
+  <h3>Segurança de aplicação</h3>
+  <ul>
+    <li><dfn>Validação de entrada</dfn>: checar tipo, tamanho e formato no servidor, de preferência por lista do que é permitido. É a base contra injeção (veja <a href="../03-appsec.html#validacao">AppSec</a>).</li>
+    <li><dfn>Cookies seguros</dfn>: atributos <code>Secure</code> (só via HTTPS), <code>HttpOnly</code> (JavaScript não lê, reduz roubo por XSS) e <code>SameSite</code> (reduz CSRF).</li>
+    <li><dfn>Análise estática</dfn> (<em>SAST</em>): ferramenta lê o código sem executar e aponta padrões vulneráveis (Semgrep, CodeQL).</li>
+    <li><dfn>Code signing</dfn>: assinar digitalmente o binário ou pacote para provar autoria e integridade. Não prova que o código é seguro, só que não foi alterado e veio de quem assinou.</li>
+    <li><dfn>Sandboxing</dfn>: executar código em ambiente isolado e com permissões mínimas (aba do navegador, sandbox de análise de malware).</li>
+    <li><dfn>Varredura de segredos</dfn> em repositórios: detectar chaves e senhas commitadas (gitleaks, secret scanning do GitHub).</li>
+    <li><strong>Monitoramento da aplicação</strong>: logs de erro, autenticação e uso para detectar abuso.</li>
+  </ul>
+
+  <h3>Controle de aplicação, segmentação e engano</h3>
+  <p><dfn>Controle de aplicação</dfn> decide que programas podem rodar. <dfn>Allow list</dfn> (só o aprovado roda) é mais forte e mais trabalhosa; <dfn>block list</dfn> (tudo roda, menos o proibido) é mais fácil e deixa passar o desconhecido. <strong>Segmentação</strong> limita o movimento lateral (o atacante pular de máquina em máquina dentro da rede).</p>
+  <p><dfn>Tecnologia de engano</dfn> planta iscas que nenhum usuário legítimo deveria tocar, então qualquer toque é alerta de alta confiança:</p>
+  <ul>
+    <li><dfn>Honeypot</dfn>: sistema falso que parece vulnerável. <dfn>Honeynet</dfn>: uma rede deles.</li>
+    <li><dfn>Honeyfile</dfn>: arquivo isca (<code>senhas_2026.xlsx</code>) que alerta quando aberto.</li>
+    <li><dfn>Honeytoken</dfn>: dado isca, como uma chave de API falsa no repositório ou um registro falso no banco; se aparecer em uso, houve vazamento.</li>
+    <li><dfn>Canary account</dfn>: conta falsa que alerta se alguém tentar logar nela.</li>
+  </ul>
+
+  <h3>IDS/IPS e firewalls na operação</h3>
+  <p>Variantes: <dfn>NIDS/NIPS</dfn> (na rede), <dfn>HIDS/HIPS</dfn> (no host, enxerga o que a criptografia esconde da rede) e <dfn>WIPS</dfn> (wireless, detecta rogue APs e ataques de desautenticação). Métodos de detecção:</p>
+  <ul>
+    <li><dfn>Assinatura</dfn>: compara com padrões conhecidos. Poucos falsos positivos, não vê o desconhecido; precisa de atualização.</li>
+    <li><dfn>Anomalia/comportamento</dfn> (<em>trends</em>): aprende o normal e alerta desvios. Pega o novo, gera mais falsos positivos.</li>
+  </ul>
+  <p>Regras de firewall e <dfn>ACLs</dfn> (<em>Access Control Lists</em>, listas ordenadas de permitir/negar) são avaliadas <strong>de cima para baixo, e a primeira que casa vence</strong>. No fim vem o <dfn>deny implícito</dfn> (tudo que não foi permitido é negado). Por isso regras específicas ficam acima das genéricas. Os campos típicos são origem, destino, protocolo, porta e ação. A <dfn>screened subnet</dfn> recebe regras que permitem internet → servidor público só nas portas do serviço e servidor público → rede interna só no estritamente necessário. <dfn>Rate limiting</dfn> limita requisições por cliente num intervalo, contra força bruta e abuso de API.</p>
+
+  <h3>Filtro de conteúdo e DNS</h3>
+  <p>O <dfn>filtro web</dfn> controla que sites os usuários acessam. Formas:</p>
+  <ul>
+    <li><strong>Baseado em agente</strong>: software no dispositivo; funciona fora da rede da empresa (notebook em casa).</li>
+    <li><strong>Proxy centralizado</strong>: todo tráfego web passa por um forward proxy; só protege quem passa por ele.</li>
+    <li><strong>Varredura de URL</strong>, <strong>categorização de conteúdo</strong> (bloquear "jogos", "malware"), <strong>regras de bloqueio</strong> e <strong>reputação</strong> (nota de risco do domínio, que derruba sites recém-registrados ou ligados a malware).</li>
+  </ul>
+  <p><dfn>Filtro de DNS</dfn> bloqueia a resolução de domínios maliciosos: a máquina nem descobre o IP. Barato, cobre qualquer protocolo, mas é contornado por quem usa IP direto ou outro resolvedor.</p>
+
+  <h3>Segurança de e-mail</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Mecanismo</th><th>Pergunta que responde</th><th>Como</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>SPF</dfn> (<em>Sender Policy Framework</em>)</td><td>Este servidor pode enviar e-mail por este domínio?</td><td>Registro TXT no DNS listando os IPs/servidores autorizados.</td></tr>
+      <tr><td><dfn>DKIM</dfn> (<em>DomainKeys Identified Mail</em>)</td><td>A mensagem foi alterada e veio mesmo do domínio?</td><td>Assinatura digital no cabeçalho; chave pública publicada no DNS.</td></tr>
+      <tr><td><dfn>DMARC</dfn> (<em>Domain-based Message Authentication, Reporting and Conformance</em>)</td><td>O que fazer quando SPF/DKIM falham, e me avise.</td><td>Política no DNS (<code>p=none</code>, <code>quarantine</code>, <code>reject</code>) + relatórios; exige alinhamento com o domínio do "From".</td></tr>
+      <tr><td><dfn>BIMI</dfn> (<em>Brand Indicators for Message Identification</em>)</td><td>Mostrar o logo da marca no cliente de e-mail.</td><td>Só funciona com DMARC em quarantine/reject; é um incentivo para adotar DMARC.</td></tr>
+    </tbody>
+  </table></div>
+  <p>O <dfn>gateway de e-mail</dfn> é o filtro na entrada (antispam, antimalware, sandbox de anexos, reescrita de links).</p>
+
+  <h3>Endpoint, NAC e sistema operacional</h3>
+  <ul>
+    <li><strong>Antivírus</strong>: assinaturas e heurística para arquivos maliciosos. <dfn>EDR</dfn> (<em>Endpoint Detection and Response</em>): registra o comportamento do endpoint (processos, rede, arquivos), detecta, investiga e responde (isolar a máquina com um clique). <dfn>XDR</dfn> (<em>Extended Detection and Response</em>): estende a correlação para além do endpoint, juntando e-mail, rede, nuvem e identidade numa plataforma.</li>
+    <li><dfn>NAC</dfn> (<em>Network Access Control</em>): decide se um dispositivo entra na rede e em qual segmento, com base em identidade e <dfn>postura</dfn> (antivírus ativo, patch em dia). Usa 802.1X, e <dfn>captive portal</dfn> (a página de login do Wi-Fi de hotel) para visitantes. Pode ter agente permanente, agente dissolúvel (roda uma vez e sai) ou ser sem agente.</li>
+    <li><dfn>Group Policy</dfn> (GPO): aplica configurações em massa em máquinas Windows de um domínio Active Directory. <dfn>SELinux</dfn> (<em>Security-Enhanced Linux</em>): controle de acesso mandatório no kernel Linux; mesmo root fica limitado pela política.</li>
+    <li><dfn>FIM</dfn> (<em>File Integrity Monitoring</em>): compara hashes de arquivos críticos com a baseline e alerta mudanças (um <code>/etc/passwd</code> alterado, um binário trocado).</li>
+    <li><dfn>DLP</dfn> (<em>Data Loss Prevention</em>): detecta e bloqueia dado sensível saindo (e-mail com 500 CPFs, upload de planilha classificada), no endpoint, na rede ou na nuvem.</li>
+    <li><dfn>UBA/UEBA</dfn> (<em>User and Entity Behavior Analytics</em>): perfila o comportamento normal de usuários e máquinas e alerta desvios (login às 3h de outro país, download dez vezes acima do normal).</li>
+  </ul>
+
+  <h3>Protocolos seguros</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Inseguro</th><th>Seguro</th><th>Porta segura</th></tr></thead>
+    <tbody>
+      <tr><td>Telnet (23)</td><td>SSH</td><td>22</td></tr>
+      <tr><td>HTTP (80)</td><td>HTTPS</td><td>443</td></tr>
+      <tr><td>FTP (20/21)</td><td>SFTP (sobre SSH) / FTPS</td><td>22 / 990</td></tr>
+      <tr><td>LDAP (389)</td><td>LDAPS</td><td>636</td></tr>
+      <tr><td>SMTP (25)</td><td>SMTP com TLS (submissão)</td><td>587 (ou 465)</td></tr>
+      <tr><td>IMAP (143) / POP3 (110)</td><td>IMAPS / POP3S</td><td>993 / 995</td></tr>
+      <tr><td>SNMPv1/v2c</td><td>SNMPv3 (autenticação e criptografia)</td><td>161/162</td></tr>
+      <tr><td>DNS (53)</td><td>DNSSEC (integridade) / DNS over HTTPS ou TLS (sigilo)</td><td>53 / 443 / 853</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="4-2">4.2 · Gestão de ativos</h2>
+  <p>Você não protege o que não sabe que existe. O ciclo de vida:</p>
+  <ol>
+    <li><strong>Planejamento e escopo</strong>: o que precisa, para quê.</li>
+    <li><strong>Aquisição</strong>: comprar de fornecedor confiável, com processo de compras que evita shadow IT (TI não aprovada) e hardware de origem duvidosa.</li>
+    <li><strong>Atribuição e contabilização</strong>: cada ativo tem <strong>dono</strong> (responsável) e <strong>classificação</strong>.</li>
+    <li><strong>Monitoramento e rastreamento</strong>: inventário atualizado, enumeração (descobrir o que está na rede), etiquetas e agentes.</li>
+    <li><strong>Descarte e desativação</strong>:
+      <ul>
+        <li><dfn>Sanitização</dfn>: apagar de forma que o dado não seja recuperável, mantendo a mídia utilizável (sobrescrita, <em>crypto erase</em>, que destrói a chave de um disco criptografado).</li>
+        <li><dfn>Destruição</dfn>: inutilizar a mídia (trituração, incineração, desmagnetização em mídia magnética). Para quando a mídia não volta a ser usada.</li>
+        <li><dfn>Certificação</dfn>: documento, muitas vezes de um terceiro, atestando que a sanitização ou destruição foi feita. É a prova para auditoria.</li>
+        <li><dfn>Retenção de dados</dfn>: guardar pelo tempo exigido (lei, contrato) antes de descartar, e não além.</li>
+      </ul>
+    </li>
+  </ol>
+  <p>Detalhe que cai: em SSD, sobrescrever não garante apagar tudo (o controlador remapeia blocos); prefira crypto erase ou destruição.</p>
+
+  <h2 id="4-3">4.3 · Gestão de vulnerabilidades</h2>
+  <p>É o mesmo ciclo que você vê com Dependabot, só que para tudo: identificar, analisar, priorizar, corrigir, validar e reportar. Os fundamentos de CVE e CVSS estão em <a href="../01-fundamentos.html#cve">Fundamentos</a>.</p>
+
+  <h3>Identificação</h3>
+  <ul>
+    <li><strong>Varredura de vulnerabilidades</strong>: ferramenta testa sistemas contra uma base de falhas conhecidas. <dfn>Credenciada</dfn> (loga na máquina, vê pacotes instalados, mais precisa) vs. <dfn>não credenciada</dfn> (vê o que um atacante de fora veria). <strong>Com agente</strong> vs. <strong>sem agente</strong>.</li>
+    <li><strong>Segurança de aplicação</strong>: SAST, DAST (testa a aplicação rodando), revisão de código, análise de dependências.</li>
+    <li><dfn>IPAM</dfn> (<em>IP Address Management</em>): inventário de faixas e endereços IP; ajuda a descobrir o que está na rede e não deveria.</li>
+    <li><dfn>CSPM</dfn> (<em>Cloud Security Posture Management</em>): verifica continuamente a configuração da nuvem contra boas práticas (bucket público, log desligado).</li>
+    <li><strong>Feeds de ameaças</strong> <span class="tag">701</span>: <dfn>OSINT</dfn> (<em>Open Source Intelligence</em>, inteligência de fontes abertas, como o catálogo KEV da CISA de falhas exploradas ativamente), feeds pagos, compartilhamento em comunidades (ISACs) e a dark web.</li>
+    <li><strong>Pentest</strong>: pessoas autorizadas exploram de verdade; revisar o relatório e priorizar os achados está no 4.3 da 801.</li>
+    <li><strong>Programas externos</strong>: <dfn>divulgação responsável</dfn> (política que diz como um pesquisador reporta uma falha e quanto tempo a empresa tem para corrigir antes de ele publicar) e <dfn>bug bounty</dfn> (recompensa paga por falhas válidas).</li>
+    <li><strong>Auditoria de sistema e processo</strong> <span class="tag">701</span>: revisão formal contra uma política ou norma.</li>
+  </ul>
+
+  <h3>Análise e priorização</h3>
+  <ul>
+    <li><strong>Confirmação</strong>: <dfn>falso positivo</dfn> = o scanner diz que há vulnerabilidade e não há (barulho, desperdiça tempo). <dfn>Falso negativo</dfn> = há vulnerabilidade e o scanner não viu (o perigoso, porque dá falsa segurança). <dfn>Verdadeiro positivo</dfn> e <dfn>verdadeiro negativo</dfn> são os acertos.</li>
+    <li><dfn>CVE</dfn> (<em>Common Vulnerabilities and Exposures</em>): o identificador único da falha (<code>CVE-2021-44228</code>, o Log4Shell). <dfn>CVSS</dfn> (<em>Common Vulnerability Scoring System</em>): a nota de 0 a 10 de gravidade técnica. Versão atual: 4.0.</li>
+    <li><strong>Classificação da vulnerabilidade</strong>: por tipo (injeção, configuração, credencial) e por gravidade.</li>
+    <li><dfn>Fator de exposição</dfn> (<em>EF</em>): percentual do valor do ativo perdido se a ameaça se concretizar. Usado no cálculo de risco do Domínio 5 (SLE = valor do ativo × EF).</li>
+    <li><strong>Variáveis ambientais</strong>: o mesmo CVSS 9,8 importa pouco num servidor isolado sem dados e muito no servidor exposto à internet com dado de cliente. A métrica ambiental do CVSS existe para isso.</li>
+    <li><dfn>Tolerância a risco</dfn>: quanto risco a organização aceita; define prazos de correção (crítico em 7 dias, por exemplo).</li>
+  </ul>
+
+  <h3>Resposta e remediação</h3>
+  <ul>
+    <li><strong>Patch</strong>: a resposta padrão.</li>
+    <li><strong>Seguro</strong>: transfere o impacto financeiro, não elimina a falha.</li>
+    <li><strong>Segmentação</strong>: isolar o que não pode ser corrigido.</li>
+    <li><dfn>Controle compensatório</dfn>: outro controle que reduz o risco quando o principal não é viável (regra de WAF bloqueando o exploit enquanto o patch não sai).</li>
+    <li><dfn>Exceção</dfn> (ou exempção): aceite formal, documentado, com dono e prazo, de que a falha fica sem correção.</li>
+  </ul>
+  <p><strong>Validação</strong>: <em>reescanear</em> para confirmar que sumiu, auditar e verificar. <strong>Relatório</strong>: interno (métricas, tendência, SLA de correção) e externo (para clientes, reguladores, pesquisadores que reportaram).</p>
+
+  <h2 id="4-4">4.4 · Alerta e monitoramento</h2>
+  <p>Monitora-se <strong>sistemas</strong> (CPU, processos, logins), <strong>aplicações</strong> (erros, autenticação) e <strong>infraestrutura</strong> (rede, nuvem). As atividades:</p>
+  <ul>
+    <li><dfn>Agregação de logs</dfn>: trazer logs de tudo para um lugar, normalizados e com horário sincronizado (NTP), para poder correlacionar.</li>
+    <li><strong>Alertas</strong> e <strong>alertas automatizados</strong>: regras que disparam notificações.</li>
+    <li><strong>Varredura</strong>: scans periódicos de vulnerabilidade e configuração.</li>
+    <li><strong>Relatórios</strong> e <strong>dashboards</strong>: visão consolidada para operação e gestão.</li>
+    <li><strong>Arquivamento</strong>: guardar logs pelo tempo da política de retenção, em armazenamento mais barato, para investigação e auditoria futuras.</li>
+    <li><strong>Resposta ao alerta</strong>: investigar e, se necessário, <strong>quarentena</strong> (isolar o arquivo ou máquina).</li>
+    <li><dfn>Alert tuning</dfn>: ajustar regras para reduzir falsos positivos sem criar falsos negativos. Alerta demais causa <em>fadiga de alerta</em>: as pessoas passam a ignorar todos, inclusive o verdadeiro.</li>
+  </ul>
+  <h3>Ferramentas e protocolos</h3>
+  <ul>
+    <li><dfn>SIEM</dfn> (<em>Security Information and Event Management</em>): agrega, correlaciona e alerta sobre logs de segurança (Splunk, Sentinel, Wazuh). Detalhes em <a href="../05-blue-team.html#siem">Blue Team</a>.</li>
+    <li><dfn>SCAP</dfn> (<em>Security Content Automation Protocol</em>): família de padrões do NIST para descrever configurações e vulnerabilidades em formato que as ferramentas entendem, permitindo checagem automática de conformidade com uma baseline.</li>
+    <li><strong>Benchmarks</strong>: as baselines de referência (CIS Benchmarks, STIGs do governo americano).</li>
+    <li><strong>Com agente vs. sem agente</strong>: agente dá mais detalhe e funciona offline; sem agente (via SSH, WMI, API) é mais fácil de implantar e não pesa no host.</li>
+    <li><dfn>SNMP</dfn> (<em>Simple Network Management Protocol</em>): monitora equipamentos de rede. O gerente consulta (<em>poll</em>) o dispositivo, e o dispositivo pode mandar uma <dfn>trap</dfn>: notificação espontânea quando algo acontece (porta caiu, temperatura alta). Use SNMPv3.</li>
+    <li><dfn>NetFlow</dfn> (e o padrão aberto <dfn>IPFIX</dfn>): metadados de conversas de rede (quem falou com quem, porta, quantos bytes, quando), sem o conteúdo. Ótimo para achar exfiltração e beaconing; não mostra o que foi dito.</li>
+    <li><dfn>syslog</dfn>: protocolo e formato padrão para enviar logs pela rede a um coletor central.</li>
+    <li><strong>Analisador de pacotes</strong> (Wireshark, tcpdump) e <strong>port mirroring</strong>: captura do conteúdo dos pacotes.</li>
+    <li><strong>Antivírus, DLP, scanners de vulnerabilidade, orquestração</strong> e <strong>sistemas de gerência de rede</strong> (NMS, que consolidam o estado dos equipamentos).</li>
+  </ul>
+
+  <h2 id="4-5">4.5 · Gestão de identidade e acesso</h2>
+  <h3>Ciclo de vida da conta</h3>
+  <ul>
+    <li><dfn>Provisionamento</dfn> e <dfn>desprovisionamento</dfn>: criar a conta com o acesso certo na entrada, e remover tudo na saída, no mesmo dia. Conta órfã de ex-funcionário é achado clássico.</li>
+    <li><strong>Atribuição de permissões</strong>: dar por grupo/papel, não por pessoa, e entender a implicação (quem está no grupo X herda o quê).</li>
+    <li><dfn>Identity proofing</dfn>: verificar que a pessoa é quem diz antes de criar a identidade (documento, selfie, presença).</li>
+    <li><dfn>Revisão de acesso</dfn> (e <dfn>atestação</dfn>, <span class="tag">701</span>): periodicamente, o gestor confirma que cada pessoa ainda precisa de cada acesso. Combate privilege creep.</li>
+    <li><strong>Tipos de conta</strong>: usuário; privilegiada (global, como admin do domínio, ou local, como admin de uma máquina); serviço (usada por aplicações, sem login interativo); terceiros; e <dfn>acesso de emergência</dfn> (<em>break glass</em>: conta guardada, monitorada e usada só quando o caminho normal falha).</li>
+  </ul>
+
+  <h3>Federação e SSO</h3>
+  <p><dfn>SSO</dfn> (<em>Single Sign-On</em>) é logar uma vez e acessar vários sistemas. <dfn>Federação</dfn> é confiar em identidades emitidas por outra organização ou provedor (login com a conta da empresa no Salesforce). <dfn>Interoperabilidade</dfn> é os sistemas falarem os mesmos padrões:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Padrão</th><th>Para quê</th><th>Formato</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>LDAP</dfn> (<em>Lightweight Directory Access Protocol</em>)</td><td>Consultar e autenticar num diretório (Active Directory).</td><td>Protocolo binário; LDAPS com TLS.</td><td>App interna que valida usuário no AD.</td></tr>
+      <tr><td><dfn>SAML</dfn> (<em>Security Assertion Markup Language</em>)</td><td><strong>Autenticação</strong> e SSO web corporativo.</td><td>Asserções em XML assinadas.</td><td>Login via Okta no Jira.</td></tr>
+      <tr><td><dfn>OAuth 2.0</dfn></td><td><strong>Autorização</strong> delegada: um app acessa recursos em seu nome sem sua senha.</td><td>Tokens de acesso (muitas vezes JWT).</td><td>"Permitir que o app leia seu Google Drive".</td></tr>
+      <tr><td><dfn>OIDC</dfn> (<em>OpenID Connect</em>) <span class="tag">701</span></td><td><strong>Autenticação</strong> por cima do OAuth.</td><td>ID token JWT.</td><td>"Entrar com Google".</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Modelos de controle de acesso</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Modelo</th><th>Quem decide</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>MAC</dfn> (<em>Mandatory</em>)</td><td>O sistema, por rótulos de classificação; nem o dono muda.</td><td>Militar: só quem tem habilitação "Secret" lê dado "Secret". SELinux.</td></tr>
+      <tr><td><dfn>DAC</dfn> (<em>Discretionary</em>)</td><td>O dono do recurso, a seu critério.</td><td>Permissões de arquivo do Linux; compartilhar um Google Doc.</td></tr>
+      <tr><td><dfn>RBAC</dfn> (<em>Role-based</em>)</td><td>O papel/função da pessoa.</td><td>Papel "financeiro" acessa o ERP; roles do Kubernetes.</td></tr>
+      <tr><td>Rule-based</td><td>Regras globais que valem para todos, independentemente de quem.</td><td>ACL do firewall; "ninguém acessa de fora do país".</td></tr>
+      <tr><td><dfn>ABAC</dfn> (<em>Attribute-based</em>) <span class="tag">701</span></td><td>Combinação de atributos do usuário, recurso, ação e ambiente.</td><td>"Médico do departamento X lê prontuário de paciente do X, em horário de plantão, de dispositivo gerenciado". Condições em policies IAM da AWS.</td></tr>
+      <tr><td>Time-based / horário</td><td>Janela de tempo.</td><td>Terceirizado só acessa em horário comercial.</td></tr>
+      <tr><td>Just-in-time</td><td>Concessão temporária sob demanda.</td><td>Admin pede acesso de 1 hora para o banco de produção.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Tudo isso aplica o <dfn>menor privilégio</dfn>: cada um com o mínimo necessário, pelo tempo necessário.</p>
+
+  <h3>MFA</h3>
+  <p><dfn>MFA</dfn> (autenticação multifator) combina fatores de categorias <strong>diferentes</strong>: algo que você <strong>sabe</strong> (senha, PIN), <strong>tem</strong> (celular, chave de segurança), <strong>é</strong> (biometria) e, como atributos extras, <strong>onde está</strong> (localização). Senha + pergunta secreta é duas vezes o mesmo fator, não é MFA. Implementações:</p>
+  <ul>
+    <li><strong>Hard token</strong>: dispositivo físico (chave FIDO2/YubiKey, chaveiro com código).</li>
+    <li><strong>Soft token</strong>: app autenticador no celular.</li>
+    <li><dfn>OTP</dfn> (<em>One-Time Password</em>): código de uso único, por tempo (TOTP, 30 segundos) ou por contador (HOTP). SMS é o OTP mais fraco (SIM swap).</li>
+    <li><strong>Biometria</strong>: digital, rosto. Avalie pela taxa de falsa aceitação (FAR) e falsa rejeição (FRR).</li>
+    <li><strong>Códigos de backup</strong>: códigos de uso único guardados para quando o segundo fator for perdido.</li>
+  </ul>
+
+  <h3>Senhas, passwordless e PAM</h3>
+  <p>Boas práticas atuais (alinhadas ao NIST SP 800-63B): <strong>comprimento</strong> pesa mais que complexidade; não reutilizar; checar contra listas de senhas vazadas (<em>compromised credential monitoring</em>); não forçar troca periódica sem motivo (expiração frequente leva a senhas previsíveis), mas trocar quando houver indício de comprometimento. A prova ainda cita <em>age</em> (idade mínima, para impedir trocar cinco vezes seguidas e voltar à antiga) e auditoria de contas. <strong>Gerenciadores de senha</strong> resolvem o reuso. <dfn>Passwordless</dfn> elimina a senha; a forma moderna é a <dfn>passkey</dfn>: par de chaves FIDO2/WebAuthn guardado no aparelho, liberado por biometria ou PIN, resistente a phishing porque a chave está amarrada ao domínio do site.</p>
+  <p><dfn>PAM</dfn> (<em>Privileged Access Management</em>) protege contas poderosas:</p>
+  <ul>
+    <li><strong>Just-in-time</strong>: o privilégio existe só durante a tarefa aprovada.</li>
+    <li><dfn>Password vaulting</dfn>: senhas privilegiadas guardadas num cofre, retiradas com aprovação, registradas e trocadas depois do uso (CyberArk, HashiCorp Vault).</li>
+    <li><dfn>Credenciais efêmeras</dfn>: criadas na hora e expiram sozinhas (credenciais temporárias do AWS STS, certificado SSH de 1 hora). Não há o que roubar depois.</li>
+  </ul>
+
+  <h2 id="4-6">4.6 · Automação e orquestração</h2>
+  <p><dfn>Automação</dfn> executa uma tarefa sem pessoa; <dfn>orquestração</dfn> coordena várias automações entre sistemas num fluxo (o SOAR, em <a href="../05-blue-team.html">Blue Team</a>, orquestra a resposta a alertas).</p>
+  <ul>
+    <li><strong>Casos de uso</strong>: provisionar usuários e recursos, <em>desired state management</em> (garantir que a configuração volte ao estado declarado, como o Terraform ou o Ansible fazem), detecção de anomalias, gestão de tickets, guardrails, escalonamento, ligar e desligar serviços, CI/CD com testes de segurança.</li>
+    <li><strong>Benefícios</strong>: eficiência, baselines aplicadas sempre igual, padronização, menor tempo de reação, menos erro humano, menos downtime, mais proatividade, menos trabalho repetitivo (o que ajuda a reter pessoas).</li>
+    <li><strong>Considerações</strong>: complexidade, custo, ponto único de falha (o orquestrador vira alvo e, se quebrar, tudo para), <em>dívida técnica</em>, suporte contínuo, lógica de automação errada que espalha o erro em escala, riscos de processo.</li>
+    <li><strong>IA</strong> (novo na 801): agentes que executam tarefas, chatbots para triagem, análise preditiva e baselines de comportamento aprendidas por IA. A palavra-chave é <dfn>guardrails</dfn>: limites do que a automação pode fazer sozinha (exigir aprovação humana para bloquear um executivo, por exemplo).</li>
+  </ul>
+
+  <h2 id="4-7">4.7 · Resposta a incidentes</h2>
+  <p>A página <a href="../05-blue-team.html">Blue Team</a> descreve o processo em detalhe; aqui está o que a prova cobra. A 701 usa as fases clássicas (próximas do NIST SP 800-61r2); a 801 organiza um pouco diferente:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>SY0-701</th><th>SY0-801</th><th>O que acontece</th></tr></thead>
+    <tbody>
+      <tr><td>Preparação</td><td>Preparação</td><td>Plano, papéis, playbooks, ferramentas, treinamento, testes (tabletop e simulação).</td></tr>
+      <tr><td>Detecção</td><td>Identificação</td><td>Perceber o evento: alertas, avisos internos e externos (um parceiro avisa), threat hunting.</td></tr>
+      <tr><td>Análise</td><td>Investigação</td><td>Confirmar se é incidente, escopo e impacto; forense, cadeia de custódia, preservação.</td></tr>
+      <tr><td>Contenção</td><td>Contenção</td><td>Parar o estrago: quarentena, isolamento de máquina, bloqueio de conta.</td></tr>
+      <tr><td>—</td><td>Negociação</td><td>Em extorsão/ransomware, conduzida com jurídico e especialistas, nunca pelo analista sozinho.</td></tr>
+      <tr><td>Erradicação</td><td rowspan="2">Erradicação/recuperação</td><td>Remover a causa: malware, conta criada pelo invasor, vulnerabilidade.</td></tr>
+      <tr><td>Recuperação</td><td>Voltar à operação normal com monitoramento reforçado; restaurar de backup limpo.</td></tr>
+      <tr><td>—</td><td>Notificação</td><td>Avisar partes interessadas, clientes, autoridades e quem a lei obriga (no Brasil, a ANPD em incidente com dado pessoal).</td></tr>
+      <tr><td>Lições aprendidas</td><td>Pós-incidente</td><td>Lições aprendidas, <dfn>análise de causa raiz</dfn> (o porquê de fundo, não só o sintoma) e relatório pós-incidente.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A ordem é o que mais cai: <strong>conter antes de erradicar</strong>, e <strong>preservar evidência antes de limpar</strong>. Desligar ou reinstalar a máquina comprometida como primeira ação destrói a memória e é quase sempre a alternativa errada.</p>
+  <ul>
+    <li><strong>Treinamento</strong>: cada papel sabe o que fazer. <strong>Testes</strong>: <em>tabletop</em> (discussão em sala) e <em>simulação</em> (exercício prático).</li>
+    <li><dfn>Threat hunting</dfn>: procurar ativamente, a partir de hipóteses ("se alguém usou credencial roubada, veríamos logins de IP novo seguidos de acesso ao bucket X"), ameaças que nenhum alerta pegou.</li>
+  </ul>
+  <h3>Forense digital</h3>
+  <ul>
+    <li><dfn>Legal hold</dfn> (na 801 está no Domínio 5): ordem para preservar todo dado relevante a um processo, suspendendo a exclusão automática.</li>
+    <li><dfn>Cadeia de custódia</dfn>: registro de quem pegou a evidência, quando, onde e o que fez com ela. Sem isso, a evidência pode não valer em juízo.</li>
+    <li><strong>Aquisição</strong>: coletar seguindo a <dfn>ordem de volatilidade</dfn>, do mais volátil ao menos: registradores e cache da CPU → memória RAM (processos, conexões) → arquivos temporários e swap → disco → logs remotos → backups e mídia arquivada.</li>
+    <li><strong>Preservação</strong>: trabalhar em cópias, com <em>write blocker</em> (impede escrita no disco original) e hash para provar integridade.</li>
+    <li><dfn>E-discovery</dfn>: identificar e entregar informação eletrônica num processo judicial.</li>
+    <li><strong>Relatório</strong>: o que foi encontrado, como, com que evidência; escrito para quem não é técnico também.</li>
+  </ul>
+
+  <h2 id="4-8">4.8 · Dados para investigação</h2>
+  <p>Questões deste objetivo mostram um trecho de log e pedem o que aconteceu. Saiba o que cada fonte responde:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Fonte</th><th>Responde</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Firewall</td><td>Que conexões foram permitidas/bloqueadas.</td><td>Centenas de <code>DENY</code> do mesmo IP em portas diferentes = varredura.</td></tr>
+      <tr><td>Aplicação</td><td>O que o usuário fez na app.</td><td>Access log com <code>?id=1' OR '1'='1</code> = tentativa de SQLi.</td></tr>
+      <tr><td>Endpoint</td><td>Processos, arquivos, conexões do host.</td><td>Word criando PowerShell codificado.</td></tr>
+      <tr><td>Segurança do SO</td><td>Logins, mudança de privilégio.</td><td>Windows 4625 (falha de logon) em rajada; <code>auth.log</code> com muitos "Failed password".</td></tr>
+      <tr><td>IDS/IPS</td><td>Que assinatura casou.</td><td>Alerta de exploit conhecido contra o servidor web.</td></tr>
+      <tr><td>Rede / NetFlow / IPFIX</td><td>Quem falou com quem, quanto, quando.</td><td>Servidor mandando 40 GB às 2h para IP desconhecido = exfiltração. Conexões a cada 60 s exatos = beaconing de C2.</td></tr>
+      <tr><td>Autenticação, acesso e auditoria</td><td>Quem entrou, onde (lógico e físico), o que mudou.</td><td>Crachá usado no prédio enquanto a VPN mostra a mesma pessoa em outro país.</td></tr>
+      <tr><td>Metadados</td><td>Dados sobre o dado.</td><td>Cabeçalhos de e-mail (servidores por onde passou), EXIF de foto, autor de documento.</td></tr>
+      <tr><td>Captura de pacotes</td><td>O conteúdo exato.</td><td>PCAP mostrando credenciais em HTTP sem TLS.</td></tr>
+      <tr><td>Scans, relatórios automáticos, dashboards</td><td>Contexto e tendência.</td><td>O host atacado tinha a vulnerabilidade? O pico começou quando?</td></tr>
+      <tr><td>Imagem de sistema</td><td>Estado completo.</td><td>Dump de memória (malware só em RAM), cópia bit a bit do disco (inclui espaço não alocado), snapshot de VM.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Também entram: imagens de câmera, integridade de arquivos e logs (logs com hash ou enviados a um destino imutável, para que o invasor não os apague), e as partes interessadas que participam da investigação (RH em caso de funcionário, jurídico sempre que houver possível processo). <strong>Técnicas de parsing de log</strong>: filtrar com <code>grep</code>, extrair campos com expressões regulares, normalizar formatos, ordenar por horário, contar por origem.</p>
+
+  <h2 id="pegadinhas">Pegadinhas de prova</h2>
+  <div class="callout warn">
+    <span class="callout-title">Pegadinhas de prova</span>
+    <ul>
+      <li><strong>IDS vs. IPS</strong>: IDS alerta, IPS bloqueia. HIDS/HIPS no host, NIDS/NIPS na rede, WIPS no wireless.</li>
+      <li><strong>Assinatura vs. anomalia</strong>: ameaça nova, sem assinatura (zero-day) só a anomalia pode pegar; ameaça conhecida com menor falso positivo é assinatura.</li>
+      <li><strong>SPF vs. DKIM vs. DMARC</strong>: SPF = <em>quem</em> pode enviar (IPs); DKIM = assinatura, <em>integridade</em>; DMARC = <em>política</em> do que fazer na falha, mais relatórios. "Receber relatórios de quem envia em nome do domínio" é DMARC.</li>
+      <li><strong>SAML vs. OAuth vs. OIDC</strong>: SAML autentica com XML (SSO corporativo); OAuth <em>autoriza</em> acesso delegado e sozinho não diz quem é o usuário; OIDC é a camada de autenticação sobre o OAuth (JSON/JWT).</li>
+      <li><strong>MAC vs. DAC vs. RBAC vs. ABAC vs. rule-based</strong>: rótulos e habilitação = MAC; o dono compartilha = DAC; cargo/função = RBAC; muitos atributos e contexto = ABAC; regra igual para todos = rule-based. Cuidado: "RBAC" às vezes é escrito para rule-based; leia o contexto.</li>
+      <li><strong>EDR vs. XDR vs. antivírus</strong>: antivírus = arquivo malicioso por assinatura; EDR = comportamento e resposta no endpoint; XDR = correlação entre endpoint, rede, e-mail, nuvem e identidade.</li>
+      <li><strong>Falso positivo vs. falso negativo</strong>: o falso negativo é o mais perigoso (você nem sabe).</li>
+      <li><strong>Sanitização vs. destruição</strong>: mídia vai ser reutilizada ou doada? Sanitize. Nunca volta? Destrua. Precisa provar? Certificado.</li>
+      <li><strong>Ordem do incidente</strong>: preparação → detecção/identificação → análise → contenção → erradicação → recuperação → lições. "Primeira ação após confirmar ransomware" quase sempre é isolar (conter), não restaurar nem desligar.</li>
+      <li><strong>Ordem de volatilidade</strong>: RAM antes do disco. Desligar a máquina perde a RAM.</li>
+      <li><strong>NetFlow vs. captura de pacotes</strong>: NetFlow mostra metadados da conversa; o conteúdo só a captura de pacotes mostra.</li>
+      <li><strong>SNMP trap vs. poll</strong>: trap é o dispositivo avisando sozinho; poll é o gerente perguntando.</li>
+      <li><strong>Controle compensatório vs. exceção</strong>: compensatório reduz o risco por outro caminho; exceção aceita o risco como está, formalmente.</li>
+    </ul>
+  </div>
+
+  <h2 id="prova">Como isso cai na prova</h2>
+  <p>Como no resto da prova, predominam questões de cenário com qualificadores: <strong>BEST</strong> (a solução mais adequada entre várias que funcionam), <strong>FIRST</strong> (a próxima ação na ordem certa, muito comum em resposta a incidentes e gestão de vulnerabilidades), <strong>MOST likely</strong> (a explicação mais provável para um log ou sintoma). Neste domínio aparecem muitos trechos de log e de configuração no enunciado.</p>
+  <p>PBQs comuns relatadas por candidatos: ordenar ou corrigir regras de firewall/ACL; associar trechos de log ao ataque (força bruta, varredura, SQLi, exfiltração); colocar etapas de resposta a incidentes ou de coleta forense na ordem; configurar opções de wireless (WPA3-Enterprise, RADIUS) ou de MFA; associar ferramenta ao caso de uso (SIEM, DLP, EDR, NAC).</p>
+  <div class="callout">
+    <span class="callout-title">Sobre as questões abaixo</span>
+    <p>As questões da prova real são confidenciais (acordo de confidencialidade da CompTIA). Todas as questões desta página são <strong>originais</strong>, escritas para este guia sobre temas que candidatos relatam com frequência em 2024–2026. Nenhuma é real, nem vem de "dumps" ou de guias pagos.</p>
+  </div>
+
+  <h3>Questões de prática</h3>
+  <p><strong>1.</strong> Um analista confirma que um servidor de arquivos está sendo criptografado por ransomware neste momento. Qual deve ser a PRIMEIRA ação?</p>
+  <ol type="A"><li>Restaurar o servidor a partir do último backup.</li><li>Isolar o servidor da rede.</li><li>Desligar o servidor da tomada.</li><li>Fazer a análise de causa raiz.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Conter impede que o ransomware alcance outros sistemas e compartilhamentos, e mantém a máquina ligada para preservar a memória.</p>
+    <ul><li>A: restaurar antes de conter e erradicar reinfecta; e o backup pode estar comprometido.</li><li>C: desligar perde evidência volátil (RAM, chaves que podem estar na memória).</li><li>D: causa raiz é pós-incidente.</li></ul>
+  </details>
+
+  <p><strong>2.</strong> Clientes recebem e-mails que parecem vir do domínio da empresa, mas não vieram. A empresa já publicou SPF e DKIM e quer instruir os servidores de destino a rejeitar mensagens que falhem, além de receber relatórios. O que configurar?</p>
+  <ol type="A"><li>Um novo registro SPF com mais IPs.</li><li>DMARC com <code>p=reject</code>.</li><li>BIMI.</li><li>Um gateway de e-mail na entrada.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> DMARC é quem define a política para falhas de SPF/DKIM e envia relatórios.</p>
+    <ul><li>A: SPF só lista quem pode enviar; não diz o que fazer na falha nem gera relatórios.</li><li>C: BIMI exibe o logo e depende de DMARC já aplicado.</li><li>D: o gateway da empresa filtra o que <em>ela</em> recebe, não o que chega aos clientes.</li></ul>
+  </details>
+
+  <p><strong>3.</strong> Um scanner reporta uma vulnerabilidade crítica do Apache num servidor que roda apenas Nginx. Como classificar?</p>
+  <ol type="A"><li>Verdadeiro positivo.</li><li>Falso negativo.</li><li>Falso positivo.</li><li>Verdadeiro negativo.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>C.</strong> O scanner apontou algo que não existe.</p>
+    <ul><li>A: seria se o Apache vulnerável estivesse lá.</li><li>B: falso negativo é não apontar uma falha que existe.</li><li>D: verdadeiro negativo é não apontar e não existir.</li></ul>
+  </details>
+
+  <p><strong>4.</strong> Um hospital quer que médicos acessem prontuários apenas do seu departamento, apenas durante o plantão e apenas de dispositivos gerenciados. Qual modelo atende MELHOR?</p>
+  <ol type="A"><li>DAC.</li><li>RBAC.</li><li>ABAC.</li><li>MAC.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>C.</strong> A decisão combina atributos do usuário (departamento), do ambiente (horário) e do dispositivo (gerenciado). (Na lista da 801 o ABAC não aparece nominalmente; o cenário é clássico da 701.)</p>
+    <ul><li>A: no DAC o dono do recurso decide, sem contexto.</li><li>B: RBAC resolve "médico", mas não horário e dispositivo sem multiplicar papéis.</li><li>D: MAC usa rótulos de classificação fixos, não contexto.</li></ul>
+  </details>
+
+  <p><strong>5.</strong> Uma vulnerabilidade crítica afeta um equipamento industrial cujo fabricante só lançará correção em três meses. O que fazer agora?</p>
+  <ol type="A"><li>Aceitar o risco sem registro, porque não há patch.</li><li>Aplicar um controle compensatório, como segmentar o equipamento e bloquear o acesso ao serviço vulnerável, e registrar uma exceção com prazo.</li><li>Contratar seguro cibernético e encerrar o caso.</li><li>Desativar o scanner para esse ativo.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Reduz o risco por outro caminho e deixa a decisão documentada, com dono e data.</p>
+    <ul><li>A: aceitar risco exige formalização.</li><li>C: seguro transfere o impacto financeiro, mas a falha continua explorável.</li><li>D: esconder o achado piora a visibilidade.</li></ul>
+  </details>
+
+  <p><strong>6.</strong> O time de segurança suspeita de exfiltração lenta de dados durante a madrugada, mas não tem captura de pacotes. Qual fonte é a MAIS útil para confirmar volume e destino?</p>
+  <ol type="A"><li>NetFlow.</li><li>Log de aplicação.</li><li>SNMP trap.</li><li>Log de antivírus.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>A.</strong> NetFlow registra origem, destino, portas, bytes e horário de cada conversa.</p>
+    <ul><li>B: mostra ações na aplicação, não o tráfego de saída da rede.</li><li>C: traps avisam eventos do equipamento (porta caiu), não volume por destino.</li><li>D: antivírus registra arquivos suspeitos, não transferências.</li></ul>
+  </details>
+
+  <p><strong>7.</strong> Administradores compartilham a mesma senha de root dos bancos de produção, guardada numa planilha. Qual solução resolve MELHOR?</p>
+  <ol type="A"><li>Exigir troca da senha a cada 30 dias.</li><li>Uma ferramenta de PAM com cofre de senhas, retirada com aprovação, registro de uso e acesso just-in-time.</li><li>Proteger a planilha com senha.</li><li>Single sign-on com SAML.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Elimina o segredo compartilhado sem dono, dá rastreabilidade e reduz o tempo de privilégio.</p>
+    <ul><li>A: trocar periodicamente não resolve o compartilhamento nem a rastreabilidade.</li><li>C: continua sendo um segredo compartilhado sem auditoria.</li><li>D: SSO resolve login de usuários em aplicações, não contas privilegiadas de banco.</li></ul>
+  </details>
+
+  <p><strong>8.</strong> Um SOC recebe 4.000 alertas por dia de uma regra que dispara para qualquer login fora do horário, e analistas começaram a ignorá-la. Qual é a MELHOR ação?</p>
+  <ol type="A"><li>Desativar a regra.</li><li>Fazer alert tuning: ajustar a regra com contexto (excluir contas de serviço conhecidas, combinar com país novo ou falhas anteriores).</li><li>Contratar mais analistas L1.</li><li>Aumentar a severidade da regra para crítica.</li></ol>
+  <details><summary>Ver resposta</summary>
+    <p><strong>B.</strong> Reduz falsos positivos e fadiga de alerta mantendo a detecção.</p>
+    <ul><li>A: cria um ponto cego (falsos negativos).</li><li>C: escala o custo sem resolver a qualidade do alerta.</li><li>D: mais barulho com rótulo mais alto piora a fadiga.</li></ul>
+  </details>
+
+  <h3>Exercício estilo PBQ: corrija a ACL</h3>
+  <p>Cenário: o firewall entre a internet e a screened subnet tem a ACL abaixo, avaliada de cima para baixo (a primeira que casa vence). Requisitos: (1) qualquer pessoa acessa o servidor web <code>10.0.1.10</code> só por HTTPS; (2) só a rede de administração <code>203.0.113.0/24</code> acessa SSH no servidor web; (3) o IP malicioso <code>198.51.100.66</code> não acessa nada; (4) todo o resto é negado.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Origem</th><th>Destino</th><th>Protocolo/porta</th><th>Ação</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>any</td><td>10.0.1.10</td><td>TCP/443</td><td>Allow</td></tr>
+      <tr><td>2</td><td>any</td><td>10.0.1.10</td><td>TCP/80</td><td>Allow</td></tr>
+      <tr><td>3</td><td>any</td><td>10.0.1.10</td><td>TCP/22</td><td>Allow</td></tr>
+      <tr><td>4</td><td>198.51.100.66</td><td>any</td><td>any</td><td>Deny</td></tr>
+      <tr><td>5</td><td>any</td><td>any</td><td>any</td><td>Allow</td></tr>
+    </tbody>
+  </table></div>
+  <p>Encontre os problemas e escreva a ACL correta.</p>
+  <details><summary>Solução comentada</summary>
+    <p>Problemas: a regra 4 nunca protege contra o IP malicioso nas portas 443/80/22, porque as regras 1–3 casam antes; a regra 2 libera HTTP, que o requisito não pede; a regra 3 abre SSH para a internet inteira; a regra 5 libera tudo, o oposto do deny padrão.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Origem</th><th>Destino</th><th>Protocolo/porta</th><th>Ação</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>198.51.100.66</td><td>any</td><td>any</td><td>Deny</td></tr>
+        <tr><td>2</td><td>203.0.113.0/24</td><td>10.0.1.10</td><td>TCP/22</td><td>Allow</td></tr>
+        <tr><td>3</td><td>any</td><td>10.0.1.10</td><td>TCP/443</td><td>Allow</td></tr>
+        <tr><td>4</td><td>any</td><td>any</td><td>any</td><td>Deny</td></tr>
+      </tbody>
+    </table></div>
+    <p>Por quê: o bloqueio específico vem primeiro para valer em todas as portas; a regra de SSH é restrita à origem de administração; HTTPS fica aberto ao público; o deny explícito no fim documenta o deny implícito e costuma gerar log. Se a empresa quiser redirecionar HTTP para HTTPS, liberaria TCP/80 conscientemente, mas o requisito pede "só por HTTPS".</p>
+  </details>
+
+  <h2 id="revisar">Para revisar</h2>
+  <p>Links conferidos em 2026-11-25:</p>
+  <ul>
+    <li><a href="https://www.comptia.org/en-us/certifications/security/v8/">Página oficial do Security+ V8 (SY0-801)</a> e o <a href="https://lecbyo.files.cmp.optimizely.com/download/77f3bd3223ac11f180820e495f189928">PDF oficial dos objetivos</a>.</li>
+    <li><a href="https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/">Curso gratuito do Professor Messer (SY0-701)</a>: o Domínio 4 da 701 cobre quase todo este conteúdo.</li>
+    <li><a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">NIST SP 800-61 Rev. 3</a> (abril de 2025): a referência de resposta a incidentes, agora organizada pelas funções do NIST CSF 2.0.</li>
+    <li><a href="https://www.first.org/cvss/v4-0/">CVSS v4.0 na FIRST</a>: especificação, guia de uso e calculadora; calcular algumas notas à mão ajuda a entender as métricas ambientais.</li>
+    <li><a href="https://www.cisa.gov/resources-tools/services/cisa-tabletop-exercise-packages">Pacotes de tabletop da CISA</a>: cenários gratuitos para treinar a sequência de resposta.</li>
+    <li><a href="https://www.cisecurity.org/cis-benchmarks">CIS Benchmarks</a>: as baselines de hardening citadas em 4.1 e 4.4.</li>
+  </ul>
+
+  <nav class="pager"><a href="d3-arquitetura.html">← Domínio 3 · Arquitetura</a><a href="d5-gestao.html">Domínio 5 · Gestão →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>
