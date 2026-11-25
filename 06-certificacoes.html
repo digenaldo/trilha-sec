@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificações · Trilha Sec</title>
+<meta name="description" content="Quais certificações de segurança valem a pena para quem vem de software, em que ordem e quanto custam em 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 06</span>
+  <h1>Certificações</h1>
+  <p class="lead">Quais certificações valem o dinheiro para quem vem de software, em que ordem tirar e quais você pode pular.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Em desenvolvimento, quase ninguém pede certificado: o GitHub e a entrevista técnica bastam. Em segurança é diferente. Muitas vagas, principalmente em consultoria, banco e governo, usam certificação como <dfn>filtro de RH</dfn>, ou seja, uma triagem feita antes de alguém técnico ler seu currículo. Uma certificação certa abre a porta. Quem faz você passar na entrevista continua sendo o portfólio.</p>
+  </div>
+
+  <h2 id="como-ler">Como ler esta página</h2>
+  <p>Há dois tipos de prova e vale saber a diferença antes de escolher:</p>
+  <ul>
+    <li><dfn>Prova de múltipla escolha</dfn>: testa se você conhece conceitos e vocabulário. É mais barata e mais reconhecida pelo RH, mas prova pouco sobre o que você sabe fazer.</li>
+    <li><dfn>Prova prática</dfn> (<em>hands-on</em> ou <em>performance-based</em>): você recebe um ambiente e precisa resolver tarefas reais, como investigar um alerta ou corrigir uma configuração. Pesa mais com quem é técnico.</li>
+  </ul>
+  <p>Os níveis abaixo usam esta escala: <span class="tag lvl-1">● entrada</span> <span class="tag lvl-2">●● intermediário</span> <span class="tag lvl-3">●●● avançado</span>.</p>
+
+  <div class="callout warn">
+    <span class="callout-title">Sobre os preços</span>
+    <p>Os valores são aproximados, em dólares, e foram levantados em novembro de 2026. Preços e versões de prova mudam com frequência e variam por país. Confira no site oficial antes de comprar, e procure desconto de estudante ou voucher de evento.</p>
+  </div>
+
+  <h2 id="base">A base comum (escolha uma)</h2>
+  <p>Servem para qualquer trilha. Se você vem de dev, uma basta. Não tire as três.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Certificação</th><th>Nível</th><th>Tipo</th><th>Custo aprox.</th><th>Quando faz sentido</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CompTIA Security+</strong></td><td><span class="tag lvl-1">●</span></td><td>Múltipla escolha com algumas questões práticas</td><td>US$ 425–439</td><td>É a mais pedida em vagas de entrada e a escolha padrão. A versão nova, SY0-801, entrou em 17/11/2026, e a SY0-701 continua disponível até junho de 2027.</td></tr>
+      <tr><td><strong>ISC2 CC</strong> (Certified in Cybersecurity)</td><td><span class="tag lvl-1">●</span></td><td>Múltipla escolha</td><td>Paga desde 2026</td><td>Era gratuita pelo programa "One Million Certified", que fechou inscrições em 20/05/2026. Hoje é paga e tem menos peso que a Security+.</td></tr>
+      <tr><td><strong>Google Cybersecurity Certificate</strong> (Coursera)</td><td><span class="tag lvl-1">●</span></td><td>Curso com avaliações, sem prova supervisionada</td><td>Assinatura mensal do Coursera (há auxílio financeiro)</td><td>Bom como curso estruturado, mas vale menos como credencial. Use para estudar, não para filtrar currículo.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Recomendação:</strong> vindo de dev, a <strong>Security+</strong> é a aposta mais segura. Se você já tem experiência sólida com Linux e redes, dá para pular a base e ir direto para uma certificação da sua trilha.</p>
+
+  <h2 id="devsecops">Trilha DevSecOps e Cloud</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Certificação</th><th>Nível</th><th>Tipo</th><th>Custo aprox.</th><th>Comentário</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CKA</strong> → <strong>CKS</strong> (Linux Foundation / CNCF)</td><td><span class="tag lvl-2">●●</span></td><td>Prática, cerca de 2 h no terminal</td><td>~US$ 445 cada (há combos e promoções frequentes)</td><td>A CKS exige a CKA ativa. É a melhor escolha se a vaga envolve Kubernetes, e o RH e os times técnicos respeitam as duas.</td></tr>
+      <tr><td><strong>Certified DevSecOps Professional</strong> (CDP, da Practical DevSecOps)</td><td><span class="tag lvl-2">●●</span></td><td>Prática, com laboratórios</td><td>~US$ 760–900 com curso</td><td>Cobre exatamente o conteúdo da <a href="04-devsecops.html">página 04</a>: SAST, SCA, DAST e IaC no pipeline. É menos conhecida pelo RH.</td></tr>
+      <tr><td><strong>AWS Certified Security – Specialty</strong></td><td><span class="tag lvl-2">●●</span></td><td>Múltipla escolha</td><td>~US$ 300</td><td>Muito pedida em empresas que usam AWS. Equivalentes em outras nuvens: Google Professional Cloud Security Engineer e Microsoft AZ-500.</td></tr>
+      <tr><td><strong>GIAC GCSA</strong> (Cloud Security Automation)</td><td><span class="tag lvl-3">●●●</span></td><td>Múltipla escolha com laboratórios, livro aberto</td><td>Caro: mais de US$ 1.000 só a prova, e o curso SANS SEC540 custa bem mais</td><td>Muito respeitada, mas o preço só costuma compensar se a empresa pagar.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="appsec">Trilha AppSec</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Certificação</th><th>Nível</th><th>Tipo</th><th>Custo aprox.</th><th>Comentário</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Burp Suite Certified Practitioner</strong> (BSCP, PortSwigger)</td><td><span class="tag lvl-2">●●</span></td><td>Prática: você explora aplicações vulneráveis em tempo limitado</td><td>Barata (cerca de US$ 100, verifique)</td><td>A preparação é toda gratuita, pela Web Security Academy. É a melhor relação custo-benefício para AppSec.</td></tr>
+      <tr><td><strong>GIAC GWEB</strong></td><td><span class="tag lvl-3">●●●</span></td><td>Múltipla escolha, livro aberto</td><td>Caro: mais de US$ 1.000</td><td>Só faz sentido se a empresa pagar.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="blue">Trilha Blue Team / SOC</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Certificação</th><th>Nível</th><th>Tipo</th><th>Custo aprox.</th><th>Comentário</th></tr></thead>
+    <tbody>
+      <tr><td><strong>TryHackMe SAL1</strong> (Security Analyst Level 1)</td><td><span class="tag lvl-1">●</span></td><td>Prática: você faz a triagem de alertas num SOC simulado</td><td>~US$ 349</td><td>Sem pré-requisito. A preparação é a trilha SOC Level 1 da própria plataforma, que é paga por assinatura. É nova e ainda pouco reconhecida pelo RH.</td></tr>
+      <tr><td><strong>BTL1</strong> (Blue Team Level 1)</td><td><span class="tag lvl-1">●</span>/<span class="tag lvl-2">●●</span></td><td>Prática, prova de 24 h</td><td>~US$ 499</td><td>Bem vista por quem já é do SOC, porque o formato é prático. A empresa que a oferece, Security Blue Team, mudou de nome para Centri em 2026.</td></tr>
+      <tr><td><strong>CompTIA CySA+</strong></td><td><span class="tag lvl-2">●●</span></td><td>Múltipla escolha com questões práticas</td><td>~US$ 400+</td><td>A que mais aparece em vaga de analista de SOC. Faz mais sentido depois da Security+ ou de um a dois anos na área.</td></tr>
+      <tr><td><strong>Microsoft SC-200</strong></td><td><span class="tag lvl-2">●●</span></td><td>Múltipla escolha</td><td>~US$ 165 (preço varia por país)</td><td>Ótima se a empresa usa Microsoft Sentinel ou Defender. No Brasil isso é muito comum.</td></tr>
+      <tr><td><strong>Cisco CyberOps Associate</strong></td><td><span class="tag lvl-1">●</span>/<span class="tag lvl-2">●●</span></td><td>Múltipla escolha</td><td>~US$ 300</td><td>Alternativa à CySA+ com mais foco em redes.</td></tr>
+      <tr><td><strong>GIAC GCIH</strong> (Incident Handler)</td><td><span class="tag lvl-3">●●●</span></td><td>Múltipla escolha com laboratórios</td><td>Caro: mais de US$ 1.000</td><td>Referência em resposta a incidentes. Costuma valer quando a empresa paga.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="depois">Para depois: carreira sênior e Red Team</h2>
+  <ul>
+    <li><strong>CISSP</strong> (ISC2): voltada a gestão e arquitetura de segurança. Exige cinco anos de experiência na área para receber o título completo, então não é para quem está migrando agora.</li>
+    <li><strong>OSCP</strong> (OffSec): referência em pentest, com prova prática longa. Só vale se você quiser ir para Red Team, que está fora do escopo desta parte.</li>
+    <li><strong>CEH</strong> (EC-Council): muito conhecida pelo RH, mas criticada por técnicos por ser cara e pouco prática. Só tire se uma vaga específica exigir.</li>
+  </ul>
+
+  <h2 id="roteiros">Roteiros sugeridos</h2>
+  <p>Cada roteiro vai de "acabei de migrar" até "candidato forte a pleno", e assume que você também está montando portfólio em paralelo (veja a <a href="07-laboratorios.html">página 07</a>).</p>
+  <div class="grid">
+    <div class="card"><span class="n">DevSecOps</span><h3>Security+ → CKA → CKS</h3><p>Se a empresa-alvo não usa Kubernetes, troque CKA → CKS por AWS Security Specialty.</p></div>
+    <div class="card"><span class="n">AppSec</span><h3>Web Security Academy → BSCP</h3><p>Some a Security+ se as vagas que você mira pedirem. O BSCP já prova que você sabe explorar e corrigir.</p></div>
+    <div class="card"><span class="n">Blue Team</span><h3>Security+ ou SAL1 → BTL1 → CySA+ ou SC-200</h3><p>Escolha a SC-200 se o mercado que você mira usa ferramentas Microsoft.</p></div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">O que pesa mais que certificação</span>
+    <p>Um repositório com um pipeline de segurança funcionando, um conjunto de regras de detecção com testes, ou write-ups (relatos escritos de como você resolveu um desafio) mostram na prática o que uma prova de múltipla escolha só sugere. A combinação que mais funciona para quem migra é <strong>uma certificação de base e um portfólio público</strong>.</p>
+  </div>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Por que, em segurança, certificação pesa mais do que em desenvolvimento?</summary><p>Porque muitas vagas, principalmente em banco, consultoria e governo, usam certificação como filtro de RH antes da análise técnica. Ela abre a porta, mas a entrevista e o portfólio continuam decidindo.</p></details>
+  <details><summary>Qual a diferença prática entre a Security+ e a BTL1?</summary><p>A Security+ é, na maior parte, múltipla escolha: prova vocabulário e conceitos e é muito reconhecida pelo RH. A BTL1 é uma prova prática de 24 h investigando um caso, e por isso pesa mais com quem é técnico de SOC.</p></details>
+  <details><summary>Você quer DevSecOps numa empresa que roda tudo em Kubernetes. Qual sequência faz sentido?</summary><p>Security+ (opcional, se vindo de dev com boa base) → CKA → CKS. A CKS exige a CKA ativa.</p></details>
+  <details><summary>A ISC2 CC ainda é gratuita?</summary><p>Não. O programa gratuito fechou inscrições em 20/05/2026. Quem já tinha código válido pode fazer a prova até 31/12/2026.</p></details>
+  <details><summary>Por que não começar pela CISSP?</summary><p>Porque o título completo exige cinco anos de experiência em segurança, e o conteúdo é voltado a gestão. Ela faz sentido mais tarde na carreira.</p></details>
+
+  <nav class="pager"><a href="05-blue-team.html">← Blue Team</a><a href="07-laboratorios.html">Laboratórios e plano →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

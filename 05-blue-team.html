@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blue Team: detectar e responder · Trilha Sec</title>
+<meta name="description" content="O que faz um Blue Team: SOC, logs, SIEM, engenharia de detecção com Sigma, MITRE ATT&amp;CK, resposta a incidentes (NIST SP 800-61) e métricas, explicado para quem vem de desenvolvimento.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 05</span>
+  <h1>Blue Team: detectar e responder</h1>
+  <p class="lead">Ao fim desta página você vai saber como um time de defesa transforma logs em alertas, como escreve detecções como código e o que acontece, passo a passo, quando um incidente de verdade aparece.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Você já vive metade do trabalho de defesa sem saber. Você lê logs para achar a causa de um erro, recebe alerta às 3h da manhã no plantão, escreve runbook, faz postmortem e discute se um alerta é "barulhento demais". O Blue Team faz exatamente isso, só que a pergunta não é "o serviço caiu?" e sim "alguém está fazendo algo que não deveria?".</p>
+    <p>Por isso desenvolvedores costumam se dar bem na área: a parte mais valorizada hoje, a <strong>engenharia de detecção</strong>, é basicamente escrever, testar e revisar código que roda em cima de logs.</p>
+  </div>
+
+  <h2 id="cores">Blue, Red e Purple Team</h2>
+  <p>Segurança usa cores emprestadas de exercícios militares para dizer de que lado cada time joga:</p>
+  <div class="grid">
+    <div class="card"><h3>Blue Team</h3><p>A <dfn>defesa</dfn>: monitora sistemas, detecta ataques e responde a incidentes. Trabalha no dia a dia, com o ambiente real da empresa.</p></div>
+    <div class="card"><h3>Red Team</h3><p>O <dfn>ataque autorizado</dfn>: simula um invasor de verdade, com permissão por escrito, para descobrir se a defesa percebe e reage.</p></div>
+    <div class="card"><h3>Purple Team</h3><p>A <dfn>colaboração</dfn>: red e blue trabalhando juntos, na mesma sala. O red executa uma técnica, o blue verifica se ela gerou alerta e, se não gerou, corrige a detecção na hora.</p></div>
+  </div>
+  <p>Purple team não é um terceiro time fixo na maioria das empresas; é um jeito de trabalhar. Pense nele como um teste de integração da defesa: em vez de esperar um ataque real para descobrir que o alerta não dispara, você provoca o cenário de propósito.</p>
+
+  <h2 id="soc">O SOC e seus níveis</h2>
+  <p>O <dfn>SOC</dfn> (<em>Security Operations Center</em>, centro de operações de segurança) é o time, às vezes uma sala física, que vigia os alertas de segurança da empresa, normalmente 24 horas por dia. Ele pode ser interno ou terceirizado para um <dfn>MSSP</dfn> (<em>Managed Security Service Provider</em>, empresa que presta esse serviço para vários clientes).</p>
+  <p>O trabalho costuma ser dividido em níveis, parecido com suporte técnico:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Nível</th><th>O que faz</th><th>Paralelo em dev</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag lvl-1">L1</span> Triagem</td><td>Olha cada alerta que chega, decide se é falso positivo, se dá para fechar ou se precisa escalar. Segue runbooks.</td><td>Quem atende o pager primeiro e segue o runbook.</td></tr>
+      <tr><td><span class="tag lvl-2">L2</span> Investigação</td><td>Aprofunda os casos escalados: cruza logs, reconstrói a linha do tempo, decide se é incidente e inicia a contenção.</td><td>O engenheiro que entra na call e faz o debug de verdade.</td></tr>
+      <tr><td><span class="tag lvl-3">L3</span> Especialista</td><td>Resposta a incidentes complexos, <dfn>threat hunting</dfn> (caçar ameaças que nenhum alerta pegou, partindo de hipóteses), análise de malware e criação de novas detecções.</td><td>O staff/sênior que conhece o sistema a fundo e corrige a causa raiz.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Muita gente acha que precisa entrar como L1 e "subir". Para quem vem de dev, isso não é obrigatório: vagas de engenharia de detecção, automação de SOC e segurança em nuvem valorizam muito quem já sabe programar, e às vezes pulam o L1 inteiro.</p>
+  </div>
+
+  <h2 id="logs">Logs: a matéria-prima</h2>
+  <p>Defesa não enxerga nada que não esteja registrado. Se um evento não gera log, para o Blue Team ele não aconteceu. As fontes mais comuns:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Fonte</th><th>Exemplo</th><th>Que pergunta responde</th></tr></thead>
+    <tbody>
+      <tr><td>Autenticação</td><td><code>/var/log/auth.log</code> do Linux, eventos de logon do Windows, logs do provedor de login (Okta, Entra ID)</td><td>Quem entrou, de onde, quando, e quem tentou e falhou.</td></tr>
+      <tr><td>Web e proxy</td><td>Access log do Nginx, logs do <dfn>WAF</dfn> (<em>Web Application Firewall</em>, filtro na frente da aplicação que bloqueia requisições maliciosas), proxy de saída</td><td>Que URLs foram chamadas, por quem, com que resposta; para onde as máquinas internas estão se conectando.</td></tr>
+      <tr><td>Auditoria de nuvem</td><td><dfn>CloudTrail</dfn> (registro da AWS de toda chamada de API feita na conta), Cloud Audit Logs no GCP, Activity Log no Azure</td><td>Quem criou, apagou ou alterou que recurso, com qual credencial.</td></tr>
+      <tr><td>Endpoint</td><td>Telemetria do EDR (ver abaixo), Sysmon no Windows, auditd no Linux</td><td>Que processo rodou, quem foi o processo pai, que arquivo foi escrito.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Normalização</h3>
+  <p>Cada fonte escreve log de um jeito. O problema aparece quando você quer perguntar "quais IPs falharam login mais de 10 vezes?" em cinco fontes diferentes. <dfn>Normalização</dfn> é converter os logs para um formato comum, com os mesmos nomes de campo, para que uma única consulta funcione em todas as fontes. Veja uma linha crua do SSH:</p>
+<pre><code><span class="c"># linha crua em /var/log/auth.log</span>
+Nov 25 03:12:44 web-01 sshd[2211]: Failed password for root from 203.0.113.7 port 51422 ssh2
+
+<span class="c"># a mesma informação normalizada (campos no estilo Elastic Common Schema)</span>
+{
+  "@timestamp": "2026-11-25T03:12:44Z",
+  "host.name": "web-01",
+  "event.category": "authentication",
+  "event.outcome": "failure",
+  "user.name": "root",
+  "source.ip": "203.0.113.7"
+}</code></pre>
+  <p>Existem esquemas padrão para isso, como o <dfn>ECS</dfn> (<em>Elastic Common Schema</em>) e o <dfn>OCSF</dfn> (<em>Open Cybersecurity Schema Framework</em>, padrão aberto apoiado por vários fornecedores). É o mesmo problema que você resolve ao padronizar logs estruturados em JSON entre microsserviços.</p>
+
+  <h2 id="siem">SIEM em palavras simples</h2>
+  <p>O <dfn>SIEM</dfn> (<em>Security Information and Event Management</em>) é o lugar onde todos esses logs chegam, são normalizados, guardados e pesquisados, e onde as regras de detecção rodam e geram alertas. Se você conhece Grafana + Loki ou Datadog Logs, já tem 70% do modelo mental: um SIEM é uma plataforma de logs com regras de alerta, só que focada em segurança e com recursos para investigação (casos, linha do tempo, enriquecimento com informações de ameaças).</p>
+  <ul>
+    <li><strong>Splunk</strong>: comercial, muito comum em grandes empresas. Tem linguagem de busca própria, a <dfn>SPL</dfn> (<em>Search Processing Language</em>).</li>
+    <li><strong>Elastic Security</strong>: construído sobre o Elasticsearch e o Kibana; muita gente começa por ele porque dá para rodar localmente.</li>
+    <li><strong>Wazuh</strong>: <dfn>open source</dfn> (código aberto e gratuito), junta agente nos servidores, regras de detecção e painel. Ótimo para montar laboratório em casa.</li>
+  </ul>
+  <p>Existem outros (Microsoft Sentinel, Google SecOps, etc.). A ferramenta muda de empresa para empresa; o raciocínio é o mesmo.</p>
+
+  <h2 id="deteccao">Engenharia de detecção: detecções como código</h2>
+  <p>Uma <dfn>detecção</dfn> é uma regra que olha os logs e dispara um alerta quando encontra um padrão suspeito. Durante muito tempo elas eram criadas clicando na interface do SIEM, sem histórico e sem teste. <dfn>Engenharia de detecção</dfn> (<em>detection engineering</em>) é tratar essas regras como software:</p>
+  <ul>
+    <li><strong>Versionar</strong>: as regras ficam num repositório git, e você sabe quem mudou o quê e por quê.</li>
+    <li><strong>Revisar</strong>: toda regra nova ou alterada passa por pull request.</li>
+    <li><strong>Testar</strong>: o CI valida a sintaxe e roda a regra contra logs de exemplo, um que deve disparar e um que não deve.</li>
+    <li><strong>Fazer deploy automático</strong>: o pipeline converte a regra para o formato do SIEM e publica.</li>
+    <li><strong>Medir</strong>: quantas vezes disparou, quantas foram falso positivo.</li>
+  </ul>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>É o mesmo ciclo de um alerta de Prometheus guardado num repositório de infraestrutura como código: PR, review, teste no CI, deploy. A diferença é só o que a regra procura. Se você já escreveu teste unitário com caso positivo e negativo, já sabe testar uma detecção.</p>
+  </div>
+
+  <h2 id="sigma">Sigma: uma regra, vários SIEMs</h2>
+  <p><dfn>Sigma</dfn> é um formato aberto, em YAML, para escrever detecções sem amarrar a um SIEM específico. Uma ferramenta de linha de comando (<code>sigma-cli</code>) converte a regra para a linguagem do Splunk, do Elastic e de outros. Pense no Sigma como um "ORM das detecções": você escreve uma vez e o conversor gera a consulta de cada banco.</p>
+  <p>O exemplo abaixo detecta <dfn>força bruta</dfn> (<em>brute force</em>, tentar muitas senhas até acertar) no SSH. São dois documentos no mesmo arquivo: uma regra base que reconhece <em>uma</em> falha de login, e uma <dfn>regra de correlação</dfn> (regra que conta ou combina eventos de outra regra) que dispara quando há muitas falhas do mesmo IP em pouco tempo.</p>
+<pre><code>title: Falha de senha no SSH
+id: d2b2982a-a65d-4dfb-b1f0-68083f8c6c5b
+name: ssh_falha_senha
+status: experimental
+description: Uma tentativa de login SSH com senha errada.
+author: Trilha Sec
+date: 2026-11-25
+logsource:
+  product: linux
+  service: auth
+detection:
+  keywords:
+    - 'Failed password for'
+  condition: keywords
+falsepositives:
+  - Usuário legítimo que errou a senha
+level: low
+---
+title: Possível força bruta no SSH
+id: 47a1576d-d934-43d6-8775-9a2e6b40292a
+status: experimental
+description: 10 ou mais falhas de senha SSH vindas do mesmo IP em 5 minutos.
+author: Trilha Sec
+date: 2026-11-25
+correlation:
+  type: event_count
+  rules:
+    - ssh_falha_senha
+  group-by:
+    - source.ip
+  timespan: 5m
+  condition:
+    gte: 10
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+falsepositives:
+  - Script de automação com senha antiga configurada
+  - Scanner de vulnerabilidades interno autorizado
+level: medium</code></pre>
+  <p>Linha por linha:</p>
+  <ul>
+    <li><code>title</code>, <code>description</code>: o que um analista lê no alerta. Escreva para alguém cansado às 3h da manhã.</li>
+    <li><code>id</code>: um <dfn>UUID</dfn> (identificador único aleatório). Não muda nunca, mesmo se o título mudar, para que métricas e histórico continuem ligados à regra.</li>
+    <li><code>name</code>: apelido legível, usado pela regra de correlação para referenciar esta.</li>
+    <li><code>status</code>: maturidade (<code>experimental</code>, <code>test</code>, <code>stable</code>). Regra nova começa experimental, como uma feature atrás de flag.</li>
+    <li><code>logsource</code>: em que tipo de log a regra roda. <code>product: linux</code> + <code>service: auth</code> significa "logs de autenticação do Linux". O conversor usa isso para descobrir qual índice ou tabela consultar.</li>
+    <li><code>detection</code>: o coração da regra. <code>keywords</code> é uma lista de textos procurados na linha; <code>condition: keywords</code> diz "dispare quando a seleção <code>keywords</code> casar". Em regras mais complexas você combina seleções com <code>and</code>, <code>or</code> e <code>not</code>.</li>
+    <li><code>falsepositives</code>: situações legítimas que também casam. Isso orienta o L1 na triagem, como a seção "causas conhecidas" de um runbook.</li>
+    <li><code>level</code>: severidade. A falha isolada é <code>low</code> porque, sozinha, não quer dizer nada: todo mundo erra senha.</li>
+    <li><code>---</code>: separador de documentos YAML; a partir daqui começa a segunda regra.</li>
+    <li><code>correlation.type: event_count</code>: conta quantos eventos da regra base aconteceram.</li>
+    <li><code>rules</code>: qual regra está sendo contada (pelo <code>name</code>).</li>
+    <li><code>group-by: source.ip</code>: conta separado por IP de origem. Sem isso, 10 pessoas diferentes errando a senha uma vez cada disparariam o alerta.</li>
+    <li><code>timespan: 5m</code> e <code>condition: gte: 10</code>: dispare se houver 10 ou mais (<em>greater than or equal</em>) dentro de 5 minutos. Esses números são ajustáveis, e ajustá-los com base em dados reais é boa parte do trabalho.</li>
+    <li><code>tags</code>: liga a regra ao MITRE ATT&amp;CK (próxima seção). <code>t1110.001</code> é "Brute Force: Password Guessing".</li>
+  </ul>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>O <code>group-by</code> só funciona se o IP já estiver num campo separado. A regra base procura texto cru, mas a contagem precisa de <code>source.ip</code> extraído; isso é responsabilidade do parser ou da normalização no seu SIEM. Regras "certas" que nunca disparam porque o campo não existe são um problema clássico, e é por isso que testar contra logs reais importa.</p>
+  </div>
+
+  <h2 id="attack">MITRE ATT&amp;CK: um vocabulário comum para ataques</h2>
+  <p>O <dfn>MITRE ATT&amp;CK</dfn> é uma base de conhecimento pública e gratuita, mantida pela organização sem fins lucrativos MITRE, que cataloga o que atacantes reais fazem, observado em incidentes documentados. Ele organiza tudo em duas camadas:</p>
+  <ul>
+    <li><dfn>Tática</dfn>: o <strong>objetivo</strong> do atacante naquele momento, o "porquê". Exemplos: <em>Initial Access</em> (TA0001, entrar no ambiente), <em>Credential Access</em> (TA0006, roubar credenciais), <em>Impact</em> (TA0040, causar dano).</li>
+    <li><dfn>Técnica</dfn>: <strong>como</strong> ele atinge esse objetivo. Exemplos: <code>T1110</code> Brute Force, <code>T1078</code> Valid Accounts (usar uma conta legítima roubada), <code>T1496</code> Resource Hijacking (usar seus servidores para minerar criptomoeda). Técnicas têm sub-técnicas, como <code>T1110.001</code> Password Guessing e <code>T1110.003</code> Password Spraying (testar uma senha comum em muitas contas).</li>
+  </ul>
+  <p><strong>Mapear uma detecção</strong> é dizer qual técnica ela pega, como fizemos no campo <code>tags</code> da regra Sigma. Por que isso vale o esforço? Porque, com todas as regras mapeadas, você consegue pintar a matriz do ATT&amp;CK (a ferramenta gratuita ATT&amp;CK Navigator faz isso) e enxergar <strong>onde não tem cobertura nenhuma</strong>. É o equivalente a um relatório de cobertura de testes: não prova que você está seguro, mas mostra onde certamente não está olhando.</p>
+
+  <h2 id="fadiga">Fadiga de alertas: o mesmo problema do SRE</h2>
+  <p><dfn>Fadiga de alertas</dfn> é quando chegam tantos alertas, a maioria inútil, que as pessoas param de prestar atenção e o alerta verdadeiro passa despercebido. Se você já silenciou um canal do Slack de alertas, conhece a sensação. Em SOCs isso é grave: é comum ler relatos de times que fecham a maior parte dos alertas como falso positivo.</p>
+  <p>As lições do <dfn>SRE</dfn> (<em>Site Reliability Engineering</em>, a disciplina de confiabilidade criada no Google) se aplicam quase sem mudança:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Princípio SRE</th><th>Versão Blue Team</th></tr></thead>
+    <tbody>
+      <tr><td>Alerte sobre sintoma que afeta o usuário, não sobre cada métrica.</td><td>Alerte sobre comportamento de ataque (10 falhas e depois um sucesso do mesmo IP), não sobre cada falha isolada.</td></tr>
+      <tr><td>Todo alerta precisa ser acionável.</td><td>Se o analista não tem o que fazer com o alerta, ele vira relatório ou dashboard, não página.</td></tr>
+      <tr><td>Todo alerta tem runbook.</td><td>Toda detecção tem um guia de triagem: o que checar, quais são os falsos positivos conhecidos, quando escalar.</td></tr>
+      <tr><td>Revise alertas que disparam muito e ninguém age.</td><td>Meça a <dfn>precisão</dfn> de cada regra (de cada 100 disparos, quantos eram ataque real) e ajuste ou desligue as piores.</td></tr>
+    </tbody>
+  </table></div>
+  <p>O vocabulário de erro também é o mesmo dos testes: <dfn>falso positivo</dfn> é alerta sem ataque; <dfn>falso negativo</dfn> é ataque sem alerta. Reduzir um costuma aumentar o outro, e o trabalho é achar o equilíbrio.</p>
+
+  <h2 id="edr">EDR: o sensor nas máquinas</h2>
+  <p><dfn>EDR</dfn> (<em>Endpoint Detection and Response</em>) é um agente instalado em notebooks e servidores que registra o que acontece na máquina (processos, conexões de rede, arquivos, alterações de registro no Windows) e envia para uma central. Diferente do antivírus tradicional, que compara arquivos com uma lista de vírus conhecidos, o EDR olha <strong>comportamento</strong>: "o Word abriu um PowerShell que baixou um arquivo da internet" é suspeito mesmo que o arquivo seja inédito. Ele também permite responder remotamente, por exemplo isolando a máquina da rede com um clique. Exemplos de mercado: CrowdStrike Falcon, Microsoft Defender for Endpoint, SentinelOne. Quando o mesmo conceito se estende para nuvem, e-mail e rede, o nome vira <dfn>XDR</dfn> (<em>Extended Detection and Response</em>).</p>
+
+  <h2 id="ir">Resposta a incidentes</h2>
+  <p>Um <dfn>incidente de segurança</dfn> é um evento que compromete (ou ameaça comprometer) a confidencialidade, integridade ou disponibilidade de sistemas e dados. A referência mais usada para organizar a resposta é o guia <dfn>NIST SP 800-61</dfn>, publicado pelo NIST (instituto de padrões do governo dos EUA). A revisão 3, de 2025, reorganizou o texto em torno do NIST Cybersecurity Framework 2.0, mas o ciclo de quatro fases da revisão 2 continua sendo o modelo mental que você vai ouvir em entrevistas e em times:</p>
+  <ol>
+    <li><strong>Preparação</strong>: tudo que se faz antes do incidente. Ter logs ligados, acessos de emergência, contatos, playbooks e treinos. É como ter dashboards e runbooks prontos antes da primeira queda.</li>
+    <li><strong>Detecção e análise</strong>: perceber que algo aconteceu e entender o tamanho. É incidente mesmo? O que foi afetado? Desde quando?</li>
+    <li><strong>Contenção, erradicação e recuperação</strong>: parar o sangramento (contenção), remover a causa e o que o atacante deixou para trás (erradicação) e voltar à operação normal com segurança (recuperação).</li>
+    <li><strong>Atividade pós-incidente</strong>: o postmortem. O que aprendemos, que detecção faltou, que ação vira card. Sem culpados, igual ao postmortem <em>blameless</em> de SRE.</li>
+  </ol>
+
+  <h3>Exemplo: chave da AWS vazada no GitHub</h3>
+  <p>Um cenário muito comum na vida real. Uma <dfn>access key</dfn> da AWS (par de identificador e segredo que permite chamar a API da conta, como uma senha para programas) foi commitada por engano num repositório público. Robôs varrem o GitHub o tempo todo atrás disso e costumam achar chaves em minutos.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Hora</th><th>O que acontece</th><th>Fase</th></tr></thead>
+    <tbody>
+      <tr><td>Antes</td><td>A conta tem CloudTrail ligado em todas as regiões, alertas de custo e um playbook "credencial vazada". O secret scanning do GitHub está ativo.</td><td>Preparação</td></tr>
+      <tr><td>10:02</td><td>Dev faz push de um <code>.env</code> com <code>AWS_ACCESS_KEY_ID</code> e <code>AWS_SECRET_ACCESS_KEY</code> num repositório público.</td><td>(o incidente começa)</td></tr>
+      <tr><td>10:06</td><td>CloudTrail registra <code>GetCallerIdentity</code> com essa chave vindo de um IP desconhecido: o atacante está testando se a chave funciona. Técnica: <code>T1078.004</code> Valid Accounts: Cloud Accounts.</td><td>Detecção e análise</td></tr>
+      <tr><td>10:09</td><td>Vários <code>RunInstances</code> de máquinas grandes em regiões que a empresa nunca usa. Uma detecção "criação de instância em região não utilizada" dispara. Técnica provável: <code>T1496</code> Resource Hijacking (mineração).</td><td>Detecção e análise</td></tr>
+      <tr><td>10:15</td><td>L1 confirma que não é deploy legítimo e escala. L2 abre incidente e filtra o CloudTrail pelo ID da chave para listar <strong>tudo</strong> que ela fez desde 10:02.</td><td>Detecção e análise</td></tr>
+      <tr><td>10:18</td><td>A chave é desativada (<code>aws iam update-access-key --status Inactive</code>). Desativar primeiro, em vez de apagar, preserva a evidência e permite reverter se algo legítimo quebrar.</td><td>Contenção</td></tr>
+      <tr><td>10:40</td><td>Instâncias criadas pelo atacante são encerradas; um usuário IAM que ele criou para manter acesso (<dfn>persistência</dfn>, garantir que continua dentro mesmo depois de perder a credencial original) é removido. A chave é apagada e uma nova é emitida para o serviço legítimo, guardada num gerenciador de segredos.</td><td>Erradicação e recuperação</td></tr>
+      <tr><td>Dias depois</td><td>Postmortem: por que o <code>.env</code> não estava no <code>.gitignore</code>? Ações: hook de pre-commit com detector de segredos, trocar chaves fixas por credenciais temporárias, bloquear regiões não usadas, nova detecção para <code>GetCallerIdentity</code> vindo de IP fora da empresa.</td><td>Pós-incidente</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Apagar o commit não resolve. O histórico do git, forks e os robôs que já copiaram a chave continuam existindo. Credencial vazada se trata como comprometida: revogue e troque sempre, mesmo que o repositório tenha ficado público por segundos.</p>
+  </div>
+
+  <h2 id="ioc-ttp">IOC, TTP e a Pirâmide da Dor</h2>
+  <p>Um <dfn>IOC</dfn> (<em>Indicator of Compromise</em>, indicador de comprometimento) é um rastro concreto de um ataque: um IP, um domínio, o <dfn>hash</dfn> de um arquivo malicioso (impressão digital do arquivo, calculada com SHA-256, por exemplo). <dfn>TTP</dfn> (<em>Tactics, Techniques and Procedures</em>) é o <strong>comportamento</strong> do atacante: como ele age, independente das ferramentas que usa.</p>
+  <p>A <dfn>Pirâmide da Dor</dfn> (<em>Pyramid of Pain</em>, proposta por David Bianco em 2013) ordena esses indicadores pelo quanto <strong>dói para o atacante</strong> quando você os detecta:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Degrau (de baixo para cima)</th><th>Custo para o atacante trocar</th></tr></thead>
+    <tbody>
+      <tr><td>Hash de arquivo</td><td>Trivial: muda um byte do arquivo e o hash é outro.</td></tr>
+      <tr><td>Endereço IP</td><td>Fácil: aluga outro servidor ou usa outro proxy.</td></tr>
+      <tr><td>Nome de domínio</td><td>Simples: registra outro domínio.</td></tr>
+      <tr><td>Artefatos de rede/host</td><td>Irritante: padrões de URL, nomes de arquivos, chaves de registro que a ferramenta deixa.</td></tr>
+      <tr><td>Ferramentas</td><td>Difícil: precisa achar ou escrever outra ferramenta.</td></tr>
+      <tr><td>TTPs</td><td>Muito difícil: precisa mudar o jeito de trabalhar.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A lição prática: bloquear IPs ajuda no momento, mas detecções baseadas em comportamento (como "10 falhas e depois um sucesso") continuam funcionando quando o atacante troca de IP. É a diferença entre corrigir um sintoma e corrigir a causa.</p>
+  <p><dfn>Threat intelligence</dfn> (inteligência de ameaças) é a informação organizada sobre quem ataca, como e com o quê: listas de IOCs, relatórios sobre grupos e suas TTPs, alertas do seu setor. No dia a dia, o SIEM usa feeds de IOCs para enriquecer alertas ("este IP já apareceu em ataques conhecidos"), e o time de detecção lê relatórios de TTPs para decidir que regra escrever a seguir.</p>
+
+  <h2 id="metricas">Métricas: MTTD e MTTR</h2>
+  <ul>
+    <li><dfn>MTTD</dfn> (<em>Mean Time To Detect</em>): tempo médio entre o começo do ataque e o momento em que alguém percebe. No exemplo da chave, de 10:02 a 10:09, ou 7 minutos.</li>
+    <li><dfn>MTTR</dfn> (<em>Mean Time To Respond</em>, às vezes <em>to Recover</em>): tempo médio entre a detecção e a contenção ou resolução. Confirme sempre qual definição o time usa, porque a sigla é ambígua.</li>
+  </ul>
+  <p>São as mesmas métricas que times de SRE usam para incidentes de disponibilidade. Junto delas, vale acompanhar a precisão de cada regra e a cobertura no ATT&amp;CK. E vale o aviso de sempre sobre métricas: se o time for cobrado só por MTTR baixo, vai aprender a fechar alertas rápido, não bem.</p>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>1. Qual a diferença entre Red, Blue e Purple Team?</summary><p>Blue defende (detecta e responde), Red ataca com autorização para testar a defesa, e Purple é o trabalho conjunto em que o red executa técnicas e o blue confirma ou corrige as detecções na hora.</p></details>
+  <details><summary>2. Por que a regra de força bruta usa <code>group-by: source.ip</code>?</summary><p>Para contar falhas por IP de origem. Sem o agrupamento, falhas isoladas de muitos usuários legítimos somariam 10 e gerariam falso positivo. E o campo precisa existir no log normalizado, senão a regra nunca dispara.</p></details>
+  <details><summary>3. No ATT&amp;CK, o que é tática e o que é técnica? Dê um exemplo de cada.</summary><p>Tática é o objetivo (ex.: Credential Access, TA0006). Técnica é o meio de atingi-lo (ex.: T1110 Brute Force, ou a sub-técnica T1110.001 Password Guessing).</p></details>
+  <details><summary>4. Ao achar uma chave da AWS vazada, por que desativar antes de apagar?</summary><p>Desativar contém o ataque imediatamente, preserva a chave para investigar o que ela fez no CloudTrail e pode ser revertido se um serviço legítimo quebrar. Apagar vem depois, na erradicação, junto com a emissão de uma credencial nova.</p></details>
+  <details><summary>5. Pela Pirâmide da Dor, por que uma detecção por TTP vale mais que bloquear um IP?</summary><p>Porque trocar de IP custa quase nada ao atacante, enquanto mudar o comportamento (as TTPs) exige mudar o jeito de operar. A detecção por comportamento continua funcionando depois que o IP muda.</p></details>
+
+  <nav class="pager"><a href="04-devsecops.html">← Anterior</a><a href="06-certificacoes.html">Próxima →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

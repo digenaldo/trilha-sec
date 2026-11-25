@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes e Linux para segurança · Trilha Sec</title>
+<meta name="description" content="Redes (TCP/IP, portas, DNS, HTTP, firewall, WAF) e Linux (permissões, SUID, processos, logs) explicados para quem vem de desenvolvimento, com um mini-lab para rodar na própria máquina.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 02</span>
+  <h1>Redes e Linux para segurança</h1>
+  <p class="lead">Ao fim desta página você vai entender o caminho de uma requisição pela rede, saber quais cabeçalhos HTTP protegem sua aplicação e conseguir investigar um servidor Linux com os comandos que um analista de segurança usa.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Como dev, você usa a rede através de abstrações: um <code>fetch()</code>, um driver de banco, um <code>docker compose up</code>. Em segurança, os ataques e as evidências moram justamente embaixo dessas abstrações: uma porta de Redis aberta para a internet, um DNS adulterado, um login SSH suspeito às 3h da manhã no <code>auth.log</code>. Quase todo servidor que você vai defender roda Linux, e quase todo incidente deixa rastro na rede ou nos logs. Esta página é o mínimo para enxergar esse andar de baixo.</p>
+  </div>
+
+  <h2 id="camadas">O modelo em camadas</h2>
+  <p>Redes são organizadas em <strong>camadas</strong>: cada uma resolve um problema e usa a de baixo sem precisar saber como ela funciona — igual às camadas de uma aplicação (controller, service, repository). O modelo prático é o <dfn>TCP/IP</dfn>, com quatro camadas:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Camada</th><th>O que resolve</th><th>Exemplos</th></tr></thead>
+    <tbody>
+      <tr><td>Aplicação</td><td>O "assunto" da conversa</td><td>HTTP, DNS, SSH, protocolo do Postgres</td></tr>
+      <tr><td>Transporte</td><td>Entregar dados ao <strong>programa</strong> certo, com ou sem garantia</td><td>TCP, UDP</td></tr>
+      <tr><td>Internet (rede)</td><td>Levar pacotes até a <strong>máquina</strong> certa, atravessando roteadores</td><td>IP, ICMP (o do <code>ping</code>)</td></tr>
+      <tr><td>Enlace / física</td><td>Mover bits no meio físico local</td><td>Ethernet, Wi-Fi</td></tr>
+    </tbody>
+  </table></div>
+  <p>Você também vai ouvir falar do <dfn>modelo OSI</dfn>, um modelo de referência com sete camadas. Não precisa decorá-lo, mas a numeração dele virou jargão: "ataque de camada 7" é na aplicação (HTTP), "firewall de camada 4" olha IP e porta. Basta saber que 7 = aplicação, 4 = transporte e 3 = rede.</p>
+
+  <h2 id="ip-porta">IP, porta, TCP e UDP</h2>
+  <p>Um <dfn>endereço IP</dfn> identifica uma máquina (ou interface de rede) — por exemplo <code>192.168.0.10</code> no IPv4. Uma <dfn>porta</dfn> é um número de 0 a 65535 que identifica <strong>qual programa</strong> naquela máquina recebe os dados. A combinação IP + porta (<code>10.0.0.5:5432</code>) é o endereço completo de um serviço. Portas abaixo de 1024 são "privilegiadas": no Linux, tradicionalmente só o root pode abri-las.</p>
+  <p>Na camada de transporte há dois protocolos principais:</p>
+  <ul>
+    <li><dfn>TCP</dfn> (<em>Transmission Control Protocol</em>): orientado a conexão, garante entrega e ordem, reenvia o que se perde. Usado por HTTP/1.1, HTTP/2, SSH, bancos de dados.</li>
+    <li><dfn>UDP</dfn> (<em>User Datagram Protocol</em>): manda e esquece, sem conexão nem garantia. Mais leve e rápido. Usado por DNS (na maioria das consultas), streaming, jogos e pelo HTTP/3 (via QUIC).</li>
+  </ul>
+
+  <h3>O handshake TCP</h3>
+  <p>Antes de trocar dados, o TCP abre a conexão com o <dfn>three-way handshake</dfn> (aperto de mão em três etapas):</p>
+  <pre><code>cliente  ── SYN ──────────▶  servidor   <span class="c"># "quero conectar"</span>
+cliente  ◀── SYN-ACK ─────  servidor   <span class="c"># "ok, aceito"</span>
+cliente  ── ACK ──────────▶  servidor   <span class="c"># "confirmado, conexão aberta"</span></code></pre>
+  <p>Por que isso importa para segurança? Porque é assim que ferramentas descobrem portas abertas: se a resposta ao SYN é SYN-ACK, há um serviço escutando. E também porque o ataque <dfn>SYN flood</dfn> abusa disso: manda milhares de SYN e nunca completa, ocupando recursos do servidor até ele não aceitar conexões legítimas (um ataque à disponibilidade).</p>
+
+  <h3>Portas que você precisa reconhecer</h3>
+  <p>Ao olhar um scan, um log de firewall ou um alerta, estas portas aparecem o tempo todo. Muitas delas <strong>nunca</strong> deveriam estar expostas à internet.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Porta</th><th>Serviço</th><th>Nota de segurança</th></tr></thead>
+    <tbody>
+      <tr><td>22/tcp</td><td>SSH</td><td>Alvo constante de força bruta. Use chave em vez de senha.</td></tr>
+      <tr><td>25/tcp</td><td>SMTP (e-mail)</td><td>Servidor mal configurado vira repetidor de spam.</td></tr>
+      <tr><td>53/udp e tcp</td><td>DNS</td><td>Resolvedor aberto pode ser usado em ataques de amplificação.</td></tr>
+      <tr><td>80/tcp</td><td>HTTP</td><td>Sem cifragem; deveria só redirecionar para 443.</td></tr>
+      <tr><td>443/tcp</td><td>HTTPS</td><td>A porta "normal" de um serviço web.</td></tr>
+      <tr><td>3306/tcp</td><td>MySQL / MariaDB</td><td>Banco nunca deveria estar aberto para a internet.</td></tr>
+      <tr><td>5432/tcp</td><td>PostgreSQL</td><td>Idem.</td></tr>
+      <tr><td>6379/tcp</td><td>Redis</td><td>Historicamente sem senha por padrão; instâncias expostas são invadidas com frequência.</td></tr>
+      <tr><td>27017/tcp</td><td>MongoDB</td><td>Instâncias expostas sem autenticação já causaram muitos vazamentos.</td></tr>
+      <tr><td>3389/tcp</td><td>RDP (área de trabalho remota do Windows)</td><td>Porta de entrada frequente de ransomware.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="dns">DNS: a agenda telefônica da internet</h2>
+  <p>O <dfn>DNS</dfn> (<em>Domain Name System</em>) traduz nomes como <code>api.exemplo.com</code> em endereços IP. Seu computador pergunta a um <dfn>resolvedor</dfn> (do provedor, da empresa ou público, como <code>1.1.1.1</code>), que consulta os servidores responsáveis pelo domínio e guarda a resposta em cache por um tempo (o <dfn>TTL</dfn>, <em>time to live</em>). Tipos de registro comuns: <code>A</code> (IPv4), <code>AAAA</code> (IPv6), <code>CNAME</code> (apelido para outro nome), <code>MX</code> (servidor de e-mail), <code>TXT</code> (texto livre, usado para verificação de domínio e políticas de e-mail).</p>
+  <p>Por que DNS é assunto de segurança: <strong>quem controla a resposta do DNS controla para onde você vai</strong>. Alguns ataques:</p>
+  <ul>
+    <li><dfn>DNS spoofing</dfn> / <dfn>cache poisoning</dfn>: o atacante faz um resolvedor guardar uma resposta falsa, mandando usuários para um IP dele. O TLS ajuda aqui: o servidor falso não terá certificado válido para o domínio. O <dfn>DNSSEC</dfn> é uma extensão que assina as respostas DNS para detectar adulteração.</li>
+    <li><dfn>Subdomain takeover</dfn>: um registro <code>CNAME</code> aponta para um recurso de cloud que foi apagado (um app, um bucket), e um atacante cria um recurso com o mesmo nome, passando a servir conteúdo no seu subdomínio.</li>
+    <li>DNS também é usado por malware para <strong>exfiltrar dados</strong> (vazar informação para fora) escondidos em consultas, porque quase nenhuma rede bloqueia DNS.</li>
+  </ul>
+
+  <h2 id="http">HTTP, HTTPS e cabeçalhos de segurança</h2>
+  <p>HTTPS é HTTP dentro de TLS (visto na página anterior). Além disso, o navegador obedece a alguns <strong>cabeçalhos de resposta</strong> que ativam proteções. São baratos de configurar e reduzem classes inteiras de ataque:</p>
+  <pre><code>Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'; script-src 'self'
+X-Content-Type-Options: nosniff
+Set-Cookie: session=abc123; Secure; HttpOnly; SameSite=Lax; Path=/</code></pre>
+  <ul>
+    <li><dfn>HSTS</dfn> (<code>Strict-Transport-Security</code>): diz ao navegador "durante este tempo, só fale comigo via HTTPS". Impede que um atacante na rede rebaixe a conexão para HTTP.</li>
+    <li><dfn>CSP</dfn> (<code>Content-Security-Policy</code>): lista de onde a página pode carregar scripts, estilos e outros recursos. Se um atacante conseguir injetar um <code>&lt;script&gt;</code> (ataque chamado <dfn>XSS</dfn>, <em>cross-site scripting</em>), uma CSP restritiva pode impedir que ele rode.</li>
+    <li><code>X-Content-Type-Options: nosniff</code>: impede o navegador de "adivinhar" o tipo de um arquivo e, por exemplo, executar como script um upload que deveria ser texto.</li>
+  </ul>
+  <p>Os atributos de cookie merecem atenção especial, porque o cookie de sessão é a chave da conta do usuário:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Atributo</th><th>O que faz</th><th>Protege contra</th></tr></thead>
+    <tbody>
+      <tr><td><code>Secure</code></td><td>Cookie só é enviado por HTTPS</td><td>Roubo do cookie em rede insegura</td></tr>
+      <tr><td><code>HttpOnly</code></td><td>JavaScript não consegue ler o cookie (<code>document.cookie</code>)</td><td>XSS roubando a sessão</td></tr>
+      <tr><td><code>SameSite</code></td><td><code>Strict</code> ou <code>Lax</code> limitam o envio do cookie em requisições vindas de outros sites; <code>None</code> libera (e exige <code>Secure</code>)</td><td><dfn>CSRF</dfn> (<em>cross-site request forgery</em>): outro site fazendo o navegador da vítima disparar ações na sua aplicação</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>Esses cabeçalhos geralmente são uma linha no seu framework ou no proxy: middlewares como <code>helmet</code> no Express, configurações de sessão no Django/Rails/Spring, ou <code>add_header</code> no nginx. Abra o DevTools, aba Network, clique numa resposta da sua aplicação e confira quais deles estão lá.</p>
+  </div>
+
+  <h2 id="perimetro">Firewall, NAT, VPN, proxy reverso e WAF</h2>
+  <ul>
+    <li><dfn>Firewall</dfn>: filtra tráfego por regras, tipicamente por IP, porta e protocolo ("só aceite 443 de qualquer lugar e 22 da rede do escritório"). Os <em>security groups</em> da AWS e as regras de firewall de VPC do GCP são firewalls. No Linux, <code>iptables</code>/<code>nftables</code> e o <code>ufw</code> (uma interface simplificada).</li>
+    <li><dfn>NAT</dfn> (<em>Network Address Translation</em>): traduz endereços privados (<code>10.x</code>, <code>192.168.x</code>) para um IP público. É o que seu roteador de casa faz. Como efeito colateral, máquinas atrás do NAT não recebem conexões de fora por padrão — mas <strong>NAT não é firewall</strong>, e não deve ser tratado como controle de segurança.</li>
+    <li><dfn>VPN</dfn> (<em>Virtual Private Network</em>): um túnel cifrado que coloca sua máquina "dentro" de outra rede. Útil para acessar recursos privados; no modelo zero trust, estar na VPN não deveria bastar para ter acesso a tudo.</li>
+    <li><dfn>Proxy reverso</dfn>: um servidor que fica na frente das aplicações, recebe as requisições e as repassa (nginx, Envoy, um load balancer de cloud). Concentra TLS, cabeçalhos e limites num ponto só.</li>
+    <li><dfn>WAF</dfn> (<em>Web Application Firewall</em>): um filtro de camada 7 que inspeciona o conteúdo HTTP e bloqueia padrões de ataque conhecidos (como <code>' OR 1=1--</code>). Exemplos: Cloudflare WAF, AWS WAF, ModSecurity.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Tratar o WAF como substituto de código seguro. Ele é uma camada extra (defesa em profundidade), não a correção: regras de WAF são contornáveis com variações de payload, e ele não enxerga falhas de lógica, como um usuário acessando o pedido de outro.</p>
+  </div>
+
+  <h2 id="ferramentas">Ferramentas de rede</h2>
+  <ul>
+    <li><code>curl -v</code>: mostra a conversa inteira — resolução, handshake TLS, certificado, cabeçalhos enviados e recebidos. É o primeiro passo para ver se aqueles cabeçalhos de segurança estão mesmo lá.</li>
+    <li><code>dig</code>: consulta DNS diretamente. <code>dig exemplo.com A</code>, <code>dig exemplo.com MX</code>, <code>dig +short</code> para só a resposta.</li>
+    <li><code>ss</code> (substituto moderno do <code>netstat</code>): lista conexões e portas abertas <strong>na sua máquina</strong>. <code>ss -tulpn</code> = TCP, UDP, só portas em escuta (<em>listening</em>), com o processo dono, sem resolver nomes.</li>
+    <li><dfn>nmap</dfn>: scanner de rede que descobre máquinas, portas abertas e versões de serviços. Ferramenta padrão de pentest e de auditoria.</li>
+    <li><code>tcpdump</code> e <dfn>Wireshark</dfn>: capturam os pacotes que passam pela interface de rede. O <code>tcpdump</code> roda no terminal (bom para servidores); o Wireshark tem interface gráfica e decodifica centenas de protocolos. Ambos precisam de privilégio.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="callout-title">Atenção à lei</span>
+    <p>Use <code>nmap</code> e afins <strong>só no seu próprio laboratório</strong> ou em sistemas com autorização por escrito. Escanear ou tentar acessar sistemas de terceiros sem autorização pode ser enquadrado como crime no Brasil — a Lei 12.737/2012 (conhecida como "Lei Carolina Dieckmann") tipificou a invasão de dispositivo informático — além de violar termos de uso de provedores. Para treinar, há alvos feitos para isso, como <code>scanme.nmap.org</code> (liberado pelo próprio projeto Nmap para scans leves) e plataformas como TryHackMe e Hack The Box.</p>
+  </div>
+
+  <h2 id="linux">Linux para segurança</h2>
+
+  <h3>Usuários, grupos e permissões</h3>
+  <p>No Linux, todo arquivo tem um <strong>dono</strong> (usuário), um <strong>grupo</strong> e três conjuntos de permissões: para o dono, para o grupo e para os outros. Cada conjunto tem <code>r</code> (<em>read</em>, ler), <code>w</code> (<em>write</em>, escrever) e <code>x</code> (<em>execute</em>, executar; em diretório, significa poder entrar nele).</p>
+  <pre><code>$ ls -l /etc/shadow app.env
+-rw-r----- 1 root shadow 1234 nov 20 10:00 /etc/shadow
+-rw-r--r-- 1 deploy deploy  88 nov 20 10:00 app.env
+<span class="c"># tipo | dono rw- | grupo r-- | outros r--</span>
+<span class="bad"># app.env com segredos legível por "outros": qualquer usuário da máquina lê</span>
+
+$ chmod 600 app.env     <span class="c"># r=4 w=2 x=1 → 6=rw- para o dono, 0 para o resto</span>
+<span class="ok">-rw------- 1 deploy deploy  88 nov 20 10:00 app.env</span></code></pre>
+  <p>O usuário <dfn>root</dfn> (UID 0) pode tudo, ignorando permissões. Por isso o menor privilégio no Linux significa rodar aplicações com um usuário próprio, sem poderes, e não como root — o mesmo motivo de usar <code>USER app</code> no seu Dockerfile.</p>
+  <p><dfn>sudo</dfn> permite que um usuário rode comandos como root (ou outro usuário), conforme regras em <code>/etc/sudoers</code>, e registra cada uso no log. É melhor que logar como root porque deixa rastro de quem fez o quê. <code>sudo -l</code> mostra o que o seu usuário pode rodar — e é um dos primeiros comandos que um atacante roda ao entrar numa máquina.</p>
+
+  <h3>SUID: por que é perigoso</h3>
+  <p>O bit <dfn>SUID</dfn> (<em>set user ID</em>) faz um executável rodar com as permissões do <strong>dono do arquivo</strong>, não de quem o executou. Aparece como <code>s</code> no lugar do <code>x</code>:</p>
+  <pre><code>$ ls -l /usr/bin/passwd
+-rwsr-xr-x 1 root root 68208 /usr/bin/passwd   <span class="c"># roda como root para poder gravar /etc/shadow</span></code></pre>
+  <p>O <code>passwd</code> precisa disso para que você troque a própria senha. O perigo: se um binário SUID de root tiver uma falha, ou permitir rodar comandos arbitrários (como um editor ou interpretador com SUID colocado por engano), qualquer usuário vira root. Isso se chama <dfn>escalação de privilégio</dfn> (sair de um usuário comum para um com mais poder), e listar binários SUID com <code>find / -perm -4000 -type f 2&gt;/dev/null</code> é passo padrão tanto do atacante quanto de quem audita.</p>
+
+  <h3>Processos</h3>
+  <p>Cada programa rodando é um <dfn>processo</dfn>, com um PID (identificador), um usuário dono e um processo pai. Investigar processos responde "o que está rodando e como quem?". Um minerador de criptomoeda rodando como <code>www-data</code> (o usuário do servidor web), filho do processo do nginx, é um sinal clássico de aplicação web comprometida.</p>
+
+  <h3>Logs</h3>
+  <p>Logs são a principal evidência do Blue Team (a equipe que defende e detecta). Os lugares mais importantes:</p>
+  <ul>
+    <li><code>/var/log/</code>: o diretório tradicional de logs.</li>
+    <li><code>/var/log/auth.log</code> (Debian/Ubuntu) ou <code>/var/log/secure</code> (RHEL/Fedora): logins, falhas de senha, uso de <code>sudo</code>, conexões SSH.</li>
+    <li><code>journalctl</code>: lê o <dfn>journal</dfn> do systemd, o sistema de logs da maioria das distribuições atuais. <code>journalctl -u ssh</code> filtra por serviço; <code>--since "1 hour ago"</code> filtra por tempo.</li>
+  </ul>
+
+  <h3>Comandos de investigação</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Comando</th><th>Pergunta que responde</th></tr></thead>
+    <tbody>
+      <tr><td><code>who</code> / <code>w</code></td><td>Quem está logado agora?</td></tr>
+      <tr><td><code>last</code></td><td>Quem logou recentemente, de onde e quando?</td></tr>
+      <tr><td><code>ps aux</code> / <code>ps -ef --forest</code></td><td>Que processos rodam, como qual usuário, e quem é pai de quem?</td></tr>
+      <tr><td><code>ss -tulpn</code></td><td>Que portas estão abertas e qual processo as abriu?</td></tr>
+      <tr><td><code>lsof -i</code> / <code>lsof -p PID</code></td><td>Que conexões de rede e arquivos um processo tem abertos?</td></tr>
+      <tr><td><code>grep</code></td><td>Onde está aquele IP, usuário ou erro nos logs?</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="mini-lab">Mini-lab: rode na sua máquina</h2>
+  <p>Tudo abaixo é seguro e toca só na sua máquina ou em consultas públicas normais. Em macOS, alguns comandos mudam (<code>ss</code> não existe; use <code>lsof -iTCP -sTCP:LISTEN</code>). Se puder, faça numa VM ou num container Linux.</p>
+  <pre><code><span class="c"># 1. Veja a conversa HTTPS inteira: TLS, certificado, cabeçalhos</span>
+curl -v https://github.com -o /dev/null 2&gt;&amp;1 | grep -Ei "SSL|subject|issuer|strict-transport|^&lt; "
+
+<span class="c"># 2. Consulte o DNS</span>
+dig +short github.com A
+dig github.com MX
+
+<span class="c"># 3. Quais portas sua máquina está escutando, e qual processo?</span>
+sudo ss -tulpn
+
+<span class="c"># 4. Scan na SUA máquina (instale o nmap antes)</span>
+nmap -sV localhost
+
+<span class="c"># 5. Quem logou e quais tentativas de login houve</span>
+last -n 10
+sudo grep -i "failed\|accepted" /var/log/auth.log | tail -n 20
+journalctl -u ssh --since "24 hours ago"    <span class="c"># o serviço pode se chamar sshd</span>
+
+<span class="c"># 6. Procure binários SUID</span>
+find / -perm -4000 -type f 2&gt;/dev/null
+
+<span class="c"># 7. Capture 20 pacotes de DNS enquanto roda um dig em outro terminal</span>
+sudo tcpdump -i any -n -c 20 port 53</code></pre>
+  <p>Ao terminar, tente responder: alguma porta aberta no passo 3 te surpreendeu? Ela escuta em <code>127.0.0.1</code> (só local) ou em <code>0.0.0.0</code> (todas as interfaces, ou seja, acessível pela rede)? Essa distinção é exatamente o que separa um Redis inofensivo de um Redis exposto.</p>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Qual a diferença prática entre TCP e UDP, e qual deles o DNS usa normalmente?</summary><p>TCP abre conexão (three-way handshake), garante entrega e ordem; UDP só envia, sem garantia, e por isso é mais leve. A maioria das consultas DNS usa UDP na porta 53, com TCP para respostas grandes e transferências de zona.</p></details>
+  <details><summary>Um cookie de sessão sem <code>HttpOnly</code> fica exposto a qual ataque?</summary><p>A XSS: se um atacante conseguir executar JavaScript na página, pode ler <code>document.cookie</code> e roubar a sessão. Com <code>HttpOnly</code>, o script não enxerga o cookie.</p></details>
+  <details><summary>Por que um binário com SUID de root é um risco?</summary><p>Porque ele roda com privilégios de root mesmo quando executado por um usuário comum. Se tiver uma falha ou permitir rodar comandos, vira um caminho de escalação de privilégio até root.</p></details>
+  <details><summary>Você suspeita de força bruta em SSH num servidor Ubuntu. Onde e como olha?</summary><p>Em <code>/var/log/auth.log</code> (ou <code>journalctl -u ssh</code>), procurando com <code>grep</code> por "Failed password" e contando IPs de origem. Depois, <code>last</code> para ver se algum login teve sucesso, e <code>who</code> para ver sessões ativas.</p></details>
+  <details><summary>Posso rodar <code>nmap</code> no site de uma empresa para praticar?</summary><p>Não sem autorização por escrito. Escanear sistemas de terceiros sem permissão pode ser enquadrado como crime no Brasil (Lei 12.737/2012) e viola termos de uso. Pratique em <code>localhost</code>, em VMs suas, em <code>scanme.nmap.org</code> ou em plataformas de treino.</p></details>
+
+  <nav class="pager"><a href="01-fundamentos.html">← Anterior</a><a href="03-appsec.html">Próxima →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

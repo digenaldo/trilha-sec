@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fundamentos de segurança · Trilha Sec</title>
+<meta name="description" content="O vocabulário e os conceitos de base da segurança da informação explicados para quem vem de desenvolvimento: tríade CIA, risco, CVE, autenticação, criptografia, TLS e segredos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 01</span>
+  <h1>Fundamentos de segurança</h1>
+  <p class="lead">Ao fim desta página você vai falar a língua básica de segurança: o que se protege, contra o quê, como se mede risco, e como autenticação, criptografia e TLS funcionam por baixo do código que você já escreve.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Você já toma decisões de segurança todo dia, só que sem esse nome: escolher onde guardar a senha do banco, validar um payload, decidir quem pode chamar um endpoint, configurar o HTTPS do serviço. O que muda numa carreira de segurança é fazer isso de forma <strong>deliberada</strong>, com vocabulário comum, para conseguir explicar o risco a outras pessoas e priorizar o que corrigir primeiro. Quase tudo nas próximas páginas da trilha se apoia nos termos daqui.</p>
+  </div>
+
+  <h2 id="cia">A tríade CIA: o que estamos protegendo</h2>
+  <p>A forma mais usada de pensar segurança é a <dfn>tríade CIA</dfn> — sigla em inglês para <em>Confidentiality, Integrity, Availability</em>. São as três propriedades que um sistema seguro precisa manter. Quase todo incidente quebra pelo menos uma delas, então elas servem de checklist mental.</p>
+  <div class="grid">
+    <div class="card"><h3>Confidencialidade</h3><p>Só quem deve consegue <strong>ler</strong> o dado. Quebra: um bucket S3 público com o dump de clientes; um log que imprime o CPF ou o token do usuário.</p></div>
+    <div class="card"><h3>Integridade</h3><p>Ninguém consegue <strong>alterar</strong> o dado sem autorização ou sem ser notado. Quebra: um usuário muda o <code>price</code> no corpo do POST e o backend aceita; um pacote npm adulterado no build.</p></div>
+    <div class="card"><h3>Disponibilidade</h3><p>O sistema <strong>responde</strong> quando precisa. Quebra: um ataque de negação de serviço; uma regex que trava a CPU com certa entrada; um ransomware que cifra o banco.</p></div>
+  </div>
+  <p>Repare que disponibilidade é assunto de segurança, não só de SRE. Um endpoint sem limite de requisições (<em>rate limit</em>) que derruba o banco com uma busca cara é uma falha de segurança, mesmo que ninguém tenha "invadido" nada.</p>
+
+  <h2 id="risco">Ativo, ameaça, vulnerabilidade, risco e exploit</h2>
+  <p>Esses cinco termos aparecem em todo relatório, reunião e vaga. Vale fixar com um exemplo só: uma API de pedidos.</p>
+  <ul>
+    <li><dfn>Ativo</dfn> (<em>asset</em>): qualquer coisa de valor que precisa de proteção. Aqui: o banco de pedidos, os dados de cartão, a própria API, até a reputação da empresa.</li>
+    <li><dfn>Ameaça</dfn> (<em>threat</em>): algo ou alguém que pode causar dano a um ativo. Aqui: um atacante externo, um funcionário mal-intencionado, ou até um deploy errado.</li>
+    <li><dfn>Vulnerabilidade</dfn>: uma fraqueza que a ameaça pode aproveitar. Aqui: o endpoint <code>GET /orders/{id}</code> não confere se o pedido pertence ao usuário logado.</li>
+    <li><dfn>Exploit</dfn>: o código ou a técnica que aproveita de fato a vulnerabilidade. Aqui: um script que itera <code>id</code> de 1 a 1.000.000 e baixa todos os pedidos.</li>
+    <li><dfn>Risco</dfn>: a chance de a ameaça explorar a vulnerabilidade, combinada com o estrago que isso causaria.</li>
+  </ul>
+  <p>A fórmula simplificada que você vai ver em toda parte é:</p>
+  <pre><code>risco = probabilidade × impacto</code></pre>
+  <p>Por que isso importa? Porque <strong>você nunca vai ter tempo de corrigir tudo</strong>. Uma vulnerabilidade grave num serviço interno sem acesso de fora pode ter risco menor que uma média num endpoint público que expõe dados pessoais. A fórmula é a ferramenta para priorizar, e priorizar é boa parte do trabalho real em segurança.</p>
+
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Confundir vulnerabilidade com risco. "Achamos 300 vulnerabilidades no scanner" não diz nada sobre risco até você perguntar: elas estão em código que roda em produção? São alcançáveis de fora? Que dado está atrás delas?</p>
+  </div>
+
+  <h2 id="cve">CVE, CWE e CVSS: como o mundo cataloga falhas</h2>
+  <p>Quando você roda <code>npm audit</code> ou o Dependabot abre um PR, aparecem três siglas. Elas são padrões públicos para que todo mundo fale da mesma falha do mesmo jeito.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sigla</th><th>O que é</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td><dfn>CVE</dfn></td><td><em>Common Vulnerabilities and Exposures</em>: um identificador único para uma vulnerabilidade específica num produto específico. É o "número de RG" da falha.</td><td><code>CVE-2021-44228</code> é o Log4Shell, a falha na biblioteca Java Log4j.</td></tr>
+      <tr><td><dfn>CWE</dfn></td><td><em>Common Weakness Enumeration</em>: um catálogo de <strong>tipos</strong> de fraqueza, independente de produto. É a "categoria" da falha.</td><td><code>CWE-89</code> é injeção de SQL; <code>CWE-79</code> é XSS.</td></tr>
+      <tr><td><dfn>CVSS</dfn></td><td><em>Common Vulnerability Scoring System</em>: uma nota de 0 a 10 para a gravidade técnica de uma vulnerabilidade, calculada a partir de critérios como "precisa estar autenticado?" e "dá para explorar pela rede?".</td><td>O Log4Shell recebeu 10.0, a nota máxima.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Um detalhe importante: o CVSS mede <strong>gravidade técnica</strong>, não risco no <em>seu</em> contexto. Um CVE com nota 9.8 numa função da biblioteca que seu código nunca chama pode importar menos que um 6.5 no caminho de login. Lembre da fórmula de risco.</p>
+
+  <h2 id="principios">Princípios que guiam toda decisão</h2>
+
+  <h3>Defesa em profundidade</h3>
+  <p><dfn>Defesa em profundidade</dfn> é ter várias camadas de proteção independentes, para que a falha de uma não seja suficiente para um ataque dar certo. A ideia vem do fato de que toda camada eventualmente falha.</p>
+  <p>Exemplo concreto contra injeção de SQL: você usa queries parametrizadas (camada 1), o usuário do banco da aplicação não tem permissão de <code>DROP</code> (camada 2), o banco não aceita conexão de fora da rede privada (camada 3) e há alerta para volume anômalo de leitura (camada 4).</p>
+
+  <h3>Menor privilégio</h3>
+  <p><dfn>Menor privilégio</dfn> (<em>least privilege</em>) significa dar a cada pessoa, serviço ou processo só as permissões necessárias para a tarefa, e nada mais. O porquê: quando algo for comprometido — e algo vai ser —, o estrago fica limitado ao que aquela identidade podia fazer.</p>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>Aquele token do GitHub Actions com permissão de escrita em todos os repositórios "porque era mais fácil", ou a service account da cloud com papel de administrador para um job que só lê um bucket: são violações de menor privilégio. Corrigir isso costuma ser uma das primeiras tarefas de quem entra em DevSecOps.</p>
+  </div>
+
+  <h3>Zero trust</h3>
+  <p><dfn>Zero trust</dfn> é um modelo em que nada é confiável só por estar "dentro da rede". Cada requisição precisa provar quem é e ter permissão, mesmo vindo de um serviço interno. Ele substitui o modelo antigo de "castelo com fosso", em que bastava passar pela VPN para ter acesso a tudo. Na prática: autenticação entre serviços, permissões por recurso e verificação contínua.</p>
+
+  <h2 id="auth">Autenticação, autorização e sessões</h2>
+  <p>Duas palavras parecidas que significam coisas diferentes, e misturá-las causa muitas falhas reais:</p>
+  <ul>
+    <li><dfn>Autenticação</dfn> (abreviada <dfn>AuthN</dfn>): provar <strong>quem você é</strong>. Login com senha, certificado, chave de API.</li>
+    <li><dfn>Autorização</dfn> (abreviada <dfn>AuthZ</dfn>): decidir <strong>o que você pode fazer</strong>, depois que já se sabe quem é. "Este usuário pode editar este pedido?"</li>
+  </ul>
+  <p>Na API do exemplo, o usuário estava autenticado (tinha token válido), mas faltava autorização: ninguém conferia se o pedido era dele. Esse tipo de falha é tão comum que lidera a lista OWASP Top 10 de 2021 com o nome <em>Broken Access Control</em> (a OWASP é uma fundação aberta de segurança de aplicações; você vai vê-la muito na página de AppSec).</p>
+
+  <h3>MFA</h3>
+  <p><dfn>MFA</dfn> (<em>Multi-Factor Authentication</em>, autenticação multifator) exige dois ou mais fatores de tipos diferentes: algo que você <strong>sabe</strong> (senha), algo que você <strong>tem</strong> (celular com app autenticador, chave física) e algo que você <strong>é</strong> (biometria). O porquê: senhas vazam o tempo todo, e com MFA a senha sozinha não basta para entrar. Duas senhas não são MFA, porque são o mesmo tipo de fator.</p>
+
+  <h3>Sessões vs tokens</h3>
+  <p>Depois do login, o servidor precisa reconhecer o usuário nas próximas requisições. Há dois modelos principais:</p>
+  <ul>
+    <li><strong>Sessão no servidor</strong>: o servidor gera um ID aleatório, guarda o estado (em memória, Redis, banco) e manda o ID num cookie. Para deslogar alguém, basta apagar a sessão do lado do servidor.</li>
+    <li><strong>Token autocontido</strong>, quase sempre um <dfn>JWT</dfn> (<em>JSON Web Token</em>): um JSON com os dados do usuário (<em>claims</em>), codificado em base64 e assinado. O servidor só valida a assinatura, sem consultar estado.</li>
+  </ul>
+  <p>JWT é prático, mas tem armadilhas clássicas:</p>
+  <pre><code><span class="c">// header.payload.assinatura — o payload é só base64, qualquer um lê</span>
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MiIsInJvbGUiOiJ1c2VyIn0.xxxx
+
+<span class="bad">jwt.decode(token)              // só decodifica, NÃO confere a assinatura</span>
+<span class="ok">jwt.verify(token, key, { algorithms: ["HS256"] })  // confere assinatura e fixa o algoritmo</span></code></pre>
+  <div class="callout warn">
+    <span class="callout-title">Armadilhas de JWT</span>
+    <ul>
+      <li><strong>JWT não é criptografado por padrão</strong>, só assinado. Não coloque dado sensível no payload.</li>
+      <li><strong>Aceitar <code>alg: none</code></strong> ou deixar o token escolher o algoritmo já permitiu forjar tokens em bibliotecas antigas. Fixe o algoritmo esperado ao validar.</li>
+      <li><strong>Revogar é difícil</strong>: um JWT roubado vale até expirar. Por isso use expiração curta.</li>
+    </ul>
+  </div>
+
+  <h2 id="cripto">Criptografia essencial</h2>
+  <p>Você não precisa entender a matemática, mas precisa saber <strong>qual ferramenta resolve qual problema</strong>. Usar a ferramenta errada é um erro muito mais comum do que um algoritmo ser quebrado.</p>
+
+  <h3>Hash</h3>
+  <p>Uma <dfn>função de hash</dfn> transforma qualquer entrada numa saída de tamanho fixo, de forma que é impraticável voltar da saída para a entrada, e qualquer mudança mínima na entrada muda a saída toda. Serve para verificar integridade (o checksum de um download) e para guardar senhas. Exemplo de algoritmo atual: <code>SHA-256</code>. <code>MD5</code> e <code>SHA-1</code> são considerados quebrados para uso de segurança.</p>
+  <p>Para <strong>senhas</strong>, SHA-256 puro não serve. O motivo é velocidade: ele foi feito para ser rápido, e uma placa de vídeo testa bilhões de candidatos por segundo. Se o banco vazar, a maioria das senhas cai num ataque de força bruta ou de dicionário. Por isso se usam funções <strong>propositalmente lentas e configuráveis</strong>, como <code>bcrypt</code>, <code>scrypt</code> e <code>Argon2</code> (esta, vencedora da Password Hashing Competition, é a recomendação mais atual).</p>
+  <p>Elas também usam um <dfn>salt</dfn>: um valor aleatório, diferente para cada usuário, misturado à senha antes do hash. Sem salt, dois usuários com a senha <code>123456</code> teriam o mesmo hash, e o atacante poderia usar tabelas pré-calculadas (<em>rainbow tables</em>) para quebrar todos de uma vez. As bibliotecas de bcrypt e Argon2 geram e guardam o salt para você.</p>
+  <pre><code><span class="bad">hash = sha256(senha)                 // rápido demais, sem salt</span>
+<span class="ok">hash = argon2.hash(senha)            // lento de propósito, salt embutido</span>
+<span class="ok">ok   = argon2.verify(hash, tentativa)</span></code></pre>
+
+  <h3>Criptografia simétrica vs assimétrica</h3>
+  <p>Hash é de mão única. Quando você precisa <strong>recuperar</strong> o dado depois, usa cifragem:</p>
+  <ul>
+    <li><dfn>Criptografia simétrica</dfn>: a mesma chave cifra e decifra. É rápida, ideal para grandes volumes. O padrão é o <dfn>AES</dfn> (<em>Advanced Encryption Standard</em>). Exemplo: cifrar um disco ou uma coluna do banco. O problema: como entregar a chave para o outro lado sem que alguém a intercepte?</li>
+    <li><dfn>Criptografia assimétrica</dfn> (ou de chave pública): cada parte tem um <strong>par</strong> de chaves. A pública pode ser divulgada; a privada fica só com o dono. O que uma cifra, só a outra decifra. Algoritmos comuns: <dfn>RSA</dfn> e <dfn>ECC</dfn> (criptografia de curvas elípticas, que oferece a mesma segurança com chaves menores). É mais lenta, então costuma ser usada para trocar uma chave simétrica, que então cifra os dados.</li>
+  </ul>
+  <p>Você já usa assimétrica: o par <code>~/.ssh/id_ed25519</code> (privada) e <code>id_ed25519.pub</code> (pública) que você cadastra no GitHub é exatamente isso. Ed25519 é um esquema de assinatura baseado em curvas elípticas.</p>
+
+  <h3>Assinatura digital</h3>
+  <p>Uma <dfn>assinatura digital</dfn> usa a chave privada para "assinar" um dado e a chave pública para qualquer um verificar. Ela garante duas coisas: quem assinou tinha a chave privada (autenticidade) e o dado não mudou depois (integridade). É o que acontece quando o GitHub mostra "Verified" num commit assinado, quando o SSH confere sua identidade e quando um JWT é assinado com <code>RS256</code>.</p>
+
+  <h3>TLS em alto nível</h3>
+  <p><dfn>TLS</dfn> (<em>Transport Layer Security</em>) é o protocolo que põe o "S" no HTTPS. Ele junta tudo acima para resolver três problemas numa conexão: ninguém no caminho lê (confidencialidade), ninguém altera (integridade) e você está falando com o servidor certo (autenticidade). Simplificando muito, o <dfn>handshake</dfn> (a negociação inicial antes de qualquer dado da aplicação) funciona assim:</p>
+  <ol>
+    <li>O cliente diz quais versões e algoritmos suporta.</li>
+    <li>O servidor escolhe e envia seu <strong>certificado</strong>.</li>
+    <li>Cliente e servidor fazem uma troca de chaves (com criptografia assimétrica) e derivam uma chave simétrica de sessão, que ninguém mais conhece.</li>
+    <li>Daí em diante, todo o tráfego é cifrado com essa chave simétrica (normalmente AES ou ChaCha20).</li>
+  </ol>
+  <p>O <dfn>certificado</dfn> é um documento que liga um domínio (<code>api.exemplo.com</code>) a uma chave pública, assinado por uma <dfn>CA</dfn> (<em>Certificate Authority</em>, autoridade certificadora) — uma entidade em quem o seu sistema operacional ou navegador já confia de fábrica. O Let's Encrypt é uma CA gratuita. Sem essa verificação, um atacante no meio do caminho poderia apresentar a própria chave e ler tudo; esse ataque se chama <dfn>man-in-the-middle</dfn> (MITM, "homem no meio").</p>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p><code>curl -k</code>, <code>verify=False</code> no Python <code>requests</code>, <code>InsecureSkipVerify: true</code> no Go, <code>NODE_TLS_REJECT_UNAUTHORIZED=0</code>: todos desligam a verificação do certificado. A conexão continua cifrada, mas você não sabe mais <strong>com quem</strong> está falando, o que anula a proteção contra MITM. Nunca deixe isso em código de produção.</p>
+  </div>
+
+  <h2 id="segredos">Segredos: nunca no git</h2>
+  <p><dfn>Segredo</dfn> é qualquer credencial que dá acesso a algo: senha de banco, chave de API, token de cloud, chave privada. A regra é simples: <strong>segredo não entra no repositório</strong>, nem em repositório privado. Os porquês:</p>
+  <ul>
+    <li>O histórico do git é para sempre. Apagar o arquivo num commit novo não remove o segredo dos commits antigos, nem dos clones que já existem.</li>
+    <li>Repositórios privados viram públicos por engano, são clonados em notebooks que são roubados e ficam acessíveis a muita gente que não precisava daquela credencial.</li>
+    <li>Existem robôs varrendo o GitHub público atrás de chaves de cloud o tempo todo.</li>
+  </ul>
+  <p>O que fazer: guardar em um gerenciador de segredos (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, ou os <em>secrets</em> do GitHub Actions), injetar como variável de ambiente em tempo de execução, colocar <code>.env</code> no <code>.gitignore</code> e usar um scanner de segredos (como <code>gitleaks</code>) no pre-commit e no CI.</p>
+  <div class="callout warn">
+    <span class="callout-title">Se vazou</span>
+    <p>Se um segredo foi para o git, considere-o comprometido: <strong>revogue e gere um novo primeiro</strong>, depois limpe o histórico. Reescrever o histórico sem trocar a credencial não resolve, porque alguém pode já ter copiado.</p>
+  </div>
+
+  <h2 id="frameworks">Frameworks e leis que você vai ouvir</h2>
+  <p>Um <dfn>framework</dfn>, em segurança, é um conjunto organizado de práticas e controles recomendados. Por enquanto basta reconhecer os nomes:</p>
+  <ul>
+    <li><strong>NIST CSF</strong> (<em>Cybersecurity Framework</em>, do instituto de padrões dos EUA): organiza o programa de segurança em funções como identificar, proteger, detectar, responder e recuperar.</li>
+    <li><strong>ISO/IEC 27001</strong>: norma internacional para um sistema de gestão de segurança da informação; empresas podem ser certificadas nela, e clientes grandes costumam exigir.</li>
+    <li><strong>LGPD</strong> (Lei Geral de Proteção de Dados, Lei 13.709/2018): a lei brasileira sobre tratamento de dados pessoais; vazamento de dado pessoal pode gerar obrigação de comunicar a ANPD (a autoridade nacional) e os titulares, além de sanções.</li>
+  </ul>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Um atacante muda o campo <code>amount</code> de uma transferência no meio do caminho. Qual propriedade da tríade CIA foi quebrada?</summary><p>Integridade: o dado foi alterado sem autorização. Se ele só tivesse lido o valor, seria confidencialidade; se tivesse derrubado o serviço, disponibilidade.</p></details>
+  <details><summary>Qual a diferença entre CVE, CWE e CVSS?</summary><p>CVE identifica uma vulnerabilidade específica num produto (ex.: <code>CVE-2021-44228</code>). CWE é a categoria do tipo de fraqueza (ex.: <code>CWE-89</code>, injeção de SQL). CVSS é a nota de 0 a 10 da gravidade técnica. Nenhum deles, sozinho, mede o risco no seu contexto.</p></details>
+  <details><summary>Um usuário logado consegue ver pedidos de outros usuários trocando o ID na URL. É falha de autenticação ou de autorização?</summary><p>Autorização. Ele provou quem é (AuthN funcionou), mas o sistema não verificou se ele tinha permissão sobre aquele recurso (AuthZ falhou).</p></details>
+  <details><summary>Por que não guardar senhas com SHA-256, mesmo sendo um hash seguro?</summary><p>Porque é rápido demais: se o banco vazar, um atacante testa bilhões de senhas por segundo. Para senhas se usa uma função lenta e configurável com salt por usuário, como Argon2 ou bcrypt, que torna a força bruta cara e impede o uso de tabelas pré-calculadas.</p></details>
+  <details><summary>Você achou uma chave de API commitada há três meses num repositório privado. Qual é o primeiro passo?</summary><p>Revogar a chave e emitir uma nova. Só depois limpar o histórico e adicionar um scanner de segredos para evitar reincidência. Enquanto a chave antiga for válida, qualquer cópia dela continua funcionando.</p></details>
+
+  <nav class="pager"><a href="./">← Mapa</a><a href="02-redes-e-linux.html">Próxima →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

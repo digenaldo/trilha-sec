@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevSecOps no pipeline · Trilha Sec</title>
+<meta name="description" content="DevSecOps para quem já tem CI: SAST, SCA, secret scanning, DAST, IaC e containers, cadeia de suprimentos (SBOM, SLSA, cosign), GitHub Actions seguro, triagem e métricas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 04</span>
+  <h1>DevSecOps: segurança no pipeline</h1>
+  <p class="lead">Ao fim desta página você vai saber que controle de segurança colocar em cada etapa do pipeline, montar um workflow de GitHub Actions com scanners gratuitos e tratar os achados sem travar o time.</p>
+
+  <h2 id="o-que-e">O que é DevSecOps</h2>
+  <p><dfn>DevSecOps</dfn> é a prática de colocar segurança dentro do fluxo de entrega de software que já existe (DevOps), em vez de tratá-la como uma auditoria no final. Na prática, é automação: scanners rodando no CI, políticas como código, dependências atualizadas por robôs, imagens assinadas. O papel da pessoa de DevSecOps é escolher esses controles, integrá-los ao pipeline, ajustar para não gerar ruído e ajudar os times a corrigir o que eles acham.</p>
+  <p>Um <dfn>pipeline</dfn> aqui é a esteira automatizada que leva o código do commit até produção: CI (<em>Continuous Integration</em>, integração contínua, que compila e testa a cada mudança) e CD (<em>Continuous Delivery/Deployment</em>, que publica a versão aprovada).</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Por que isso importa para quem vem de dev</span>
+    <p>Você já escreve workflow de CI, já mexeu em Dockerfile, já sofreu com teste quebrado bloqueando merge. DevSecOps é exatamente isso, com outro tipo de verificação. A habilidade rara no mercado não é "saber rodar o Trivy" (qualquer um roda); é saber colocar o scanner sem que o time passe a odiá-lo: escolher o que bloqueia, o que só avisa, e como fazer a correção caber no fluxo normal de PR. Isso é engenharia, e você já sabe fazer.</p>
+  </div>
+
+  <h2 id="shift-left">Shift left: o que é e onde para</h2>
+  <p><dfn>Shift left</dfn> ("mover para a esquerda") é a ideia de achar problemas mais cedo na linha do tempo do desenvolvimento. Se você desenhar o ciclo da esquerda (ideia, código) para a direita (produção), mover segurança para a esquerda significa pegar a falha no editor ou no PR, e não depois do deploy. O motivo é custo: corrigir um SQL injection apontado no PR leva minutos; corrigir o mesmo bug depois de um vazamento envolve incidente, comunicação a clientes e às vezes multa.</p>
+  <p>Mas shift left tem limites, e quem vende a ideia esquece de dizer:</p>
+  <ul>
+    <li><strong>Nem tudo é visível no código.</strong> Configuração de produção, permissão real na nuvem e comportamento em execução só aparecem à direita. Por isso existe o complemento, às vezes chamado de <em>shift right</em>: monitoramento e detecção em runtime.</li>
+    <li><strong>Ferramenta não substitui desenho.</strong> Nenhum scanner acha falha de lógica de negócio, como "o cupom pode ser aplicado duas vezes", nem a maioria dos IDORs. Threat modeling e revisão humana (página anterior) continuam necessários.</li>
+    <li><strong>Empurrar tudo para o dev não é shift left, é transferir trabalho.</strong> Se o pipeline despeja 400 alertas no PR, o time aprende a ignorar. O objetivo é dar ao dev poucos achados, relevantes e com a correção clara.</li>
+  </ul>
+
+  <h2 id="mapa">O mapa do pipeline</h2>
+  <p>Cada controle tem um lugar onde rende mais. A tabela abaixo é o mapa desta página; as seções seguintes explicam cada ferramenta.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Etapa</th><th>Controle</th><th>Ferramentas gratuitas</th><th>O que pega</th></tr></thead>
+    <tbody>
+      <tr><td>Commit (máquina do dev)</td><td>Secret scanning em pre-commit; linters de segurança no editor</td><td>gitleaks, Semgrep (extensão)</td><td>Chave de API antes de sair da máquina</td></tr>
+      <tr><td>Push / PR</td><td>Push protection; SAST; SCA; IaC scanning; revisão humana</td><td>GitHub push protection, Semgrep, CodeQL, Dependabot, OSV-Scanner, Checkov</td><td>Padrões de código inseguro, dependência vulnerável, Terraform com bucket público</td></tr>
+      <tr><td>Build</td><td>Container scanning; SBOM; assinatura; build reprodutível</td><td>Trivy, Syft, cosign</td><td>CVE na imagem base, imagem rodando como root, artefato sem procedência</td></tr>
+      <tr><td>Deploy</td><td>Verificar assinatura; admission control no cluster; DAST em staging</td><td>cosign verify, Kyverno, OWASP ZAP</td><td>Imagem não assinada, cabeçalhos ausentes, falhas visíveis só com a app rodando</td></tr>
+      <tr><td>Runtime</td><td>Monitoramento, detecção, re-scan contínuo de imagens em uso</td><td>Falco, Trivy Operator, logs no SIEM</td><td>CVE novo em imagem antiga, comportamento anômalo, ataque em andamento</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="sast">SAST: análise estática do código</h2>
+  <p><dfn>SAST</dfn> (<em>Static Application Security Testing</em>) analisa o código-fonte sem executá-lo, procurando padrões perigosos. O tipo mais útil faz <dfn>taint analysis</dfn> (análise de contaminação): marca dados vindos do usuário como "contaminados" (a <em>source</em>) e avisa se eles chegam a uma função perigosa (o <em>sink</em>, como <code>cursor.execute</code>) sem passar por um tratamento.</p>
+  <ul>
+    <li><strong>Semgrep</strong>: regras escritas em algo parecido com o próprio código, rápido, roda local e no CI. Versão de linha de comando open source; tem registro público de regras. Fácil de escrever regra própria para um padrão da sua empresa.</li>
+    <li><strong>CodeQL</strong>: do GitHub. Transforma o código num banco de dados consultável e roda queries de fluxo de dados mais profundas. Gratuito em repositórios públicos; em privados exige licença (GitHub Advanced Security / Code Security).</li>
+  </ul>
+<pre><code><span class="c"># Exemplo de regra Semgrep: proíbe requests sem timeout</span>
+rules:
+  - id: requests-sem-timeout
+    languages: [python]
+    severity: WARNING
+    message: "requests sem timeout pode travar o worker indefinidamente"
+    patterns:
+      - pattern: requests.$METHOD(...)
+      - pattern-not: requests.$METHOD(..., timeout=$T, ...)</code></pre>
+  <p>Limite: SAST gera <dfn>falsos positivos</dfn> (alertas sobre algo que não é problema de verdade, por exemplo porque a validação acontece num lugar que a ferramenta não enxerga) e <dfn>falsos negativos</dfn> (problemas reais que ele não vê, como falhas de autorização). Comece com um conjunto pequeno de regras de alta confiança.</p>
+
+  <h2 id="sca">SCA: dependências vulneráveis</h2>
+  <p>Seu código é uma fração pequena do que roda: o resto são bibliotecas. <dfn>SCA</dfn> (<em>Software Composition Analysis</em>) lê o seu arquivo de dependências (<code>package-lock.json</code>, <code>poetry.lock</code>, <code>go.sum</code>) e cruza cada versão com bancos de vulnerabilidades conhecidas. Cada vulnerabilidade pública recebe um <dfn>CVE</dfn> (<em>Common Vulnerabilities and Exposures</em>, identificador único como CVE-2021-44228, o Log4Shell) e normalmente uma nota <dfn>CVSS</dfn> (<em>Common Vulnerability Scoring System</em>, de 0 a 10, que estima a gravidade técnica).</p>
+  <ul>
+    <li><strong>Dependabot</strong>: embutido no GitHub. Alerta sobre dependência vulnerável e abre PR com a versão corrigida. Também pode abrir PRs de atualização de rotina.</li>
+    <li><strong>Trivy</strong>: scanner multiuso da Aqua Security; com <code>trivy fs .</code> lê os lockfiles do projeto.</li>
+    <li><strong>OSV-Scanner</strong>: do Google, usa o banco aberto OSV.dev, que agrega avisos de vários ecossistemas.</li>
+  </ul>
+  <p>Detalhe importante: dependência vulnerável não significa aplicação vulnerável. Se o CVE está numa função da biblioteca que você nunca chama, o risco real é baixo. Algumas ferramentas fazem <dfn>reachability analysis</dfn> (verificam se o código vulnerável é de fato alcançável a partir do seu), o que reduz muito o ruído. Use o <strong>lockfile</strong> sempre: sem ele, o scanner não sabe a versão exata instalada.</p>
+
+  <h2 id="secrets">Secret scanning</h2>
+  <p>Como vimos na página anterior, segredo commitado é segredo vazado. O scanner procura padrões conhecidos (formato de chave AWS, token do GitHub, chave privada) e strings de alta <dfn>entropia</dfn> (aleatoriedade, típica de tokens).</p>
+  <ul>
+    <li><strong>gitleaks</strong>: open source, roda como hook de pre-commit (na máquina do dev, antes do commit existir), no CI e também no histórico inteiro do repositório (<code>gitleaks git</code>), útil para auditar repositórios antigos.</li>
+    <li><strong>GitHub push protection</strong>: o próprio GitHub recusa o <code>git push</code> se detectar um segredo de formato conhecido. Ativo por padrão para usuários em repositórios públicos; em organizações com repositórios privados depende do plano.</li>
+  </ul>
+<pre><code><span class="c"># .pre-commit-config.yaml</span>
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2   <span class="c"># fixe a versão; confira a mais recente</span>
+    hooks:
+      - id: gitleaks</code></pre>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Achou um segredo no histórico? Rotacione primeiro. Reescrever o histórico (com <code>git filter-repo</code>) é opcional e não adianta sozinho: forks, clones e caches já têm a chave.</p>
+  </div>
+
+  <h2 id="dast">DAST: testando a aplicação rodando</h2>
+  <p><dfn>DAST</dfn> (<em>Dynamic Application Security Testing</em>) testa a aplicação em execução, de fora, como um atacante faria: manda requisições e analisa respostas. Enxerga coisas que o SAST não vê, como cabeçalhos de segurança ausentes, cookies sem <code>Secure</code>, páginas de erro com stack trace e configuração do servidor.</p>
+  <p>A ferramenta gratuita de referência é o <strong>ZAP</strong> (antes OWASP ZAP, hoje mantido como ZAP by Checkmarx, ainda open source). Ele tem dois modos: <em>baseline</em> (passivo, só observa respostas; seguro e rápido, bom para PR) e <em>full scan</em> (ativo, envia payloads de ataque; mais lento e pode sujar dados, então rode só contra staging, nunca produção).</p>
+<pre><code>docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://staging.exemplo.com</code></pre>
+
+  <h2 id="iac">IaC scanning</h2>
+  <p><dfn>IaC</dfn> (<em>Infrastructure as Code</em>, infraestrutura como código) é descrever a infraestrutura em arquivos versionados: Terraform, manifests de Kubernetes, CloudFormation, Helm charts. A vantagem para segurança é enorme: a configuração pode ser revisada e escaneada no PR, antes de existir. É aqui que se pega a categoria A02 do Top 10 (Security Misconfiguration).</p>
+  <ul>
+    <li><strong>Checkov</strong>: da Palo Alto (Prisma Cloud), open source, centenas de políticas prontas para Terraform, Kubernetes, Dockerfile e outros.</li>
+    <li><strong>Trivy config</strong>: <code>trivy config .</code> faz o mesmo, aproveitando a ferramenta que você já usa para imagens.</li>
+  </ul>
+<pre><code><span class="c"># Terraform que um scanner de IaC vai apontar</span>
+<span class="bad">resource "aws_security_group_rule" "ssh" {
+  type        = "ingress"
+  from_port   = 22
+  to_port     = 22
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]   # SSH aberto para a internet inteira
+}</span></code></pre>
+
+  <h2 id="containers">Container scanning e hardening de imagem</h2>
+  <p>Uma imagem de container carrega um sistema operacional mínimo com dezenas ou centenas de pacotes, e cada um pode ter CVEs. <strong>Container scanning</strong> é listar esses pacotes e cruzar com bancos de vulnerabilidades: <code>trivy image minha-app:1.4.0</code>. Mas reduzir o que está na imagem é mais eficaz do que escanear: pacote que não existe não tem CVE. Isso é <dfn>hardening</dfn> (endurecimento: remover o desnecessário e restringir o que sobra).</p>
+<pre><code><span class="c"># ANTES: imagem grande, roda como root, tag móvel</span>
+<span class="bad">FROM python:3.12
+COPY . /app
+RUN pip install -r /app/requirements.txt
+CMD ["python", "/app/main.py"]</span>
+
+<span class="c"># DEPOIS: multi-stage, distroless, não-root, base fixada por digest</span>
+<span class="ok">FROM python:3.12-slim@sha256:&lt;digest&gt; AS build
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --target=/deps -r requirements.txt
+COPY . .
+
+FROM gcr.io/distroless/python3-debian12:nonroot@sha256:&lt;digest&gt;
+WORKDIR /app
+COPY --from=build /deps /deps
+COPY --from=build /app /app
+ENV PYTHONPATH=/deps
+USER nonroot
+CMD ["main.py"]</span></code></pre>
+  <ul>
+    <li><dfn>Distroless</dfn>: imagens do Google que contêm só o runtime da linguagem, sem shell nem gerenciador de pacotes. Menos CVEs e, se alguém invadir o container, não tem <code>bash</code> nem <code>curl</code> à mão. Alternativas parecidas: Chainguard images, Alpine (menor, mas com shell).</li>
+    <li><strong>Não-root</strong>: se o processo for comprometido, roda sem privilégios. Em Kubernetes, reforce com <code>runAsNonRoot: true</code>.</li>
+    <li><strong>Fixar por digest</strong>: a tag <code>python:3.12</code> é um ponteiro que muda; o <dfn>digest</dfn> <code>sha256:...</code> é o hash do conteúdo e identifica exatamente uma imagem. Fixar por digest garante build reprodutível e impede que uma tag adulterada entre no seu build. O Dependabot e o Renovate atualizam digests automaticamente via PR. (Atenção: o caminho exato da imagem distroless de Python e suas variantes mudam com as versões do Debian; confira no repositório <code>GoogleContainerTools/distroless</code>.)</li>
+  </ul>
+
+  <h2 id="supply-chain">Cadeia de suprimentos de software</h2>
+  <p><dfn>Supply chain security</dfn> (segurança da cadeia de suprimentos) cuida de tudo que entra no seu software sem ser escrito por você: dependências, imagens base, ferramentas de build, actions do CI. Os casos que tornaram o tema famoso: SolarWinds (2020, o servidor de build foi invadido e o malware entrou no produto assinado), o backdoor no xz-utils (2024, um mantenedor "confiável" inseriu código malicioso ao longo de anos) e o comprometimento da action <code>tj-actions/changed-files</code> (2025, a tag foi movida para código que vazava segredos nos logs de CI). Desde 2025 é a categoria A03 do OWASP Top 10.</p>
+
+  <h3>SBOM</h3>
+  <p>Um <dfn>SBOM</dfn> (<em>Software Bill of Materials</em>, lista de materiais do software) é um inventário legível por máquina de todos os componentes de um artefato, com nome e versão. Serve para responder em minutos a pergunta que todo mundo fez no Log4Shell: "onde, na empresa, usamos log4j 2.14?". Os dois formatos padrão são <strong>CycloneDX</strong> (da OWASP) e <strong>SPDX</strong> (da Linux Foundation, também norma ISO). <strong>Syft</strong> (da Anchore) gera SBOM de diretórios e imagens: <code>syft minha-app:1.4.0 -o cyclonedx-json &gt; sbom.json</code>. O Trivy também gera.</p>
+
+  <h3>SLSA em palavras simples</h3>
+  <p><dfn>SLSA</dfn> (<em>Supply-chain Levels for Software Artifacts</em>, pronuncia-se "salsa") é um framework que define níveis de garantia sobre <strong>como</strong> um artefato foi construído. A peça central é a <dfn>proveniência</dfn> (<em>provenance</em>): um documento que diz "este binário foi gerado a partir deste commit, por este sistema de build, com estes parâmetros". Na versão 1.0, a trilha de build tem estes níveis:</p>
+  <ul>
+    <li><strong>Nível 0</strong>: nenhuma garantia.</li>
+    <li><strong>Nível 1</strong>: existe proveniência, gerada pelo processo de build. Ajuda a saber de onde veio, mas pode ser forjada.</li>
+    <li><strong>Nível 2</strong>: o build roda numa plataforma hospedada (como o GitHub Actions), que assina a proveniência. Adulterar depois do build passa a ser detectável.</li>
+    <li><strong>Nível 3</strong>: a plataforma de build é endurecida: builds isolados entre si e os segredos de assinatura inacessíveis ao código do projeto, então nem um passo malicioso do build consegue forjar a proveniência.</li>
+  </ul>
+  <p>No GitHub, a action <code>actions/attest-build-provenance</code> gera proveniência assinada com pouco esforço.</p>
+
+  <h3>Assinatura com Sigstore e cosign</h3>
+  <p><dfn>Sigstore</dfn> é um projeto aberto (da OpenSSF) para assinar artefatos sem precisar gerenciar chaves de longa duração. O <strong>cosign</strong> é a ferramenta dele para imagens de container. No modo <em>keyless</em>, o CI se identifica via <dfn>OIDC</dfn> (<em>OpenID Connect</em>, protocolo em que um provedor, aqui o GitHub, emite um token que prova "sou o workflow X do repositório Y"), recebe um certificado de curta duração e a assinatura fica registrada num log público e auditável (Rekor). No deploy, você verifica que a imagem foi assinada por aquele workflow específico:</p>
+<pre><code>cosign sign ghcr.io/org/app@sha256:&lt;digest&gt;
+
+cosign verify ghcr.io/org/app@sha256:&lt;digest&gt; \
+  --certificate-identity-regexp '^https://github.com/org/app/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com</code></pre>
+
+  <h3>GitHub Actions: o próprio CI é superfície de ataque</h3>
+  <p>O workflow do CI roda com acesso a segredos e permissão de escrita no repositório. Três cuidados resolvem a maior parte do risco:</p>
+  <ol>
+    <li><strong>Fixar actions por SHA de commit.</strong> <code>uses: actions/checkout@v4</code> aponta para uma tag, e tags podem ser movidas por quem controla o repositório da action (foi o que aconteceu no caso tj-actions). O SHA completo do commit é imutável. Mantenha o comentário com a versão e deixe o Dependabot atualizar.</li>
+    <li><strong>Privilégio mínimo no <code>GITHUB_TOKEN</code>.</strong> Todo job recebe um token automático; dependendo da configuração da organização, ele pode ter escrita em tudo. Declare <code>permissions:</code> no topo do workflow com o mínimo (em geral <code>contents: read</code>) e eleve só no job que precisa.</li>
+    <li><strong>Cuidado com <code>pull_request_target</code>.</strong> Diferente de <code>pull_request</code>, esse evento roda no contexto do repositório de destino, <strong>com acesso a segredos e token com escrita</strong>, mesmo para PRs vindos de forks. Se o workflow fizer checkout do código do PR e executá-lo (instalar dependências, rodar testes, build), qualquer pessoa na internet abre um PR e roda código com seus segredos. Essa classe de ataque é chamada de "pwn request". Regra: não use <code>pull_request_target</code> para nada que execute código do PR.</li>
+  </ol>
+<pre><code><span class="bad">on: pull_request_target
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}   # código do fork
+      - run: npm install &amp;&amp; npm test                      # executa com seus segredos</span></code></pre>
+  <p>Outro cuidado relacionado é <dfn>script injection</dfn> em workflow: interpolar <code>${{ github.event.pull_request.title }}</code> direto num <code>run:</code> deixa o título do PR virar comando de shell. Passe esses valores por variável de ambiente (<code>env:</code>) e use <code>"$TITULO"</code> no script.</p>
+
+  <h2 id="workflow">Exemplo completo: workflow de segurança no GitHub Actions</h2>
+  <p>Este workflow roda gitleaks, Semgrep e Trivy a cada PR e push na <code>main</code>. As três ferramentas são gratuitas, e o GitHub Actions é gratuito em repositórios públicos (privados têm uma cota de minutos por mês). Os resultados de Semgrep e Trivy vão para a aba <em>Security</em> do GitHub no formato <dfn>SARIF</dfn> (<em>Static Analysis Results Interchange Format</em>, um JSON padrão para resultados de ferramentas de análise), que mostra os achados como anotações no PR. O upload de SARIF para o code scanning é gratuito em repositórios públicos.</p>
+<pre><code><span class="c"># .github/workflows/security.yml</span>
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+<span class="ok">permissions:
+  contents: read            <span class="c"># padrão mínimo para todos os jobs</span></span>
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@&lt;SHA-de-40-caracteres&gt;   <span class="c"># v4</span>
+        with:
+          fetch-depth: 0      <span class="c"># histórico completo para varrer os commits do PR</span>
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            git /repo --redact --verbose
+
+  semgrep:
+    runs-on: ubuntu-latest
+    <span class="ok">permissions:
+      contents: read
+      security-events: write   <span class="c"># só este job pode enviar SARIF</span></span>
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@&lt;SHA-de-40-caracteres&gt;   <span class="c"># v4</span>
+      - run: semgrep scan --config p/default --sarif --output semgrep.sarif
+      - uses: github/codeql-action/upload-sarif@&lt;SHA&gt;    <span class="c"># v3</span>
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  trivy:
+    runs-on: ubuntu-latest
+    <span class="ok">permissions:
+      contents: read
+      security-events: write</span>
+    steps:
+      - uses: actions/checkout@&lt;SHA-de-40-caracteres&gt;   <span class="c"># v4</span>
+      - name: Trivy (dependências e IaC do repositório)
+        uses: aquasecurity/trivy-action@&lt;SHA&gt;            <span class="c"># fixe por SHA</span>
+        with:
+          scan-type: fs
+          scanners: vuln,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true      <span class="c"># só alerta o que já tem correção</span>
+          format: sarif
+          output: trivy.sarif
+      - uses: github/codeql-action/upload-sarif@&lt;SHA&gt;    <span class="c"># v3</span>
+        if: always()
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+      - name: Falhar só em CRITICAL com correção disponível
+        uses: aquasecurity/trivy-action@&lt;SHA&gt;
+        with:
+          scan-type: fs
+          scanners: vuln
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"</code></pre>
+  <p>Pontos de design que valem explicar:</p>
+  <ul>
+    <li><strong>Placeholders <code>&lt;SHA&gt;</code></strong>: substitua pelo SHA completo do commit da release que você escolheu (aparece na página de releases da action). Não copie SHAs de tutoriais sem conferir. O Dependabot, configurado com <code>package-ecosystem: github-actions</code>, mantém esses SHAs atualizados.</li>
+    <li><strong>Gitleaks via container</strong>: a action oficial do gitleaks exige licença gratuita para repositórios de organizações; rodar a imagem diretamente evita isso. Confira a versão mais recente da imagem.</li>
+    <li><strong>Relatar tudo, bloquear pouco</strong>: o primeiro passo do Trivy envia HIGH e CRITICAL para a aba Security; o segundo só falha o build em CRITICAL que já tem correção. Isso é política, não detalhe técnico, e é o assunto da próxima seção.</li>
+    <li><strong>Semgrep</strong>: <code>p/default</code> é um conjunto público de regras; depois você troca por um conjunto adaptado à sua stack (por exemplo <code>p/python</code>, <code>p/owasp-top-ten</code>). Ele não falha o build por padrão com <code>--sarif</code>; adicione <code>--error</code> quando o ruído estiver sob controle.</li>
+  </ul>
+
+  <h2 id="triagem">Triagem: o trabalho de verdade</h2>
+  <p>Rodar scanner é fácil; o que diferencia um bom programa de DevSecOps é o que se faz com os resultados. <dfn>Triagem</dfn> é decidir, para cada achado: é real? É relevante no nosso contexto? Qual a prioridade? Quem corrige?</p>
+  <h3>Falsos positivos</h3>
+  <p>Quando um achado não é real, registre o motivo junto do código, para que a decisão seja revisável no PR: <code># nosemgrep: regra-x  -- valor vem de enum interno</code>, ou um arquivo <code>.trivyignore</code> com o CVE e uma data de expiração. Supressão sem justificativa e sem prazo vira cemitério de alertas. Se uma regra gera falso positivo com frequência, ajuste ou desligue a regra: alerta que ninguém lê é pior que nenhum, porque dá falsa sensação de cobertura.</p>
+  <h3>Severidade de verdade</h3>
+  <p>O CVSS mede gravidade técnica no pior cenário, não o risco para você. Para priorizar, combine com contexto:</p>
+  <ul>
+    <li><strong>Exposição</strong>: o serviço é acessível pela internet ou só interno?</li>
+    <li><strong>Alcance</strong>: o código vulnerável é chamado?</li>
+    <li><strong>Exploração real</strong>: o CVE está no catálogo <dfn>KEV</dfn> da CISA (<em>Known Exploited Vulnerabilities</em>, lista de falhas que comprovadamente estão sendo exploradas)? O <dfn>EPSS</dfn> (<em>Exploit Prediction Scoring System</em>, probabilidade estimada de exploração nos próximos 30 dias) está alto?</li>
+    <li><strong>Dados</strong>: o sistema guarda dado pessoal, financeiro, credenciais?</li>
+  </ul>
+  <h3>SLA de correção</h3>
+  <p>Um <dfn>SLA</dfn> (<em>Service Level Agreement</em>, acordo de nível de serviço) de correção é o prazo máximo que a empresa se compromete a levar para corrigir uma vulnerabilidade, conforme a severidade. Ele transforma "corrigir quando der" em algo mensurável. Os números variam por empresa e por exigências de compliance; um <strong>exemplo de política</strong> razoável para começar:</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Severidade (após triagem)</th><th>Prazo de exemplo</th><th>Bloqueia o merge?</th></tr></thead>
+    <tbody>
+      <tr><td>Crítica, exposta à internet ou no KEV</td><td>7 dias (ou imediato, se em exploração ativa)</td><td>Sim, quando há correção disponível</td></tr>
+      <tr><td>Alta</td><td>30 dias</td><td>Não; vira card com prazo</td></tr>
+      <tr><td>Média</td><td>90 dias</td><td>Não</td></tr>
+      <tr><td>Baixa</td><td>Melhor esforço, revisada no ciclo de atualização</td><td>Não</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Não bloqueie tudo</h3>
+  <p>A tentação de quem começa é fazer o pipeline falhar em qualquer achado. O resultado é previsível: o time pede exceção, desliga o job ou cria um <code>|| true</code>. Estratégias que funcionam melhor:</p>
+  <ul>
+    <li><strong>Comece em modo de relatório</strong>, sem bloquear, por algumas semanas; meça o ruído e ajuste as regras.</li>
+    <li><strong>Bloqueie só o que é novo</strong> (diff-aware): o PR não pode introduzir problema crítico, mas o legado é tratado num backlog com SLA. O Semgrep faz isso nativamente em PR.</li>
+    <li><strong>Bloqueie o que tem alta confiança e correção fácil</strong>: segredo vazado, CVE crítico com versão corrigida, Terraform com bucket público.</li>
+    <li><strong>Tenha um caminho de exceção documentado</strong>, com dono e prazo, em vez de exceção informal.</li>
+  </ul>
+
+  <h2 id="kubernetes">Kubernetes: segurança em três palavras</h2>
+  <p>Se sua empresa roda em <dfn>Kubernetes</dfn> (orquestrador que distribui containers entre máquinas e os mantém rodando), três controles nativos aparecem em toda revisão. Aqui vai só o mapa; uma parte futura da trilha aprofunda segurança de nuvem e Kubernetes.</p>
+  <ul>
+    <li><dfn>RBAC</dfn> (<em>Role-Based Access Control</em>): define quem (pessoa ou <em>service account</em> de um pod) pode fazer o que com quais recursos da API do cluster. Erro comum: dar <code>cluster-admin</code> para o pipeline de deploy ou para um pod que só precisava ler um ConfigMap.</li>
+    <li><dfn>Pod Security Standards</dfn>: três perfis oficiais (<em>privileged</em>, <em>baseline</em>, <em>restricted</em>) que limitam o que um pod pode pedir: rodar como root, montar diretórios do host, usar rede do host. São aplicados por namespace via um rótulo, como <code>pod-security.kubernetes.io/enforce: restricted</code>.</li>
+    <li><dfn>NetworkPolicy</dfn>: regras de firewall entre pods. Por padrão, todo pod fala com todo pod; uma política de negar tudo e liberar só os fluxos necessários limita o estrago se um serviço for invadido (movimento lateral).</li>
+  </ul>
+
+  <h2 id="metricas">Métricas: como saber se está funcionando</h2>
+  <p>Um programa de DevSecOps precisa mostrar resultado com números, não com quantidade de ferramentas. Ideias de métricas:</p>
+  <ul>
+    <li><dfn>MTTR de vulnerabilidade</dfn> (<em>Mean Time To Remediate</em>, tempo médio entre a detecção e a correção), separado por severidade. É a métrica principal: mostra se os achados viram correção.</li>
+    <li><strong>Cumprimento de SLA</strong>: percentual de vulnerabilidades corrigidas dentro do prazo, e quantas estão vencidas hoje.</li>
+    <li><strong>Cobertura</strong>: percentual de repositórios com os scanners ativos, com push protection ligada, com <code>permissions:</code> declarado.</li>
+    <li><strong>Taxa de falso positivo</strong> por regra ou ferramenta: indica onde ajustar.</li>
+    <li><strong>Segredos detectados antes do push</strong> vs. depois: se o pre-commit funciona, o número "depois" cai.</li>
+    <li><strong>Idade das imagens em produção</strong>: imagens antigas acumulam CVEs novos mesmo sem mudança de código.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>"Número de vulnerabilidades encontradas" sozinho é uma métrica ruim: sobe quando você adiciona um scanner novo (o que é bom) e cai quando alguém desliga um (o que é péssimo). Prefira métricas de fluxo, como MTTR e cumprimento de SLA.</p>
+  </div>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>Qual a diferença entre SAST, SCA e DAST, e em que etapa do pipeline cada um rende mais?</summary><p>SAST analisa o seu código-fonte sem executá-lo (PR). SCA verifica as versões das dependências contra bancos de CVEs (PR e continuamente, porque CVEs novos surgem em versões antigas). DAST testa a aplicação rodando, de fora (staging, após o deploy).</p></details>
+  <details><summary>Por que fixar uma action por SHA de commit em vez de <code>@v4</code>?</summary><p>Tags são ponteiros que podem ser movidos por quem controla o repositório da action; se ele for comprometido, a tag pode passar a apontar para código malicioso (caso tj-actions, 2025). O SHA é imutável. O Dependabot atualiza os SHAs via PR.</p></details>
+  <details><summary>O que torna <code>pull_request_target</code> perigoso?</summary><p>Ele roda no contexto do repositório de destino, com segredos e token com escrita, mesmo para PRs de forks. Se o workflow fizer checkout e executar o código do PR, qualquer pessoa consegue rodar código com seus segredos ("pwn request").</p></details>
+  <details><summary>Um CVE de CVSS 9.8 aparece numa biblioteca de um serviço interno, numa função que o código nunca chama. Ele deve bloquear o deploy?</summary><p>Provavelmente não. Depois da triagem (sem exposição à internet, código não alcançável), a severidade real é menor; vira card com prazo de SLA. Bloqueio fica para o que é crítico de verdade e tem correção, e a decisão fica registrada com justificativa.</p></details>
+  <details><summary>Cite três mudanças que endurecem uma imagem de container e o porquê de cada uma.</summary><p>Usar base distroless ou mínima (menos pacotes, menos CVEs, sem shell para o atacante); rodar como usuário não-root (processo comprometido sem privilégios); fixar a base por digest (build reprodutível e imune a tag adulterada). Multi-stage build também ajuda, deixando compiladores fora da imagem final.</p></details>
+
+  <nav class="pager"><a href="03-appsec.html">← Anterior</a><a href="05-blue-team.html">Próxima →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

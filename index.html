@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trilha Sec</title>
+<meta name="description" content="Guia gratuito, em português, para quem vem de engenharia de software migrar para segurança: DevSecOps, AppSec e Blue Team.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Mapa · comece por aqui</span>
+  <h1>Trilha Sec</h1>
+  <p class="lead">Um guia em português para quem já escreve software e quer entrar em segurança, seja em DevSecOps, segurança de aplicações ou Blue Team, sem precisar saber nada de segurança antes.</p>
+
+  <div class="callout dev">
+    <span class="callout-title">Para quem é</span>
+    <p>Para quem já sabe programar, usa git, conhece APIs HTTP e já mexeu em CI. Esse conhecimento já é metade do caminho. Segurança moderna é, em grande parte, engenharia: pipelines, logs, automação e código revisado. Aqui você aprende a outra metade, ou seja, como alguém atacaria o sistema e como você percebe e reage.</p>
+  </div>
+
+  <h2 id="como-usar">Como usar</h2>
+  <ol>
+    <li><strong>Leia na ordem.</strong> Cada página explica os termos na primeira vez que aparecem e assume só o que as anteriores ensinaram.</li>
+    <li><strong>Pratique em paralelo.</strong> Ler sem praticar não fixa. A página <a href="07-laboratorios.html">Laboratórios</a> traz exercícios gratuitos e um plano de 12 semanas.</li>
+    <li><strong>Feche cada página com o Checkpoint.</strong> São perguntas curtas com a resposta escondida. Se errar mais de duas, releia a seção.</li>
+    <li><strong>Escolha uma trilha só depois da página 05.</strong> Assim você já viu o lado do ataque, o lado do pipeline e o lado da defesa.</li>
+  </ol>
+
+  <h2 id="mapa">Parte 1 · Essencial</h2>
+  <p>O mínimo para conversar com um time de segurança de igual para igual e escolher para onde ir.</p>
+  <div class="grid">
+    <a class="card" href="01-fundamentos.html"><span class="n">01</span><h3>Fundamentos</h3><p>Tríade CIA, risco, autenticação e autorização, e a criptografia que um dev precisa saber.</p></a>
+    <a class="card" href="02-redes-e-linux.html"><span class="n">02</span><h3>Redes e Linux</h3><p>TCP/IP, DNS, HTTP, portas, permissões e onde ficam os logs que contam o que aconteceu.</p></a>
+    <a class="card" href="03-appsec.html"><span class="n">03</span><h3>AppSec</h3><p>OWASP Top 10 com código vulnerável e corrigido lado a lado, e modelagem de ameaças com STRIDE.</p></a>
+    <a class="card" href="04-devsecops.html"><span class="n">04</span><h3>DevSecOps</h3><p>SAST, SCA, segredos, containers e cadeia de suprimentos, com um workflow pronto e gratuito.</p></a>
+    <a class="card" href="05-blue-team.html"><span class="n">05</span><h3>Blue Team</h3><p>SOC, SIEM, regras Sigma, MITRE ATT&amp;CK e resposta a incidentes.</p></a>
+    <a class="card" href="06-certificacoes.html"><span class="n">06</span><h3>Certificações</h3><p>Quais valem a pena, em que ordem tirar e quanto custam em 2026.</p></a>
+    <a class="card" href="07-laboratorios.html"><span class="n">07</span><h3>Laboratórios e plano</h3><p>Prática gratuita, um laboratório em casa sem custo e 12 semanas de estudo.</p></a>
+  </div>
+
+  <h2 id="trilhas">As trilhas de carreira</h2>
+  <p>"Segurança" é um guarda-chuva com várias profissões. Estas são as que mais aproveitam a bagagem de quem vem de software:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Trilha</th><th>O que faz no dia a dia</th><th>O que você já tem</th><th>Páginas-chave</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DevSecOps</strong></td><td>Coloca verificações de segurança no pipeline de entrega e na infraestrutura, de forma automatizada.</td><td>CI/CD, containers, IaC</td><td><a href="04-devsecops.html">04</a>, <a href="03-appsec.html">03</a></td></tr>
+      <tr><td><strong>AppSec</strong> (segurança de aplicações)</td><td>Revisa código e design, ensina os times a evitar falhas e trata relatos de vulnerabilidade.</td><td>Ler código, saber como frameworks funcionam</td><td><a href="03-appsec.html">03</a></td></tr>
+      <tr><td><strong>Blue Team / SOC</strong></td><td>Monitora alertas, investiga atividade suspeita e responde a incidentes.</td><td>Logs, observabilidade, plantão</td><td><a href="05-blue-team.html">05</a>, <a href="02-redes-e-linux.html">02</a></td></tr>
+      <tr><td><strong>Detection Engineering</strong></td><td>Escreve e testa as regras que geram os alertas do SOC, tratadas como código.</td><td>Testes, revisão de código, versionamento</td><td><a href="05-blue-team.html">05</a></td></tr>
+      <tr><td><strong>Cloud Security</strong></td><td>Cuida de permissões (IAM), configuração e postura de segurança em AWS, GCP ou Azure.</td><td>Deploy em nuvem, Terraform</td><td><a href="04-devsecops.html">04</a> (aprofunda na Parte 2)</td></tr>
+      <tr><td><strong>Red Team / Pentest</strong></td><td>Ataca sistemas com autorização para achar falhas antes de alguém mal-intencionado.</td><td>Automação, scripts</td><td>Fora do escopo da Parte 1</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    <span class="callout-title">Regra número zero</span>
+    <p>Só teste ataques em sistemas seus ou em laboratórios feitos para isso. Invadir ou varrer sistema de terceiros sem autorização é crime no Brasil (Lei 12.737/2012) mesmo "só para aprender". Todos os exercícios deste guia usam ambientes próprios ou plataformas de treino.</p>
+  </div>
+
+  <h2 id="proximas">Próximas partes</h2>
+  <p>O guia cresce por partes. As próximas planejadas são:</p>
+  <ul>
+    <li><strong>Parte 2 · Nuvem e Kubernetes:</strong> IAM a fundo, postura de nuvem, RBAC, políticas de admissão e segurança em runtime.</li>
+    <li><strong>Parte 3 · Segurança de IA:</strong> injeção de prompt, OWASP Top 10 para LLMs, agentes com ferramentas e guardrails.</li>
+    <li><strong>Parte 4 · Resposta a incidentes a fundo:</strong> forense básica, playbooks e exercícios de mesa.</li>
+  </ul>
+
+  <nav class="pager"><span></span><a href="01-fundamentos.html">Começar: Fundamentos →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>

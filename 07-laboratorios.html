@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratórios gratuitos e plano de estudo · Trilha Sec</title>
+<meta name="description" content="Onde praticar segurança de graça e dentro da lei, um plano de 12 semanas para devs (DevSecOps ou Blue Team), um home lab de custo zero com Docker e ideias de portfólio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="top"><a class="brand" href="./">▲ trilha-sec</a><span><a href="./#mapa">mapa</a> · <a href="06-certificacoes.html">certificações</a> · <a href="https://github.com/ogatalars/trilha-sec">github</a></span></nav>
+<main>
+  <span class="chip">◆ Parte 1 · Essencial · 07</span>
+  <h1>Laboratórios gratuitos e plano de estudo</h1>
+  <p class="lead">Ao fim desta página você vai saber onde praticar segurança de graça e dentro da lei, como organizar 12 semanas de estudo e o que mostrar a quem for te contratar.</p>
+
+  <h2 id="regra">A regra antes de tudo: só pratique onde você tem permissão</h2>
+  <p>Segurança se aprende fazendo, mas a mesma técnica que é estudo num laboratório é crime num sistema alheio. No Brasil, a <dfn>Lei 12.737/2012</dfn> (conhecida como Lei Carolina Dieckmann) incluiu no Código Penal o crime de <strong>invasão de dispositivo informático</strong> (art. 154-A), e a Lei 14.155/2021 aumentou as penas. "Só estava testando" não é defesa; a intenção de aprender não substitui autorização.</p>
+  <p>Na prática, você pode atacar:</p>
+  <ul>
+    <li>máquinas, containers e contas <strong>suas</strong>, montados para isso;</li>
+    <li>plataformas de treino que existem justamente para serem atacadas (todas as da tabela abaixo);</li>
+    <li>empresas com programa de <dfn>bug bounty</dfn> (programa público em que a empresa autoriza testes e paga por falhas encontradas), <strong>respeitando exatamente o escopo</strong> que elas publicam.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>Rodar um scanner "só para ver" no site do trabalho, da faculdade ou de um amigo. Mesmo sem má intenção, sem autorização por escrito isso pode ser enquadrado como tentativa de invasão, e no trabalho ainda pode disparar o SOC e virar incidente com o seu nome. Na dúvida, não faça.</p>
+  </div>
+
+  <h2 id="recursos">Onde praticar de graça</h2>
+  <p>Os preços abaixo foram conferidos em novembro de 2026. Plataformas mudam planos com frequência, então trate "Gratuito" e "Freemium" (parte grátis, parte paga) como ponto de partida e verifique o preço atual antes de assinar algo.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Recurso</th><th>Trilha</th><th>O que treina</th><th>Custo</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://portswigger.net/web-security">PortSwigger Web Security Academy</a></td><td>AppSec</td><td>Vulnerabilidades web (SQL injection, XSS, SSRF, controle de acesso) com teoria e laboratórios no navegador. O melhor ponto de partida para AppSec.</td><td>Gratuito</td></tr>
+      <tr><td><a href="https://owasp.org/www-project-juice-shop/">OWASP Juice Shop</a></td><td>AppSec, DevSecOps</td><td>Loja online propositalmente vulnerável, com placar de desafios. Roda num container.</td><td>Gratuito (open source)</td></tr>
+      <tr><td><a href="https://owasp.org/www-project-webgoat/">OWASP WebGoat</a></td><td>AppSec</td><td>Lições guiadas, em Java, explicando cada falha e como corrigir no código.</td><td>Gratuito (open source)</td></tr>
+      <tr><td><a href="https://github.com/digininja/DVWA">DVWA</a></td><td>AppSec</td><td>App PHP vulnerável com níveis de dificuldade; bom para ver a mesma falha "com e sem" proteção.</td><td>Gratuito (open source)</td></tr>
+      <tr><td><a href="https://overthewire.org/wargames/bandit/">OverTheWire Bandit</a></td><td>Base</td><td>Linha de comando Linux, permissões, SSH, em formato de jogo por níveis.</td><td>Gratuito</td></tr>
+      <tr><td><a href="https://picoctf.org/">picoCTF</a></td><td>Base</td><td>Desafios de <dfn>CTF</dfn> (<em>Capture The Flag</em>, competição em que você resolve desafios de segurança para achar um texto secreto, a "flag") feitos para iniciantes.</td><td>Gratuito</td></tr>
+      <tr><td><a href="https://tryhackme.com/">TryHackMe</a></td><td>Todas</td><td>Salas guiadas com máquina virtual no navegador, de fundamentos a SOC.</td><td>Freemium: muitas salas grátis; trilhas completas no plano pago</td></tr>
+      <tr><td><a href="https://www.hackthebox.com/">Hack The Box</a></td><td>Ofensiva, AppSec</td><td>Máquinas para invadir e cursos (HTB Academy). Mais difícil que o TryHackMe.</td><td>Freemium: parte das máquinas e módulos grátis</td></tr>
+      <tr><td><a href="https://cyberdefenders.org/">CyberDefenders</a></td><td>Blue Team</td><td>Investigações com logs, tráfego de rede e imagens de disco reais.</td><td>Freemium: labs gratuitos; labs Pro pagos</td></tr>
+      <tr><td><a href="https://blueteamlabs.online/">Blue Team Labs Online</a></td><td>Blue Team</td><td>Investigações e desafios de SOC. A empresa por trás, Security Blue Team, passou a se chamar Centri em junho de 2026; a plataforma de labs manteve nome e endereço.</td><td>Freemium: verifique o preço atual</td></tr>
+      <tr><td><a href="https://letsdefend.io/">LetsDefend</a></td><td>Blue Team</td><td>Simula o painel de um analista SOC L1: alertas chegam, você investiga e fecha. Hoje faz parte da Hack The Box.</td><td>Freemium: plano Basic grátis</td></tr>
+      <tr><td><a href="https://www.splunk.com/en_us/training/free-courses.html">Splunk free courses</a></td><td>Blue Team</td><td>Cursos online de busca no Splunk e de segurança (há cursos introdutórios de detecção e threat hunting). A antiga série "Splunk Fundamentals" foi substituída por cursos menores.</td><td>Gratuito (cursos marcados como free)</td></tr>
+      <tr><td><a href="https://wazuh.com/">Wazuh</a> (local, Docker)</td><td>Blue Team</td><td>Um SIEM open source completo rodando na sua máquina. Receita abaixo.</td><td>Gratuito (open source)</td></tr>
+      <tr><td><a href="https://mitre-attack.github.io/attack-navigator/">MITRE ATT&amp;CK Navigator</a></td><td>Blue Team</td><td>Pintar a matriz ATT&amp;CK com a cobertura das suas detecções.</td><td>Gratuito</td></tr>
+      <tr><td><a href="https://github.com/redcanaryco/atomic-red-team">Atomic Red Team</a></td><td>Blue Team, Purple</td><td>Pequenos testes que simulam técnicas do ATT&amp;CK para checar se sua detecção dispara. Rode só em VM de laboratório.</td><td>Gratuito (open source)</td></tr>
+      <tr><td><a href="http://flaws.cloud/">flaws.cloud</a> e <a href="http://flaws2.cloud/">flaws2.cloud</a></td><td>Nuvem</td><td>Erros reais de configuração da AWS (bucket S3 aberto, credenciais expostas), resolvidos no navegador e na AWS CLI. Alguns níveis pedem uma conta AWS qualquer, mas você não cria recursos.</td><td>Gratuito</td></tr>
+      <tr><td><a href="https://github.com/RhinoSecurityLabs/cloudgoat">CloudGoat</a></td><td>Nuvem</td><td>Cenários vulneráveis criados com Terraform dentro da <strong>sua</strong> conta AWS.</td><td>A ferramenta é grátis, mas os recursos criados na AWS podem gerar cobrança. Prefira flaws.cloud.</td></tr>
+      <tr><td><a href="https://github.com/madhuakula/kubernetes-goat">Kubernetes Goat</a></td><td>DevSecOps, Nuvem</td><td>Cluster Kubernetes vulnerável de propósito, para rodar localmente (por exemplo com kind).</td><td>Gratuito (open source)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum: a conta de nuvem</span>
+    <p>Criar recursos numa conta AWS, GCP ou Azure pessoal "só para estudar" e esquecer ligado. Uma máquina ou um NAT Gateway parado ali vira fatura no fim do mês. Se for inevitável usar nuvem, configure um alerta de orçamento antes de qualquer coisa e destrua tudo ao final (<code>terraform destroy</code>). Este guia foi montado para que você não precise.</p>
+  </div>
+
+  <h2 id="plano">Plano de 12 semanas</h2>
+  <p>Pensado para quem trabalha como dev e tem <strong>6 a 8 horas por semana</strong>. As quatro primeiras semanas são iguais para as duas trilhas, porque a base é a mesma; depois, escolha uma. Por que não as duas ao mesmo tempo? Porque, com pouco tempo, profundidade numa área rende portfólio e entrevista; um pouco de tudo rende só ansiedade. A outra trilha pode vir depois.</p>
+
+  <h3>Semanas 1 a 4: base comum</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Semana</th><th>Estudo</th><th>Prática</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><a href="01-fundamentos.html">Fundamentos</a>: confidencialidade, integridade e disponibilidade; ameaça, risco, autenticação</td><td>OverTheWire Bandit, níveis 0 a 10</td></tr>
+      <tr><td>2</td><td><a href="02-redes-e-linux.html">Redes e Linux</a>: TCP/IP, DNS, HTTP, permissões</td><td>Bandit até o nível 20; capturar seu próprio tráfego com Wireshark</td></tr>
+      <tr><td>3</td><td><a href="03-appsec.html">AppSec</a>: OWASP Top 10, injeção, controle de acesso</td><td>PortSwigger: SQL injection e controle de acesso</td></tr>
+      <tr><td>4</td><td><a href="03-appsec.html">AppSec</a>: XSS, autenticação, SSRF</td><td>Juice Shop local: resolver 10 desafios e escrever um write-up</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Semanas 5 a 12: trilha DevSecOps</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Semana</th><th>Estudo</th><th>Prática</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td><a href="04-devsecops.html">DevSecOps</a>: shift-left, SAST, segredos no código</td><td>Rodar um SAST e um detector de segredos num projeto seu</td></tr>
+      <tr><td>6</td><td><a href="04-devsecops.html">DevSecOps</a>: dependências (SCA) e SBOM</td><td>Adicionar scan de dependências no CI de um repositório público seu</td></tr>
+      <tr><td>7</td><td><a href="04-devsecops.html">DevSecOps</a>: containers e imagens</td><td>Escanear e endurecer o Dockerfile do projeto (usuário não-root, imagem mínima)</td></tr>
+      <tr><td>8</td><td><a href="04-devsecops.html">DevSecOps</a>: DAST</td><td>ZAP baseline contra o Juice Shop, rodando dentro do pipeline</td></tr>
+      <tr><td>9</td><td><a href="04-devsecops.html">DevSecOps</a>: Kubernetes e IaC</td><td>Kubernetes Goat local; scanner de IaC em manifestos ou Terraform</td></tr>
+      <tr><td>10</td><td>Nuvem: IAM e configurações erradas</td><td>flaws.cloud completo</td></tr>
+      <tr><td>11</td><td><a href="05-blue-team.html">Blue Team</a>: o que acontece depois do deploy</td><td>Ler a página e mapear quais logs sua aplicação já gera</td></tr>
+      <tr><td>12</td><td><a href="06-certificacoes.html">Certificações</a> e portfólio</td><td>Fechar o repositório do pipeline com README explicando cada etapa</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Semanas 5 a 12: trilha Blue Team</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Semana</th><th>Estudo</th><th>Prática</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td><a href="05-blue-team.html">Blue Team</a>: SOC, logs, normalização</td><td>Ler o próprio <code>auth.log</code> e access logs; identificar falhas de login</td></tr>
+      <tr><td>6</td><td><a href="05-blue-team.html">Blue Team</a>: SIEM</td><td>Subir o Wazuh local e ligar um agente numa VM ou container</td></tr>
+      <tr><td>7</td><td>Busca em SIEM</td><td>Cursos gratuitos do Splunk; recriar as mesmas buscas no Wazuh</td></tr>
+      <tr><td>8</td><td><a href="05-blue-team.html">Blue Team</a>: Sigma e detecção como código</td><td>Escrever 3 regras Sigma e convertê-las com sigma-cli</td></tr>
+      <tr><td>9</td><td><a href="05-blue-team.html">Blue Team</a>: MITRE ATT&amp;CK</td><td>Mapear suas regras no ATT&amp;CK Navigator; testar uma com Atomic Red Team</td></tr>
+      <tr><td>10</td><td>Triagem de alertas</td><td>LetsDefend (plano gratuito): fechar 10 alertas com justificativa</td></tr>
+      <tr><td>11</td><td><a href="05-blue-team.html">Blue Team</a>: resposta a incidentes</td><td>Dois labs gratuitos no CyberDefenders ou Blue Team Labs Online, com write-up</td></tr>
+      <tr><td>12</td><td><a href="06-certificacoes.html">Certificações</a> e portfólio</td><td>Repositório de detecções com testes no CI e README</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="homelab">Home lab de custo zero</h2>
+  <p>Um <dfn>home lab</dfn> é um ambiente de testes na sua própria máquina, onde você pode atacar e defender à vontade, legalmente. Tudo abaixo roda com Docker, sem nuvem. Reserve uns 8 GB de RAM livres para o Wazuh; o resto é leve.</p>
+
+  <h3>1. Juice Shop + ZAP (AppSec e DevSecOps)</h3>
+  <p>O <dfn>ZAP</dfn> (<em>Zed Attack Proxy</em>, scanner open source mantido hoje pela Checkmarx) faz <dfn>DAST</dfn> (<em>Dynamic Application Security Testing</em>, testar a aplicação rodando, de fora, como um atacante faria). O <em>baseline scan</em> é passivo: navega pelo site e aponta problemas sem atacar de verdade, por isso é o mais usado em CI.</p>
+<pre><code><span class="c"># sobe o Juice Shop em http://localhost:3000</span>
+docker run --rm -d --name juice -p 3000:3000 bkimminich/juice-shop
+
+<span class="c"># roda o ZAP baseline contra ele (Linux: --network host deixa o container ver o localhost)</span>
+docker run --rm --network host -v "$(pwd)":/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable \
+  zap-baseline.py -t http://localhost:3000 -r relatorio-zap.html
+
+<span class="c"># no macOS/Windows, troque localhost por host.docker.internal e remova --network host</span></code></pre>
+  <p>O relatório HTML fica na pasta atual. O próximo passo natural é colocar esse mesmo comando num workflow do GitHub Actions e fazer o pipeline falhar quando aparecer um alerta de risco alto.</p>
+
+  <h3>2. Wazuh single-node (Blue Team)</h3>
+  <p>O repositório oficial <code>wazuh-docker</code> traz uma configuração de nó único. Confira na página de releases do repositório qual é a versão estável mais recente e use essa tag no lugar de <code>vX.Y.Z</code>.</p>
+<pre><code><span class="c"># o indexador (baseado em OpenSearch) exige este ajuste do kernel no Linux</span>
+sudo sysctl -w vm.max_map_count=262144
+
+git clone https://github.com/wazuh/wazuh-docker.git -b vX.Y.Z
+cd wazuh-docker/single-node
+
+<span class="c"># gera os certificados TLS internos entre os componentes</span>
+docker compose -f generate-indexer-certs.yml run --rm generator
+
+docker compose up -d
+<span class="c"># painel em https://localhost (o certificado é autoassinado; o navegador vai reclamar)</span></code></pre>
+  <div class="callout warn">
+    <span class="callout-title">Armadilha comum</span>
+    <p>A senha padrão do painel está documentada no próprio repositório, ou seja, é pública. Não exponha esse lab na internet nem na rede do trabalho, e troque as senhas se for mantê-lo ligado.</p>
+  </div>
+
+  <h3>3. Sigma CLI (detecção como código)</h3>
+  <p>O <code>sigma-cli</code> valida e converte regras Sigma. O <code>pipx</code> instala ferramentas Python cada uma no seu ambiente isolado, sem bagunçar o Python do sistema.</p>
+<pre><code>pipx install sigma-cli
+sigma plugin install splunk          <span class="c"># backend que traduz para SPL</span>
+
+<span class="c"># valida a sintaxe (ótimo para um passo de CI)</span>
+sigma check regras/
+
+<span class="c"># converte para uma busca do Splunk, sem pipeline de mapeamento de campos</span>
+sigma convert -t splunk --without-pipeline regras/ssh_bruteforce.yml</code></pre>
+  <p>Use como ponto de partida a regra de força bruta SSH da <a href="05-blue-team.html#sigma">página de Blue Team</a>. Para outros SIEMs, liste os plugins com <code>sigma plugin list</code>.</p>
+
+  <h2 id="portfolio">Portfólio: o que mostrar</h2>
+  <p>Para quem está mudando de área, o portfólio pesa mais que o diploma, porque é a prova de que você sabe fazer. E você tem uma vantagem: já sabe usar git, escrever README e montar CI. Ideias, todas sem custo de nuvem:</p>
+  <div class="grid">
+    <div class="card"><span class="n">01</span><h3>Pipeline com scans</h3><p>Um repositório com app de exemplo e um workflow que roda SAST, scan de dependências, detecção de segredos, scan de imagem e ZAP baseline. README explicando o porquê de cada etapa.</p></div>
+    <div class="card"><span class="n">02</span><h3>Repositório de detecções</h3><p>Regras Sigma com logs de teste (um que deve disparar, um que não deve), validação no CI e mapeamento ATT&amp;CK num arquivo do Navigator.</p></div>
+    <div class="card"><span class="n">03</span><h3>Write-ups</h3><p>Relatos passo a passo de labs e CTFs: o que você tentou, o que deu errado, como resolveu e como se defender. Escreva só sobre desafios em que a plataforma permite publicar solução.</p></div>
+    <div class="card"><span class="n">04</span><h3>Relatório de incidente simulado</h3><p>Pegue um lab do CyberDefenders e escreva como se fosse um incidente real: linha do tempo, impacto, contenção e lições, no formato de postmortem.</p></div>
+  </div>
+  <div class="callout dev">
+    <span class="callout-title">Ponte com o que você já faz</span>
+    <p>Recrutadores de segurança leem um bom write-up como você lê um bom postmortem: o que importa é a clareza do raciocínio, não só o resultado. Escrever bem é um diferencial enorme na área.</p>
+  </div>
+
+  <h2 id="checkpoint">Checkpoint</h2>
+  <details><summary>1. Você achou uma falha óbvia no site de uma loja onde compra. Pode testar para confirmar?</summary><p>Não, a menos que a loja tenha um programa de bug bounty ou política de divulgação que autorize testes, e ainda assim só dentro do escopo publicado. Testar sem autorização pode ser enquadrado no art. 154-A do Código Penal (Lei 12.737/2012).</p></details>
+  <details><summary>2. Por que preferir flaws.cloud ao CloudGoat no começo?</summary><p>Porque o flaws.cloud roda na infraestrutura dos autores e não cria nada na sua conta, enquanto o CloudGoat sobe recursos na sua conta AWS, que podem gerar cobrança se você esquecer de destruí-los.</p></details>
+  <details><summary>3. Por que escolher uma trilha nas semanas 5 a 12 em vez de estudar as duas?</summary><p>Com 6 a 8 horas por semana, profundidade numa área gera portfólio e assunto para entrevista. A base comum das semanas 1 a 4 serve para as duas, e a segunda trilha pode vir depois.</p></details>
+
+  <nav class="pager"><a href="06-certificacoes.html">← Anterior</a><a href="./">Voltar ao mapa →</a></nav>
+</main>
+<p class="foot">Material aberto (CC BY 4.0) · feito por <a href="https://ogatalars.github.io/">Felipe Ogata</a> · sem rastreadores</p>
+</body>
+</html>
